@@ -1,0 +1,708 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// USERS
+// ============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  displayName   String
+  passwordHash  String?
+  avatarUrl     String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  masteredCampaigns   Campaign[]        @relation("CampaignMaster")
+  campaignMembers     CampaignMember[]
+  characters          Character[]
+  notes               Note[]
+  chatMessages        ChatMessage[]
+  diceRolls           DiceRoll[]
+  generatedContent    GeneratedContent[]
+  sessions            Session[]
+  visualAids          VisualAid[]
+
+  @@map("users")
+}
+
+// ============================================================
+// CAMPAIGNS
+// ============================================================
+
+model Campaign {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  slug            String          @unique
+  coverImage      String?
+  bannerImage     String?
+  theme           CampaignTheme   @default(FANTASY)
+  system          GameSystem      @default(DND5E)
+  status          CampaignStatus  @default(ACTIVE)
+  isPublic        Boolean         @default(false)
+  inviteCode      String          @unique @default(cuid())
+  settings        Json            @default("{}")
+  masterId        String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  master          User            @relation("CampaignMaster", fields: [masterId], references: [id])
+  members         CampaignMember[]
+  characters      Character[]
+  npcs            NPC[]
+  locations       Location[]
+  factions        Faction[]
+  items           Item[]
+  quests          Quest[]
+  sessions        Session[]
+  notes           Note[]
+  chatRooms       ChatRoom[]
+  events          TimelineEvent[]
+  maps            GameMap[]
+  monsters        Monster[]
+  loreEntries     LoreEntry[]
+  generatedContent GeneratedContent[]
+  visualAids      VisualAid[]
+
+  @@map("campaigns")
+}
+
+model CampaignMember {
+  id          String      @id @default(cuid())
+  campaignId  String
+  userId      String
+  role        MemberRole  @default(PLAYER)
+  joinedAt    DateTime    @default(now())
+
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@unique([campaignId, userId])
+  @@map("campaign_members")
+}
+
+// ============================================================
+// CHARACTERS
+// ============================================================
+
+model Character {
+  id              String          @id @default(cuid())
+  campaignId      String
+  userId          String
+  name            String
+  race            String?
+  class           String?
+  subclass        String?
+  level           Int             @default(1)
+  background      String?
+  alignment       String?
+  backstory       String?
+  appearance      String?
+  avatarUrl       String?
+  portraitUrl     String?
+  isAlive         Boolean         @default(true)
+  isNPC           Boolean         @default(false)
+  stats           Json            @default("{}")
+  skills          Json            @default("{}")
+  savingThrows    Json            @default("{}")
+  features        Json            @default("[]")
+  traits          Json            @default("{}")
+  hitPoints       Int             @default(10)
+  maxHitPoints    Int             @default(10)
+  tempHitPoints   Int             @default(0)
+  armorClass      Int             @default(10)
+  initiative      Int             @default(0)
+  speed           Int             @default(30)
+  proficiencyBonus Int            @default(2)
+  currency        Json            @default("{}")
+  experience      Int             @default(0)
+  conditions      Json            @default("[]")
+  deathSaves      Json            @default("{}")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  campaign        Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id])
+  inventory       InventoryItem[]
+  relationships   CharacterRelationship[] @relation("CharacterA")
+  relatedTo       CharacterRelationship[] @relation("CharacterB")
+  spells          CharacterSpell[]
+  notes           Note[]          @relation("CharacterNotes")
+
+  @@map("characters")
+}
+
+model InventoryItem {
+  id            String    @id @default(cuid())
+  characterId   String
+  itemId        String?
+  name          String
+  description   String?
+  quantity      Int       @default(1)
+  weight        Float?
+  value         Float?
+  isEquipped    Boolean   @default(false)
+  properties    Json      @default("{}")
+  createdAt     DateTime  @default(now())
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  item          Item?     @relation(fields: [itemId], references: [id])
+
+  @@map("inventory_items")
+}
+
+model CharacterSpell {
+  id            String    @id @default(cuid())
+  characterId   String
+  name          String
+  level         Int       @default(0)
+  school        String?
+  castingTime   String?
+  range         String?
+  components    String?
+  duration      String?
+  description   String?
+  isPrepared    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@map("character_spells")
+}
+
+model CharacterRelationship {
+  id           String           @id @default(cuid())
+  characterAId String
+  characterBId String
+  type         RelationshipType @default(ACQUAINTANCE)
+  description  String?
+  createdAt    DateTime         @default(now())
+
+  characterA   Character @relation("CharacterA", fields: [characterAId], references: [id], onDelete: Cascade)
+  characterB   Character @relation("CharacterB", fields: [characterBId], references: [id], onDelete: Cascade)
+
+  @@unique([characterAId, characterBId])
+  @@map("character_relationships")
+}
+
+// ============================================================
+// NPCs
+// ============================================================
+
+model NPC {
+  id              String    @id @default(cuid())
+  campaignId      String
+  name            String
+  race            String?
+  occupation      String?
+  age             String?
+  gender          String?
+  appearance      String?
+  personality     String?
+  backstory       String?
+  motivations     String?
+  secrets         String?
+  quirks          String?
+  voiceNotes      String?
+  portraitUrl     String?
+  isAlive         Boolean   @default(true)
+  isKnownToParty  Boolean   @default(false)
+  location        String?
+  faction         String?
+  stats           Json      @default("{}")
+  relationships   Json      @default("[]")
+  generatedBy     String?
+  tags            String[]  @default([])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  campaign        Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("npcs")
+}
+
+// ============================================================
+// MONSTERS
+// ============================================================
+
+model Monster {
+  id               String    @id @default(cuid())
+  campaignId       String
+  name             String
+  type             String?
+  size             String?
+  alignment        String?
+  challengeRating  String?
+  hitPoints        String?
+  armorClass       Int?
+  speed            Json      @default("{}")
+  stats            Json      @default("{}")
+  skills           Json      @default("{}")
+  senses           Json      @default("{}")
+  languages        String?
+  abilities        Json      @default("[]")
+  actions          Json      @default("[]")
+  reactions        Json      @default("[]")
+  legendaryActions Json      @default("[]")
+  lore             String?
+  imageUrl         String?
+  generatedBy      String?
+  tags             String[]  @default([])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  campaign         Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("monsters")
+}
+
+// ============================================================
+// WORLD BUILDING
+// ============================================================
+
+model Location {
+  id              String    @id @default(cuid())
+  campaignId      String
+  parentId        String?
+  name            String
+  type            String?
+  description     String?
+  history         String?
+  secrets         String?
+  imageUrl        String?
+  mapUrl          String?
+  isKnownToParty  Boolean   @default(false)
+  tags            String[]  @default([])
+  properties      Json      @default("{}")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  campaign        Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  parent          Location? @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children        Location[] @relation("LocationHierarchy")
+
+  @@map("locations")
+}
+
+model Faction {
+  id              String    @id @default(cuid())
+  campaignId      String
+  name            String
+  description     String?
+  goals           String?
+  secrets         String?
+  alignment       String?
+  size            String?
+  headquarters    String?
+  logoUrl         String?
+  isKnownToParty  Boolean   @default(false)
+  tags            String[]  @default([])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  campaign        Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("factions")
+}
+
+model Item {
+  id                 String     @id @default(cuid())
+  campaignId         String
+  name               String
+  type               String?
+  rarity             ItemRarity @default(COMMON)
+  description        String?
+  lore               String?
+  properties         Json       @default("{}")
+  imageUrl           String?
+  isArtifact         Boolean    @default(false)
+  requiresAttunement Boolean    @default(false)
+  generatedBy        String?
+  tags               String[]   @default([])
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  campaign           Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  inventoryItems     InventoryItem[]
+
+  @@map("items")
+}
+
+// ============================================================
+// QUESTS
+// ============================================================
+
+model Quest {
+  id              String      @id @default(cuid())
+  campaignId      String
+  name            String
+  description     String?
+  type            QuestType   @default(MAIN)
+  status          QuestStatus @default(ACTIVE)
+  hook            String?
+  objectives      Json        @default("[]")
+  rewards         Json        @default("{}")
+  notes           String?
+  isKnownToParty  Boolean     @default(true)
+  generatedBy     String?
+  tags            String[]    @default([])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  campaign        Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("quests")
+}
+
+// ============================================================
+// SESSIONS
+// ============================================================
+
+model Session {
+  id          String        @id @default(cuid())
+  campaignId  String
+  masterId    String
+  number      Int
+  title       String?
+  date        DateTime?
+  duration    Int?
+  summary     String?
+  aiSummary   String?
+  notes       String?
+  status      SessionStatus @default(PLANNED)
+  recap       String?
+  highlights  Json          @default("[]")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  campaign    Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  master      User          @relation(fields: [masterId], references: [id])
+
+  @@map("sessions")
+}
+
+// ============================================================
+// MAPS
+// ============================================================
+
+model GameMap {
+  id          String  @id @default(cuid())
+  campaignId  String
+  name        String
+  description String?
+  imageUrl    String
+  type        MapType @default(WORLD)
+  width       Int     @default(1920)
+  height      Int     @default(1080)
+  isActive    Boolean @default(false)
+  fogOfWar    Boolean @default(false)
+  fogData     Json?
+  markers     Json    @default("[]")
+  gridEnabled Boolean @default(false)
+  gridSize    Int     @default(50)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("game_maps")
+}
+
+// ============================================================
+// LORE & WIKI
+// ============================================================
+
+model LoreEntry {
+  id            String       @id @default(cuid())
+  campaignId    String
+  title         String
+  content       String
+  category      LoreCategory @default(GENERAL)
+  isPublic      Boolean      @default(false)
+  tags          String[]     @default([])
+  linkedEntries String[]     @default([])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  campaign      Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("lore_entries")
+}
+
+model TimelineEvent {
+  id              String   @id @default(cuid())
+  campaignId      String
+  title           String
+  description     String?
+  date            String?
+  inGameDate      String?
+  type            String?
+  isKnownToParty  Boolean  @default(false)
+  linkedEntities  Json     @default("{}")
+  createdAt       DateTime @default(now())
+
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("timeline_events")
+}
+
+// ============================================================
+// NOTES
+// ============================================================
+
+model Note {
+  id          String    @id @default(cuid())
+  campaignId  String
+  userId      String
+  characterId String?
+  title       String?
+  content     String
+  isPrivate   Boolean   @default(true)
+  tags        String[]  @default([])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  campaign    Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id])
+  character   Character? @relation("CharacterNotes", fields: [characterId], references: [id])
+
+  @@map("notes")
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+
+model ChatRoom {
+  id          String       @id @default(cuid())
+  campaignId  String
+  name        String
+  type        ChatRoomType @default(PUBLIC)
+  description String?
+  createdAt   DateTime     @default(now())
+
+  campaign    Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  messages    ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String
+  type      MessageType @default(TEXT)
+  metadata  Json        @default("{}")
+  createdAt DateTime    @default(now())
+  editedAt  DateTime?
+
+  room      ChatRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id])
+
+  @@map("chat_messages")
+}
+
+// ============================================================
+// DICE
+// ============================================================
+
+model DiceRoll {
+  id          String   @id @default(cuid())
+  campaignId  String
+  userId      String
+  characterId String?
+  notation    String
+  results     Json
+  total       Int
+  modifier    Int      @default(0)
+  purpose     String?
+  isSecret    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("dice_rolls")
+}
+
+// ============================================================
+// VISUAL AIDS (gallery)
+// ============================================================
+
+model VisualAid {
+  id          String   @id @default(cuid())
+  campaignId  String
+  userId      String
+  name        String
+  description String?
+  imageUrl    String
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("visual_aids")
+}
+
+// ============================================================
+// AI CONTENT
+// ============================================================
+
+model GeneratedContent {
+  id         String      @id @default(cuid())
+  campaignId String
+  userId     String
+  type       ContentType
+  prompt     String
+  result     Json
+  model      String
+  tokens     Int?
+  savedAs    String?
+  savedId    String?
+  createdAt  DateTime    @default(now())
+
+  campaign   Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@map("generated_content")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum CampaignTheme {
+  FANTASY
+  HORROR
+  SCIFI
+  GRIMDARK
+  STEAMPUNK
+  WESTERN
+  MODERN
+  POSTAPOCALYPTIC
+  CUSTOM
+}
+
+enum GameSystem {
+  DND5E
+  PATHFINDER2E
+  CALL_OF_CTHULHU
+  VAMPIRE_MASQUERADE
+  SHADOWRUN
+  STARFINDER
+  CUSTOM
+}
+
+enum CampaignStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum MemberRole {
+  MASTER
+  PLAYER
+  SPECTATOR
+}
+
+enum RelationshipType {
+  ALLY
+  ENEMY
+  RIVAL
+  FRIEND
+  FAMILY
+  ROMANTIC
+  MENTOR
+  ACQUAINTANCE
+  UNKNOWN
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  VERY_RARE
+  LEGENDARY
+  ARTIFACT
+}
+
+enum QuestType {
+  MAIN
+  SIDE
+  PERSONAL
+  FACTION
+  BOUNTY
+}
+
+enum QuestStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  INACTIVE
+}
+
+enum SessionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MapType {
+  WORLD
+  REGION
+  CITY
+  DUNGEON
+  BUILDING
+  CUSTOM
+}
+
+enum LoreCategory {
+  GENERAL
+  HISTORY
+  RELIGION
+  MAGIC
+  POLITICS
+  GEOGRAPHY
+  CULTURE
+  BESTIARY
+  TECHNOLOGY
+}
+
+enum ChatRoomType {
+  PUBLIC
+  PRIVATE
+  MASTER_ONLY
+}
+
+enum MessageType {
+  TEXT
+  DICE_ROLL
+  SYSTEM
+  EMOTE
+  WHISPER
+}
+
+enum ContentType {
+  NPC
+  MONSTER
+  ITEM
+  QUEST
+  LOCATION
+  SESSION_SUMMARY
+  LORE
+  MAP_DESCRIPTION
+  CITY
+  ENCOUNTER
+}

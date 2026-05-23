@@ -1,26 +1,380 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ============================================================
+   CAMPAIGN FORGE — Design System
+   Dark, immersive, cinematic RPG aesthetic
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core Palette — default: dark fantasy */
+  --bg-base:        #0a0a0f;
+  --bg-surface:     #111118;
+  --bg-elevated:    #1a1a26;
+  --bg-overlay:     #22223a;
+
+  --border-subtle:  rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.12);
+  --border-strong:  rgba(255,255,255,0.24);
+
+  --text-primary:   #f0ece6;
+  --text-secondary: #9a9087;
+  --text-muted:     #5a5550;
+
+  /* Brand / Accent */
+  --accent-gold:    #c9a84c;
+  --accent-gold-dim:#7a6230;
+  --accent-crimson: #8b1a1a;
+  --accent-arcane:  #7c3aed;
+  --accent-ice:     #38bdf8;
+  --accent-nature:  #22c55e;
+
+  /* Glow effects */
+  --glow-gold:    0 0 20px rgba(201,168,76,0.3);
+  --glow-arcane:  0 0 20px rgba(124,58,237,0.4);
+  --glow-crimson: 0 0 20px rgba(139,26,26,0.4);
+
+  /* Shadows */
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md:    0 4px 16px rgba(0,0,0,0.6);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,0.8);
+  --shadow-xl:    0 16px 48px rgba(0,0,0,0.9);
+
+  /* Fonts */
+  --font-display: 'Cinzel', serif;
+  --font-body:    'Crimson Text', serif;
+  --font-ui:      'Inter', sans-serif;
+
+  /* Radius */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Theme variants */
+[data-theme="horror"] {
+  --accent-gold:    #8b0000;
+  --accent-gold-dim:#4a0000;
+  --bg-base:        #060308;
+  --bg-surface:     #0d0a12;
+  --bg-elevated:    #150f1e;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="scifi"] {
+  --accent-gold:    #00d4ff;
+  --accent-gold-dim:#005f70;
+  --bg-base:        #030812;
+  --bg-surface:     #060f1e;
+  --bg-elevated:    #0d1a2e;
+}
+
+[data-theme="grimdark"] {
+  --accent-gold:    #8b7355;
+  --accent-gold-dim:#4a3d2d;
+  --bg-base:        #080705;
+  --bg-surface:     #100e0a;
+  --bg-elevated:    #181410;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-color: var(--border-subtle);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-overlay);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   TAILWIND THEME TOKENS
+   ============================================================ */
+
+@theme inline {
+  --color-background:     var(--bg-base);
+  --color-surface:        var(--bg-surface);
+  --color-elevated:       var(--bg-elevated);
+  --color-overlay:        var(--bg-overlay);
+
+  --color-border:         var(--border-default);
+  --color-border-subtle:  var(--border-subtle);
+  --color-border-strong:  var(--border-strong);
+
+  --color-foreground:     var(--text-primary);
+  --color-muted:          var(--text-secondary);
+  --color-muted-fg:       var(--text-muted);
+
+  --color-gold:           var(--accent-gold);
+  --color-gold-dim:       var(--accent-gold-dim);
+  --color-crimson:        var(--accent-crimson);
+  --color-arcane:         var(--accent-arcane);
+  --color-ice:            var(--accent-ice);
+  --color-nature:         var(--accent-nature);
+
+  --font-display:         var(--font-display);
+  --font-body:            var(--font-body);
+  --font-ui:              var(--font-ui);
+
+  --radius-sm:  var(--radius-sm);
+  --radius-md:  var(--radius-md);
+  --radius-lg:  var(--radius-lg);
+  --radius-xl:  var(--radius-xl);
+}
+
+/* ============================================================
+   COMPONENT UTILITIES
+   ============================================================ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-default);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #c9a84c 0%, #f5d06e 50%, #c9a84c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gold-border {
+  border: 1px solid var(--accent-gold);
+  box-shadow: var(--glow-gold);
+}
+
+.arcane-glow {
+  box-shadow: var(--glow-arcane);
+}
+
+.crimson-glow {
+  box-shadow: var(--glow-crimson);
+}
+
+/* Parchment texture effect */
+.parchment {
+  background: linear-gradient(135deg, #2a1f0a 0%, #1a1208 50%, #221a08 100%);
+  border: 1px solid #4a3520;
+  position: relative;
+}
+
+/* Campaign card hover effect */
+.campaign-card {
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.campaign-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl), 0 0 30px rgba(201,168,76,0.15);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes ember {
+  0% { opacity: 0; transform: translateY(0) scale(0); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-20px) scale(0.5); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.2), transparent);
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease forwards;
+}
+
+/* Stagger animation children */
+.stagger-children > * {
+  animation: fade-in-up 0.5s ease forwards;
+  opacity: 0;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.30s; }
+
+/* ============================================================
+   DICE STYLES
+   ============================================================ */
+
+.dice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  border: 2px solid var(--accent-gold);
+  color: var(--accent-gold);
+  transition: all var(--transition-fast);
+}
+
+.dice:hover {
+  background: rgba(201,168,76,0.1);
+  box-shadow: var(--glow-gold);
+  transform: scale(1.1) rotate(-5deg);
+}
+
+/* ============================================================
+   PROSE / LORE CONTENT
+   ============================================================ */
+
+.lore-content {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.lore-content h1, .lore-content h2, .lore-content h3 {
+  font-family: var(--font-display);
+  color: var(--accent-gold);
+  margin: 1.5em 0 0.5em;
+}
+
+.lore-content p {
+  margin-bottom: 1em;
+}
+
+.lore-content blockquote {
+  border-left: 3px solid var(--accent-gold);
+  padding-left: 1em;
+  font-style: italic;
+  color: var(--text-secondary);
+  margin: 1em 0;
+}
+
+/* ============================================================
+   SELECTION
+   ============================================================ */
+
+::selection {
+  background: rgba(201,168,76,0.25);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   FOCUS
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
 }

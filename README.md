@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CampaignForge
 
-## Getting Started
+Plataforma web completa para campañas de rol multijugador con IA integrada.
 
-First, run the development server:
+## Stack
+
+- Next.js 15 (App Router) + TypeScript
+- Tailwind CSS v4 (tema oscuro inmersivo)
+- Supabase (Auth + PostgreSQL + Realtime)
+- Prisma v7 + `@prisma/adapter-pg`
+- OpenAI GPT-4o (generación narrativa)
+- Framer Motion + Zustand
+
+## Setup Rápido
+
+### 1. Variables de entorno
+
+```bash
+cp .env.example .env
+```
+
+Completa `.env` con:
+- `DATABASE_URL` — PostgreSQL de Supabase
+- `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `OPENAI_API_KEY` — Para GPT-4o
+
+### 2. Sincronizar DB
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### 3. Ejecutar
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Estructura
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/app/
+  (auth)/         → Login, Registro
+  (dashboard)/    → Dashboard, nueva campaña
+  (campaign)/     → Todo dentro de una campaña
+    [slug]/
+      page.tsx        overview
+      characters/     fichas de personaje
+      npcs/           PNJs con visibilidad
+      sessions/       registro de sesiones
+      lore/           wiki por categorías
+      ai-forge/       generador IA (NPC/Monstruo/Quest...)
+  api/
+    auth/           create-profile, signout
+    ai/             generate, assistant
+    campaigns/      CRUD, join, by-slug
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Funcionalidades
 
-## Learn More
+### Implementadas
+- Auth completo (Supabase email/password)
+- Dashboard multi-campaña
+- Creación de campañas (wizard 3 pasos con tema/sistema)
+- Unirse por código de invitación
+- Layout con sidebar colapsable y tema dinámico
+- Fichas de personaje con HP bar, stats, inventario
+- PNJs con visibilidad máster/jugador
+- Sesiones con historial y resúmenes IA
+- Wiki/Lore con categorías
+- IA Forge: NPC, Monstruo, Objeto, Quest, Localización, Resumen
+- Asistente del Máster (chat GPT-4o contextual)
+- Bandeja de dados (d4-d100, historial)
+- Animaciones inmersivas
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Próximas Fases
+- Mapas interactivos con fog of war
+- Chat en tiempo real (Supabase Realtime)
+- Generador de imágenes (DALL-E 3)
+- Timeline interactiva
+- Upload de imágenes con UploadThing
+- Export PDF de fichas
