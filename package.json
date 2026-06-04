@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "dotenv -e .env -- tsx prisma/seed.ts"
+    "seed": "dotenv -e .env -- tsx prisma/seed.ts",
+    "mock:reset": "node -e \"require('fs').rmSync('data/mock-db.json', { force: true }); console.log('Mock DB reset.')\"",
+    "dev:setup": "npx prisma generate && npx prisma db push && npm run seed"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

@@ -33,6 +33,10 @@ yarn-error.log*
 # env files
 .env*
 !.env.example
+!.env.local.example
+
+# mock database (local dev only)
+/data/mock-db.json
 
 # uploaded files (local dev only — production uses Cloudinary)
 /public/uploads/
