@@ -8,6 +8,14 @@
 
 ## Prioridad ALTA — Funcionalidad faltante crítica
 
+### [ ] Sección "Dados" del sidebar — historial de tiradas por jugador
+**Estado:** Sección deshabilitada en sidebar (modelo `DiceRoll` existe en DB, UI no implementada).
+**Decisión de diseño:** El dado flotante del navbar es para tirar dados en tiempo real durante la sesión. La sección "Dados" del sidebar debe ser el **historial de tiradas** de la campaña: quién tiró, qué dado, resultado, fecha/sesión. Filtrable por jugador.
+**Approach sugerido:** Server Component que liste `DiceRoll` filtrados por `campaignId`. Mostrar avatar del jugador, notación (ej: `2d6+3`), resultado total, y si tiene `purpose` mostrarlo. Agrupar por sesión opcional.
+**Versión estimada:** v2.0
+
+
+
 ### [ ] Tiempo real en chat (Supabase Realtime)
 **Estado:** No implementado. El chat existe como modelo en DB pero no tiene polling ni WebSocket.
 **Impacto:** Sin esto, el chat no es usable en sesiones activas.
