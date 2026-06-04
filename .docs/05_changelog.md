@@ -5,6 +5,38 @@
 
 ---
 
+## [1.6] — 2026-06-04
+
+### feat(dice) + fix(nav) + fix(sidebar) — Página de dados, nav refinado, versión en UI
+
+**Archivos nuevos:**
+- `src/components/dice/dice-roller.tsx` — Componente de tirada extraído de `DiceTray`. Reutilizable en la bandeja y en la página `/dice`.
+- `src/app/(campaign)/[campaignSlug]/dice/page.tsx` — Página de dados con historial mock (izquierda) y roller inline (derecha). Disclaimer de datos simulados. Badges automáticos `¡CRÍTICO!` / `PIFIA`.
+- `src/lib/version.ts` — Constante `APP_VERSION` como fuente única de verdad para el número de versión.
+
+**Archivos modificados:**
+
+| Archivo | Cambios |
+|---------|---------|
+| `dice-tray.tsx` | Reescrito con `AnimatePresence` correcto: backdrop y panel son hijos condicionales separados dentro de su propio `<AnimatePresence>`. Fix definitivo del bug "bandeja no abre". Usa `DiceRoller` internamente. |
+| `top-nav.tsx` | Nueva prop `isMaster?: boolean`. Botón Sparkles (IA) solo se renderiza si `isMaster`. Avatar convertido a `<Link href="/profile">`. |
+| `campaign-sidebar.tsx` | Dados habilitado. Avatar y props `userDisplayName`/`userAvatarUrl` eliminados del footer. Badge de versión `v{APP_VERSION}` en footer, visible solo cuando el sidebar está expandido. |
+| `(campaign)/layout.tsx` | Pasa `isMaster` a `TopNav`. Ya no pasa props de usuario al sidebar. |
+| `(dashboard)/layout.tsx` | Email removido del nav. Avatar como `<Link href="/profile">`. "Salir" movido a la derecha del avatar. Footer con `CampaignForge v{APP_VERSION}`. |
+| `.env.local.example` | Completado con todas las variables: `MOCK_MODE`, `DATABASE_URL`, `JWT_SECRET`, `OPENAI_API_KEY`, `NEXT_PUBLIC_APP_URL`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`. |
+
+**Bugs resueltos:**
+- Bandeja de dados no abría al hacer click en el ícono del navbar: `AnimatePresence` con early-return `null` en el componente raíz no detectaba el cambio de estado. Fix: siempre renderizar el componente, condición dentro de `AnimatePresence`.
+- Avatar del navbar de campaña no tenía acción: era un `<button>` sin handler. Ahora navega a `/profile`.
+
+**Versión en UI:**
+- Sidebar de campaña: `v{APP_VERSION}` en el footer, visible solo cuando está expandido (opacidad reducida).
+- Dashboard: footer con `CampaignForge v{APP_VERSION}` alineado a la derecha.
+
+**Rama:** `fix/visuales`
+
+---
+
 ## [1.5] — 2026-06-04
 
 ### fix(ui) — Sidebar reordenado, texto persistente, Chat/Voz en construcción

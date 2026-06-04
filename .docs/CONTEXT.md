@@ -4,7 +4,7 @@
 
 ---
 
-## Versión actual: `1.5`
+## Versión actual: `1.6`
 
 Historial de versiones en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 
@@ -46,13 +46,14 @@ src/
 ├── components/
 │   ├── layout/              → CampaignSidebar, TopNav
 │   ├── ai/                  → MasterAssistant
-│   ├── dice/                → DiceTray
+│   ├── dice/                → DiceTray, DiceRoller (compartido)
 │   └── ui/                  → Componentes base (Button, Input, Avatar, UnderConstruction, etc.)
 ├── lib/
 │   ├── ai/                  → Integración OpenAI, generadores
-│   ├── auth.ts              → JWT + bcrypt
-│   ├── prisma.ts            → Switch condicional: mock o Prisma real
 │   ├── mock/                → Mock layer (seed, store, query, client)
+│   ├── auth.ts              → JWT + bcrypt
+│   ├── version.ts           → APP_VERSION — fuente única del número de versión
+│   ├── prisma.ts            → Switch condicional: mock o Prisma real
 │   └── supabase/            → Re-exporta getSessionUser (compatibilidad)
 ├── store/
 │   └── campaign-store.ts    → Zustand (sidebar, dice, AI assistant state)
