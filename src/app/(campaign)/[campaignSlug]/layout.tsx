@@ -20,11 +20,7 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
     where: { slug: campaignSlug },
     include: {
       master: true,
-      members: {
-        include: {
-          user: true,
-        },
-      },
+      members: { include: { user: true } },
     },
   });
 
@@ -33,17 +29,53 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
   const isMaster = campaign.masterId === user.id;
   const isMember = campaign.members.some((m: { userId: string }) => m.userId === user.id) || isMaster;
 
-  if (!isMember) {
-    redirect(`/join/${campaign.inviteCode}`);
+  if (!isMember) redirect(`/join/${campaign.inviteCode}`);
+
+  // Auto-initialize default chat rooms for new campaigns
+  const [textRooms, voiceRooms] = await Promise.all([
+    prisma.chatRoom.findMany({ where: { campaignId: campaign.id, channelType: "TEXT" } }),
+    prisma.chatRoom.findMany({
+      where: { campaignId: campaign.id, channelType: "VOICE" },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
+
+  if (textRooms.length === 0) {
+    await prisma.chatRoom.create({
+      data: { campaignId: campaign.id, name: "General", channelType: "TEXT", type: "PUBLIC" },
+    });
   }
+  if (voiceRooms.length === 0) {
+    await Promise.all([
+      prisma.chatRoom.create({ data: { campaignId: campaign.id, name: "General", channelType: "VOICE", type: "PUBLIC" } }),
+      prisma.chatRoom.create({ data: { campaignId: campaign.id, name: "Dungeon", channelType: "VOICE", type: "PUBLIC" } }),
+    ]);
+  }
+
+  // Fetch final voice rooms (after potential creation)
+  const finalVoiceRooms = voiceRooms.length > 0
+    ? voiceRooms
+    : await prisma.chatRoom.findMany({
+        where: { campaignId: campaign.id, channelType: "VOICE" },
+        orderBy: { createdAt: "asc" },
+      });
+
+  const serializedVoiceRooms = finalVoiceRooms.map((r: any) => ({
+    id: r.id,
+    name: r.name,
+    type: r.type as "PUBLIC" | "PRIVATE" | "MASTER_ONLY",
+    channelType: "VOICE" as const,
+  }));
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-base)]" data-theme={campaign.theme.toLowerCase()}>
       <CampaignSidebar
         campaignSlug={campaignSlug}
+        campaignId={campaign.id}
         isMaster={isMaster}
         campaignName={campaign.name}
         campaignTheme={campaign.theme}
+        voiceRooms={serializedVoiceRooms}
       />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -53,12 +85,11 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
           userAvatarUrl={user.avatarUrl ?? undefined}
           isMaster={isMaster}
         />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-hidden">
           {children}
         </main>
       </div>
 
-      {/* Floating panels */}
       <DiceTray />
       {isMaster && (
         <MasterAssistant

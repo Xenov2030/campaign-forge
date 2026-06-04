@@ -7,7 +7,11 @@
       "Bash(python3 skills/ui-ux-pro-max/scripts/search.py \"tabletop RPG campaign manager dark fantasy SaaS dashboard\" --design-system -p \"Campaign Forge\" -f markdown)",
       "Bash(npx tsc *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(git stash *)",
+      "Bash(node *)",
+      "Bash(xargs grep *)"
     ]
   }
 }

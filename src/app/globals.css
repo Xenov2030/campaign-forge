@@ -456,3 +456,37 @@ input:disabled,
     display: none;
   }
 }
+
+/* ============================================================
+   CHAT BACKGROUND ANIMATIONS
+   ============================================================ */
+
+@keyframes chatBgShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes chatParticle {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+  33%  { transform: translateY(-30px) translateX(10px) scale(1.2); opacity: 0.6; }
+  66%  { transform: translateY(-15px) translateX(-8px) scale(0.9); opacity: 0.4; }
+  100% { transform: translateY(-50px) translateX(5px) scale(1); opacity: 0; }
+}
+
+.chat-bg-animated {
+  background: linear-gradient(135deg,
+    #0a0a0f 0%,
+    #0f0a1a 25%,
+    #0d0a14 50%,
+    #0a0d14 75%,
+    #0a0a0f 100%
+  );
+  background-size: 400% 400%;
+  animation: chatBgShift 25s ease infinite;
+}
+
+.chat-particle {
+  animation: chatParticle linear infinite;
+  will-change: transform, opacity;
+}

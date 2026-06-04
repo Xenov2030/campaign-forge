@@ -13,7 +13,7 @@ export async function GET(
     const { slug } = await params;
     const campaign = await prisma.campaign.findUnique({
       where: { slug },
-      select: { id: true, name: true, theme: true, system: true },
+      select: { id: true, name: true, theme: true, system: true, masterId: true },
     });
 
     if (!campaign) return NextResponse.json({ error: "Not found" }, { status: 404 });
