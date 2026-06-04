@@ -487,6 +487,7 @@ model ChatRoom {
   campaignId  String
   name        String
   type        ChatRoomType @default(PUBLIC)
+  channelType ChannelType  @default(TEXT)
   description String?
   createdAt   DateTime     @default(now())
 
@@ -684,6 +685,11 @@ enum ChatRoomType {
   PUBLIC
   PRIVATE
   MASTER_ONLY
+}
+
+enum ChannelType {
+  TEXT
+  VOICE
 }
 
 enum MessageType {

@@ -31,6 +31,22 @@ interface CampaignStore {
   // Theme
   campaignTheme: string;
   setCampaignTheme: (theme: string) => void;
+
+  // Chat
+  activeTextRoomId: string | null;
+  setActiveTextRoomId: (id: string | null) => void;
+
+  // Voice
+  activeVoiceRoomId: string | null;
+  setActiveVoiceRoomId: (id: string | null) => void;
+  voiceConnected: boolean;
+  setVoiceConnected: (connected: boolean) => void;
+  voiceMuted: boolean;
+  setVoiceMuted: (v: boolean) => void;
+  voiceDeafened: boolean;
+  setVoiceDeafened: (v: boolean) => void;
+  activeVoiceChannelId: string | null;
+  setActiveVoiceChannelId: (id: string | null) => void;
 }
 
 export const useCampaignStore = create<CampaignStore>((set, get) => ({
@@ -58,4 +74,18 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
 
   campaignTheme: "FANTASY",
   setCampaignTheme: (theme) => set({ campaignTheme: theme }),
+
+  activeTextRoomId: null,
+  setActiveTextRoomId: (id) => set({ activeTextRoomId: id }),
+
+  activeVoiceRoomId: null,
+  setActiveVoiceRoomId: (id) => set({ activeVoiceRoomId: id }),
+  voiceConnected: false,
+  setVoiceConnected: (connected) => set({ voiceConnected: connected }),
+  voiceMuted: false,
+  setVoiceMuted: (v) => set({ voiceMuted: v }),
+  voiceDeafened: false,
+  setVoiceDeafened: (v) => set({ voiceDeafened: v }),
+  activeVoiceChannelId: null,
+  setActiveVoiceChannelId: (id) => set({ activeVoiceChannelId: id }),
 }));
