@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Crown, LogOut, User, Plus } from "lucide-react";
+import { Crown, LogOut } from "lucide-react";
 
 export default async function DashboardLayout({
   children,
@@ -39,14 +39,6 @@ export default async function DashboardLayout({
             </span>
           </div>
           <div className="h-4 w-px bg-[var(--border-subtle)] mx-1 hidden md:block" aria-hidden="true" />
-
-          <Link
-            href="/profile"
-            className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-3 py-2 rounded hover:bg-[var(--bg-elevated)] min-h-[36px]"
-          >
-            <User className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">Mi perfil</span>
-          </Link>
 
           <form action="/api/auth/signout" method="POST">
             <button

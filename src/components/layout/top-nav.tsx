@@ -18,6 +18,7 @@ interface TopNavProps {
   currentSection?: string;
   userDisplayName: string;
   userAvatarUrl?: string;
+  isMaster?: boolean;
 }
 
 export function TopNav({
@@ -25,6 +26,7 @@ export function TopNav({
   currentSection,
   userDisplayName,
   userAvatarUrl,
+  isMaster,
 }: TopNavProps) {
   const { setDiceTrayOpen, setAIAssistantOpen, toggleSidebar } = useCampaignStore();
 
@@ -80,15 +82,17 @@ export function TopNav({
           <Dices className="h-4 w-4" aria-hidden="true" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setAIAssistantOpen(true)}
-          aria-label="Asistente IA"
-          className="h-9 w-9"
-        >
-          <Sparkles className="h-4 w-4" aria-hidden="true" />
-        </Button>
+        {isMaster && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setAIAssistantOpen(true)}
+            aria-label="Asistente IA"
+            className="h-9 w-9"
+          >
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        )}
 
         <Button
           variant="ghost"

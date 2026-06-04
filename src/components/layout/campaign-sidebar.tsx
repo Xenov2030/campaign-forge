@@ -81,7 +81,7 @@ export function CampaignSidebar({
     { label: "Notas",          href: `${base}/notes`,        icon: <Scroll className="h-4 w-4" />,   disabled: true },
     { label: "Sesiones",       href: `${base}/sessions`,     icon: <Calendar className="h-4 w-4" /> },
     { label: "Lore / Wiki",    href: `${base}/lore`,         icon: <BookOpen className="h-4 w-4" /> },
-    { label: "Dados",          href: `${base}/dice`,         icon: <Dices className="h-4 w-4" />,    disabled: true },
+    { label: "Dados",          href: `${base}/dice`,         icon: <Dices className="h-4 w-4" /> },
     // — Solo máster —
     { label: "Galería",        href: `${base}/gallery`,      icon: <ImageIcon className="h-4 w-4" />, isMasterOnly: true },
     { label: "Mapas",          href: `${base}/maps`,         icon: <Map className="h-4 w-4" />,       isMasterOnly: true, disabled: true },
