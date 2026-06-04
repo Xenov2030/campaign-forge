@@ -113,7 +113,7 @@ La app está en español. Soporte para inglés y portugués como segundo paso.
 
 ---
 
-## Mejoras completadas
+## Mejoras completadas (v1.2)
 
 | Versión | Mejora |
 |---------|--------|
@@ -122,6 +122,10 @@ La app está en español. Soporte para inglés y portugués como segundo paso.
 | v1.1 | Skeletons de carga en dashboard y campaña overview |
 | v1.1 | Sidebar mobile como overlay con backdrop |
 | v1.1 | `prefers-reduced-motion` support |
+| v1.2 | Demo login sin necesidad de crear cuenta (`/api/auth/demo-login`) |
+| v1.2 | CTAs de landing page coherentes (sin redundancia) |
+| v1.2 | Cursor-pointer global en todos los elementos interactivos |
+| v1.2 | Hover en inputs, textareas, select, stat cards, botones del wizard |
 | v1.1 | Contraste de `--text-muted` corregido (WCAG AA) |
 | v1.1 | `aria-label` en todos los botones de ícono |
 | v1.1 | Breadcrumb responsivo con truncado en mobile |

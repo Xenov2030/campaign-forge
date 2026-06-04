@@ -9,6 +9,7 @@ import {
   Crown,
   ChevronRight,
   Star,
+  Play,
 } from "lucide-react";
 
 const features = [
@@ -74,16 +75,15 @@ export default function LandingPage() {
         <div className="flex items-center gap-2 md:gap-3">
           <Link
             href="/login"
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-2 py-1.5"
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-2 py-1.5 rounded hover:bg-[var(--bg-elevated)] cursor-pointer"
           >
             Iniciar sesión
           </Link>
           <Link
             href="/register"
-            className="inline-flex items-center gap-1.5 h-9 px-3 md:px-4 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)]"
+            className="inline-flex items-center gap-1.5 h-9 px-3 md:px-4 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] cursor-pointer"
           >
-            <span className="hidden sm:inline">Comenzar</span>
-            <span className="sm:hidden">Gratis</span>
+            Crear cuenta
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         </div>
@@ -92,7 +92,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
         {/* Background effects */}
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[var(--accent-gold)]/5 blur-[120px]" />
           <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-[var(--accent-arcane)]/8 blur-[100px]" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-[600px] bg-gradient-to-b from-transparent via-[var(--accent-gold)]/20 to-transparent" />
@@ -101,6 +101,7 @@ export default function LandingPage() {
         {/* Grid pattern */}
         <div
           className="absolute inset-0 opacity-[0.03]"
+          aria-hidden="true"
           style={{
             backgroundImage: `linear-gradient(var(--border-default) 1px, transparent 1px), linear-gradient(90deg, var(--border-default) 1px, transparent 1px)`,
             backgroundSize: "60px 60px",
@@ -109,9 +110,9 @@ export default function LandingPage() {
 
         <div className="relative text-center px-4 sm:px-6 max-w-5xl mx-auto stagger-children">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--accent-gold)]/30 bg-[var(--accent-gold)]/5 text-xs text-[var(--accent-gold)] mb-8">
-            <Sparkles className="h-3 w-3" />
+            <Sparkles className="h-3 w-3" aria-hidden="true" />
             Generación de contenido con GPT-4o
-            <Star className="h-3 w-3" />
+            <Star className="h-3 w-3" aria-hidden="true" />
           </div>
 
           <h1 className="font-display text-5xl sm:text-6xl md:text-8xl font-black text-[var(--text-primary)] tracking-tight leading-[0.9] mb-6">
@@ -127,19 +128,23 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 h-14 px-8 bg-[var(--accent-gold)] text-[var(--bg-base)] text-base font-bold rounded-[var(--radius-lg)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] font-display tracking-wide"
+              className="inline-flex items-center gap-2 h-14 px-8 bg-[var(--accent-gold)] text-[var(--bg-base)] text-base font-bold rounded-[var(--radius-lg)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] font-display tracking-wide cursor-pointer"
             >
-              <Crown className="h-5 w-5" />
-              Crear campaña gratis
+              <Crown className="h-5 w-5" aria-hidden="true" />
+              Crear cuenta gratis
             </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 h-14 px-8 border border-[var(--border-default)] text-[var(--text-primary)] text-base font-medium rounded-[var(--radius-lg)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-all"
+            <a
+              href="/api/auth/demo-login"
+              className="inline-flex items-center gap-2 h-14 px-8 border border-[var(--border-default)] text-[var(--text-primary)] text-base font-medium rounded-[var(--radius-lg)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/5 transition-all cursor-pointer"
             >
-              Ver demo
-              <ChevronRight className="h-4 w-4" />
-            </Link>
+              <Play className="h-4 w-4" aria-hidden="true" />
+              Probar demo
+            </a>
           </div>
+
+          <p className="text-xs text-[var(--text-muted)] mt-4">
+            Demo: entra directamente como máster con una campaña de ejemplo lista
+          </p>
 
           {/* Systems */}
           <div className="mt-16 pt-8 border-t border-[var(--border-subtle)]">
@@ -184,6 +189,7 @@ export default function LandingPage() {
                   border: `1px solid ${feature.color}30`,
                   color: feature.color,
                 }}
+                aria-hidden="true"
               >
                 {feature.icon}
               </div>
@@ -200,7 +206,7 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section className="py-20 md:py-32 px-4 sm:px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-[var(--accent-gold)]/5 blur-[80px]" />
         </div>
 
@@ -211,15 +217,24 @@ export default function LandingPage() {
             <span className="gold-text">comienza aquí</span>
           </h2>
           <p className="text-[var(--text-secondary)] text-lg mb-10">
-            Únete a miles de narradores que ya usan CampaignForge para crear aventuras inolvidables.
+            Únete a narradores que ya usan CampaignForge para crear aventuras inolvidables.
           </p>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 h-14 px-10 bg-[var(--accent-gold)] text-[var(--bg-base)] text-lg font-bold rounded-[var(--radius-lg)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] font-display"
-          >
-            <Dices className="h-5 w-5" />
-            Empezar aventura
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 h-14 px-10 bg-[var(--accent-gold)] text-[var(--bg-base)] text-lg font-bold rounded-[var(--radius-lg)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] font-display cursor-pointer"
+            >
+              <Dices className="h-5 w-5" aria-hidden="true" />
+              Empezar gratis
+            </Link>
+            <a
+              href="/api/auth/demo-login"
+              className="inline-flex items-center gap-2 h-14 px-8 border border-[var(--border-default)] text-[var(--text-secondary)] text-base rounded-[var(--radius-lg)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-all cursor-pointer"
+            >
+              <Play className="h-4 w-4" aria-hidden="true" />
+              Ver demo primero
+            </a>
+          </div>
         </div>
       </section>
 

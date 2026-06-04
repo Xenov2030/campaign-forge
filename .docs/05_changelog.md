@@ -5,6 +5,40 @@
 
 ---
 
+## [1.2] — 2026-06-04
+
+### fix(ui) — Demo login, CTAs coherentes, cursor-pointer y hover effects
+
+**Archivos nuevos:**
+- `src/app/api/auth/demo-login/route.ts` — GET endpoint que autentica al usuario demo (`master@demo.com`) y redirige al dashboard. Permite probar la app sin crear cuenta.
+
+**Lógica de negocio corregida:**
+- Landing page: "Ver demo" / "Empezar aventura" apuntaban todos a `/register` o `/login` siendo redundantes e inconsistentes.
+- Nueva estructura de CTAs:
+  - **Nav**: "Iniciar sesión" (→ `/login`) + "Crear cuenta" (→ `/register`)
+  - **Hero**: "Crear cuenta gratis" (primary, → `/register`) + "Probar demo" (secondary, → `/api/auth/demo-login`)
+  - **CTA section**: "Empezar gratis" (→ `/register`) + "Ver demo primero" (→ `/api/auth/demo-login`)
+- El botón "Probar demo" ahora genuinamente diferente: auto-login como máster con campaña de ejemplo precargada.
+
+**Cursor-pointer y hover effects:**
+| Elemento | Cambio |
+|---------|--------|
+| `globals.css` | Regla global `button:not(:disabled)`, `[role="button"]`, `label[for]`, `input[type="checkbox/radio"]` → `cursor: pointer`. `.dice` → `cursor: pointer`. |
+| `select.tsx` SelectTrigger | Añadido `cursor-pointer` + `hover:border-[var(--border-strong)]` |
+| `input.tsx` Input | Añadido `hover:border-[var(--border-strong)]` antes de focus |
+| `textarea.tsx` Textarea | Añadido `hover:border-[var(--border-strong)]` antes de focus |
+| `new-campaign/page.tsx` | Theme buttons y system buttons: `cursor-pointer` explícito + `hover:bg-[var(--bg-elevated)]` |
+| Dashboard stat cards | Añadido `hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)] transition-all` |
+
+**Rama:** `fix/visuales`
+
+---
+
+> Formato: `## [MAJOR.MINOR] — YYYY-MM-DD`
+> Tipos: `feat` (nueva funcionalidad), `fix` (corrección), `refactor`, `chore`, `docs`
+
+---
+
 ## [1.1] — 2026-06-04
 
 ### fix(ui) — Mejoras de UX visual, accesibilidad y responsividad móvil

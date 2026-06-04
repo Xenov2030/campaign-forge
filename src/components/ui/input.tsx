@@ -34,6 +34,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               "w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)]",
               "h-10 px-3 rounded-[var(--radius-md)] text-sm",
               "placeholder:text-[var(--text-muted)]",
+              "hover:border-[var(--border-strong)]",
               "focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)]",
               "transition-colors duration-150",
               "disabled:opacity-50 disabled:cursor-not-allowed",

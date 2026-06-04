@@ -104,7 +104,7 @@ export default async function DashboardPage() {
           { label: "Total sesiones", value: masteredCampaigns.reduce((acc: number, c) => acc + c._count.sessions, 0), icon: <Calendar className="h-5 w-5" />, color: "#34d399" },
           { label: "Compañeros de aventura", value: masteredCampaigns.reduce((acc: number, c) => acc + c._count.members, 0), icon: <Users className="h-5 w-5" />, color: "#a855f7" },
         ].map((stat, i) => (
-          <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-5">
+          <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-5 hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)] transition-all duration-200">
             <div className="flex items-center gap-2 mb-2 md:mb-3">
               <span style={{ color: stat.color }} aria-hidden="true">{stat.icon}</span>
               <span className="text-xs text-[var(--text-muted)] uppercase tracking-wider leading-tight">{stat.label}</span>

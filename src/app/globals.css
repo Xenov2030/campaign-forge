@@ -331,6 +331,7 @@ h1, h2, h3 {
   border: 2px solid var(--accent-gold);
   color: var(--accent-gold);
   transition: all var(--transition-fast);
+  cursor: pointer;
 }
 
 .dice:hover {
@@ -375,6 +376,30 @@ h1, h2, h3 {
 ::selection {
   background: rgba(201,168,76,0.25);
   color: var(--text-primary);
+}
+
+/* ============================================================
+   CURSOR & INTERACTIVITY BASELINE
+   ============================================================ */
+
+/* Ensure pointer cursor on all interactive elements */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+  cursor: pointer;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+
+/* Disabled state */
+button:disabled,
+input:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
 }
 
 /* ============================================================
