@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Crown, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default async function DashboardLayout({
   children,
@@ -28,17 +29,13 @@ export default async function DashboardLayout({
           </span>
         </Link>
 
-        <nav aria-label="Acciones de usuario" className="flex items-center gap-1 md:gap-2">
-          {/* User info — hidden on small screens */}
-          <div className="hidden md:flex flex-col items-end mr-1">
-            <span className="text-sm font-medium text-[var(--text-primary)] truncate max-w-[160px]">
-              {user.displayName}
-            </span>
-            <span className="text-xs text-[var(--text-muted)] truncate max-w-[160px]">
-              {user.email}
-            </span>
-          </div>
-          <div className="h-4 w-px bg-[var(--border-subtle)] mx-1 hidden md:block" aria-hidden="true" />
+        <nav aria-label="Acciones de usuario" className="flex items-center gap-2 md:gap-3">
+          {/* Display name — hidden on small screens */}
+          <span className="hidden md:block text-sm font-medium text-[var(--text-primary)] truncate max-w-[160px]">
+            {user.displayName}
+          </span>
+
+          <div className="h-4 w-px bg-[var(--border-subtle)] hidden md:block" aria-hidden="true" />
 
           <form action="/api/auth/signout" method="POST">
             <button
@@ -50,6 +47,19 @@ export default async function DashboardLayout({
               <span className="hidden sm:inline">Salir</span>
             </button>
           </form>
+
+          <Link
+            href="/profile"
+            aria-label="Editar perfil"
+            className="rounded-full focus-visible:outline-2 focus-visible:outline-[var(--accent-gold)] focus-visible:outline-offset-2"
+          >
+            <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-[var(--accent-gold)] transition-all">
+              <AvatarImage src={user.avatarUrl ?? undefined} alt={`Avatar de ${user.displayName}`} />
+              <AvatarFallback className="text-xs">
+                {user.displayName.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
         </nav>
       </header>
 

@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCampaignStore } from "@/store/campaign-store";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface SidebarItem {
   label: string;
@@ -45,17 +44,12 @@ interface CampaignSidebarProps {
   isMaster: boolean;
   campaignName: string;
   campaignTheme: string;
-  userDisplayName: string;
-  userAvatarUrl?: string;
 }
 
 export function CampaignSidebar({
   campaignSlug,
   isMaster,
   campaignName,
-  campaignTheme,
-  userDisplayName,
-  userAvatarUrl,
 }: CampaignSidebarProps) {
   const { sidebarOpen, toggleSidebar, setSidebarOpen } = useCampaignStore();
   const pathname = usePathname();
@@ -279,14 +273,6 @@ export function CampaignSidebar({
               )}
             </Link>
 
-            <div className={cn("flex items-center px-1 py-1", !sidebarOpen && "justify-center")}>
-              <Avatar className="h-7 w-7 shrink-0">
-                <AvatarImage src={userAvatarUrl} alt={`Avatar de ${userDisplayName}`} />
-                <AvatarFallback className="text-xs">
-                  {userDisplayName.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </div>
           </div>
 
         </div>{/* end inner overflow wrapper */}

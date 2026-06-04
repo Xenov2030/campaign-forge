@@ -128,8 +128,8 @@ export default function DicePage() {
       {/* Main layout */}
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
 
-        {/* Left — Roll history */}
-        <div className="md:w-[400px] lg:w-[460px] border-b md:border-b-0 md:border-r border-[var(--border-subtle)] flex flex-col overflow-hidden">
+        {/* Left — Roll history (takes the majority of the space) */}
+        <div className="flex-1 border-b md:border-b-0 md:border-r border-[var(--border-subtle)] flex flex-col overflow-hidden">
           <div className="px-4 py-3 border-b border-[var(--border-subtle)]">
             <h2 className="font-display text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider">
               Historial de tiradas
@@ -201,9 +201,9 @@ export default function DicePage() {
           </div>
         </div>
 
-        {/* Right — Dice roller */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-sm mx-auto px-4 py-6">
+        {/* Right — Dice roller (fixed width panel) */}
+        <div className="md:w-[320px] lg:w-[360px] shrink-0 overflow-y-auto">
+          <div className="px-4 py-6">
             <h2 className="font-display text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-5">
               Lanzar dados
             </h2>
