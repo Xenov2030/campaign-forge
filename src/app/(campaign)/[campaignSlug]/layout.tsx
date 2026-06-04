@@ -44,8 +44,6 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
         isMaster={isMaster}
         campaignName={campaign.name}
         campaignTheme={campaign.theme}
-        userDisplayName={user.displayName}
-        userAvatarUrl={user.avatarUrl ?? undefined}
       />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -53,6 +51,7 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
           campaignName={campaign.name}
           userDisplayName={user.displayName}
           userAvatarUrl={user.avatarUrl ?? undefined}
+          isMaster={isMaster}
         />
         <main className="flex-1 overflow-y-auto">
           {children}

@@ -124,9 +124,10 @@ export async function loginUser(email: string, password: string) {
     throw new Error("Email o contraseña incorrectos");
   }
 
-  const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) {
-    throw new Error("Email o contraseña incorrectos");
+  // In mock mode skip real bcrypt comparison (no valid hash in seed data)
+  if (process.env.MOCK_MODE !== "true") {
+    const valid = await verifyPassword(password, user.passwordHash);
+    if (!valid) throw new Error("Email o contraseña incorrectos");
   }
 
   return user;

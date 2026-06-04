@@ -18,9 +18,10 @@ const SelectTrigger = React.forwardRef<
     className={cn(
       "flex h-10 w-full items-center justify-between rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2 text-sm text-[var(--text-primary)]",
       "placeholder:text-[var(--text-muted)]",
+      "hover:border-[var(--border-strong)] hover:bg-[var(--bg-overlay)]",
       "focus:outline-none focus:ring-1 focus:ring-[var(--accent-gold)] focus:border-[var(--accent-gold)]",
       "disabled:cursor-not-allowed disabled:opacity-50",
-      "transition-colors duration-150",
+      "transition-colors duration-150 cursor-pointer",
       className
     )}
     {...props}

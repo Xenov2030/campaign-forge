@@ -163,8 +163,8 @@ export default function NewCampaignPage() {
                   <button
                     key={theme.id}
                     onClick={() => setForm({ ...form, theme: theme.id })}
-                    className={`text-left p-4 rounded-[var(--radius-lg)] border transition-all ${
-                      isSelected ? "border-current" : "border-[var(--border-subtle)] hover:border-[var(--border-default)]"
+                    className={`text-left p-4 rounded-[var(--radius-lg)] border transition-all cursor-pointer ${
+                      isSelected ? "border-current" : "border-[var(--border-subtle)] hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)]"
                     }`}
                     style={isSelected ? {
                       borderColor: `${tc.primary}50`,
@@ -195,10 +195,10 @@ export default function NewCampaignPage() {
                 <button
                   key={system.id}
                   onClick={() => setForm({ ...form, system: system.id })}
-                  className={`w-full text-left p-4 rounded-[var(--radius-md)] border transition-all flex items-center justify-between ${
+                  className={`w-full text-left p-4 rounded-[var(--radius-md)] border transition-all flex items-center justify-between cursor-pointer ${
                     form.system === system.id
                       ? "border-[var(--accent-gold)]/40 bg-[var(--accent-gold)]/08 text-[var(--accent-gold)]"
-                      : "border-[var(--border-subtle)] hover:border-[var(--border-default)] text-[var(--text-primary)]"
+                      : "border-[var(--border-subtle)] hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]"
                   }`}
                 >
                   <div>

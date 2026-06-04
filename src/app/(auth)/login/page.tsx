@@ -1,19 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Crown, Eye, EyeOff, Sword } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function LoginPage() {
-  const router = useRouter();
+function LoginForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Show message if coming from failed demo login
+  useEffect(() => {
+    if (searchParams.get("demo") === "unavailable") {
+      setError("El usuario demo no existe todavía. Ejecutá 'npx prisma db seed' para crearlo, o creá una cuenta nueva.");
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +33,12 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
+      // Handle non-JSON responses (e.g. server misconfiguration, Prisma not generated)
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("El servidor no está disponible. Verificá que la base de datos esté configurada y ejecutá 'npx prisma generate'.");
+      }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error al iniciar sesión");
@@ -41,7 +54,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)] px-4">
       {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
         <div className="absolute top-1/3 left-1/3 w-80 h-80 rounded-full bg-[var(--accent-gold)]/4 blur-[100px]" />
         <div className="absolute bottom-1/3 right-1/3 w-64 h-64 rounded-full bg-[var(--accent-arcane)]/6 blur-[80px]" />
       </div>
@@ -49,7 +62,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md animate-fade-in-up">
         <div className="text-center mb-8">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-[var(--radius-xl)] bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 mb-4">
-            <Crown className="h-7 w-7 text-[var(--accent-gold)]" />
+            <Crown className="h-7 w-7 text-[var(--accent-gold)]" aria-hidden="true" />
           </div>
           <h1 className="font-display text-3xl font-black text-[var(--text-primary)] tracking-wider mb-2">
             Bienvenido
@@ -83,26 +96,27 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 px-3 pr-10 rounded-[var(--radius-md)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 px-3 pr-10 rounded-[var(--radius-md)] text-sm placeholder:text-[var(--text-muted)] hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="px-4 py-3 rounded-[var(--radius-md)] bg-red-900/20 border border-red-800/50 text-red-400 text-sm">
+              <div role="alert" className="px-4 py-3 rounded-[var(--radius-md)] bg-red-900/20 border border-red-800/50 text-red-400 text-sm">
                 {error}
               </div>
             )}
 
             <Button type="submit" loading={loading} className="w-full" size="lg">
-              <Sword className="h-4 w-4" />
+              <Sword className="h-4 w-4" aria-hidden="true" />
               Entrar a la aventura
             </Button>
           </form>
@@ -124,5 +138,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
