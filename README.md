@@ -1,4 +1,4 @@
-# CampaignForge `v1.4`
+# CampaignForge `v1.5`
 
 Plataforma web completa para campañas de rol multijugador con IA integrada.
 

@@ -4,7 +4,7 @@
 
 ---
 
-## Versión actual: `1.4`
+## Versión actual: `1.5`
 
 Historial de versiones en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 
@@ -36,6 +36,8 @@ src/
 │   │   ├── notes/           → Notas privadas
 │   │   ├── chat/            → Salas de chat
 │   │   ├── dice/            → Tirada de dados
+│   │   ├── chat/            → Página "en construcción" (Supabase Realtime pendiente)
+│   │   ├── voice/           → Página "en construcción" (LiveKit pendiente)
 │   │   └── ai-forge/        → Generador IA (máster only)
 │   ├── api/                 → Route handlers (auth, campaigns, characters, etc.)
 │   ├── not-found.tsx        → Página 404
@@ -45,7 +47,7 @@ src/
 │   ├── layout/              → CampaignSidebar, TopNav
 │   ├── ai/                  → MasterAssistant
 │   ├── dice/                → DiceTray
-│   └── ui/                  → Componentes base (Button, Input, Avatar, etc.)
+│   └── ui/                  → Componentes base (Button, Input, Avatar, UnderConstruction, etc.)
 ├── lib/
 │   ├── ai/                  → Integración OpenAI, generadores
 │   ├── auth.ts              → JWT + bcrypt

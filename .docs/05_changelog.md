@@ -5,6 +5,36 @@
 
 ---
 
+## [1.5] — 2026-06-04
+
+### fix(ui) — Sidebar reordenado, texto persistente, Chat/Voz en construcción
+
+**Archivos nuevos:**
+- `src/components/ui/under-construction.tsx` — Componente reutilizable "en construcción" con ícono temático, glow y animación float.
+- `src/app/(campaign)/[campaignSlug]/chat/page.tsx` — Página en construcción para el chat de campaña.
+- `src/app/(campaign)/[campaignSlug]/voice/page.tsx` — Página en construcción para canales de voz (LiveKit pendiente).
+
+**Archivos modificados:**
+
+| Archivo | Cambios |
+|---------|---------|
+| `campaign-sidebar.tsx` | Reordenamiento completo de ítems. Fix crítico: reemplazados todos los `AnimatePresence` alrededor de texto por `motion.span` con `animate` directo — resuelve texto invisible al volver de 404 o navegar entre secciones. Toggle button movido fuera del `overflow-hidden` wrapper para que no se recorte en desktop. "PNJs" → "NPCs". Nombre de usuario removido del footer. Link "Volver al dashboard" agregado en footer. Sesiones y Lore/Wiki re-habilitados. Ítems Chat y Canales de voz agregados con divider separador. |
+| `dice-tray.tsx` | Backdrop transparente agregado (z-30) — cierra la bandeja al hacer click fuera del panel. |
+| `.docs/06_mejoras.md` | Chat actualizado como "sidebar habilitado, página en construcción". Nuevo ítem Canales de voz (LiveKit) agregado como ALTA prioridad. |
+
+**Orden final del sidebar (jugador):**
+Inicio → Personajes → NPCs → Monstruos → Mundo → Quests → Objetos → Notas → Sesiones → Lore/Wiki → Dados → `[divider]` → Chat → Canales de voz
+
+**Solo máster (adicional):** Galería, Mapas, IA Forge
+
+**Bugs resueltos:**
+- Texto del sidebar desaparecía al navegar de vuelta desde una 404: `AnimatePresence` inicializaba con `opacity: 0` al remontar el Server Component layout y podía quedar atascado. Fix: `motion.span` siempre en DOM, solo cambia `opacity`/`x`.
+- Botón toggle del sidebar recortado en desktop: `overflow-hidden` en `motion.aside` cortaba el botón `absolute -right-3`. Fix: wrapper interno con `overflow-hidden`, botón como hijo directo de `motion.aside`.
+
+**Rama:** `fix/visuales`
+
+---
+
 ## [1.4] — 2026-06-04
 
 ### feat(mock): modo de desarrollo sin base de datos

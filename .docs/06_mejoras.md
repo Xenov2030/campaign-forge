@@ -17,9 +17,15 @@
 
 
 ### [ ] Tiempo real en chat (Supabase Realtime)
-**Estado:** No implementado. El chat existe como modelo en DB pero no tiene polling ni WebSocket.
+**Estado:** Sidebar habilitado → página "en construcción" (`/chat`). Modelo en DB existe. Sin polling ni WebSocket aún.
 **Impacto:** Sin esto, el chat no es usable en sesiones activas.
 **Approach sugerido:** Usar `supabase.channel()` con Postgres Changes en el componente de chat. Suscribir a `INSERT` en `ChatMessage` filtrado por `chatRoomId`.
+**Versión estimada:** v2.0
+
+### [ ] Canales de voz (LiveKit)
+**Estado:** Sidebar habilitado → página "en construcción" (`/voice`). Sin implementación aún.
+**Impacto:** Permite a los jugadores hablar durante la sesión sin usar herramientas externas.
+**Approach sugerido:** Instalar `@livekit/components-react` y `livekit-client`. Crear sala por `campaignId`. Token generado en API route `/api/livekit/token`.
 **Versión estimada:** v2.0
 
 ### [ ] Upload real de imágenes (UploadThing / Cloudinary)
