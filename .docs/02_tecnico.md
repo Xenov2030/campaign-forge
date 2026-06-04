@@ -1,6 +1,6 @@
 # CampaignForge — Documentación Técnica
 
-**Versión:** 1.1 | **Última actualización:** 2026-06-04
+**Versión:** 1.4 | **Última actualización:** 2026-06-04
 
 ---
 
@@ -13,8 +13,9 @@
 | Lenguaje | TypeScript | 5.x |
 | Estilos | Tailwind CSS + PostCSS | v4 |
 | ORM | Prisma | v7 |
-| Base de datos | PostgreSQL (Supabase) | 15+ |
-| Auth | Supabase Auth + JWT (jose) + bcryptjs | — |
+| Base de datos | PostgreSQL (Neon recomendado) | 15+ |
+| Adaptador DB | `@prisma/adapter-pg` | v7 |
+| Auth | JWT custom (`jose`) + bcryptjs | — |
 | IA | OpenAI SDK (GPT-4o) | — |
 | Estado global | Zustand | v5 |
 | Animaciones | Framer Motion | v12 |
@@ -23,7 +24,9 @@
 | Queries | TanStack React Query | v5 |
 | Forms | React Hook Form + Zod | — |
 | Upload | UploadThing + Cloudinary | — |
-| Deploy | Vercel (recomendado) | — |
+| Deploy | Netlify (config presente) / Vercel | — |
+
+> **Nota:** `@supabase/ssr` y `@supabase/supabase-js` están instalados pero no se usan activamente. `lib/supabase/server.ts` solo re-exporta `getSessionUser` de `lib/auth.ts` por compatibilidad de importaciones.
 
 ---
 
@@ -41,20 +44,27 @@ flowchart TD
         SC[Server Components]
         AR[API Route Handlers]
         MW[Middleware / Auth]
+        PTS[lib/prisma.ts]
+    end
+
+    subgraph DataLayer["Capa de datos"]
+        MOCK[Mock Client\ndata/mock-db.json]
+        REAL[(PostgreSQL\nNeon)]
     end
 
     subgraph External["Servicios Externos"]
-        SB[(Supabase\nPostgreSQL)]
         OAI[OpenAI\nGPT-4o]
         CDN[Cloudinary\nUploadThing]
     end
 
     Client -->|RSC / fetch| Server
-    SC -->|Prisma| SB
-    AR -->|Prisma| SB
+    SC --> PTS
+    AR --> PTS
+    PTS -->|MOCK_MODE=true| MOCK
+    PTS -->|MOCK_MODE=false| REAL
     AR -->|OpenAI SDK| OAI
     AR -->|Upload| CDN
-    MW -->|JWT verify| SB
+    MW -->|JWT verify cookie cf_session| SC
 ```
 
 ### Descripción de capas
@@ -64,8 +74,9 @@ flowchart TD
 | **Server Components** | Fetch de datos inicial (Prisma directo), validación de sesión con `getUser()`, renderizado HTML en servidor |
 | **Client Components** | Interactividad, formularios, animaciones, estado local con `useState`, estado global con Zustand |
 | **API Routes** | Mutaciones (POST/PUT/DELETE), llamadas a OpenAI, operaciones que requieren server-side logic |
-| **Middleware** | Protección de rutas (redirigir `/` si no auth), validación JWT |
+| **Middleware** | Protección de rutas, validación JWT |
 | **Zustand Store** | Estado de UI: sidebar open/close, dice tray, AI assistant panel |
+| **Mock Layer** | Reemplaza Prisma cuando `MOCK_MODE=true`; cliente con misma API, respaldado en `data/mock-db.json` |
 
 ---
 
@@ -76,29 +87,31 @@ sequenceDiagram
     actor U as Usuario
     participant C as Client
     participant API as /api/auth/login
-    participant DB as Supabase DB
+    participant P as lib/prisma.ts
     participant CK as Cookie (httpOnly)
 
     U->>C: Ingresa email + password
     C->>API: POST { email, password }
-    API->>DB: SELECT user WHERE email
-    DB-->>API: user { id, passwordHash, ... }
+    API->>P: user.findUnique({ where: { email } })
+    P-->>API: user { id, passwordHash, ... }
     API->>API: bcrypt.compare(password, hash)
-    API->>API: jose.SignJWT({ userId })
-    API-->>CK: Set-Cookie: campaign_token (7d, httpOnly)
-    API-->>C: { ok: true }
+    API->>API: jose.SignJWT({ sub: userId }, exp: 7d)
+    API-->>CK: Set-Cookie: cf_session (httpOnly, sameSite: lax)
+    API-->>C: { ok: true, user }
     C->>C: window.location.href = "/dashboard"
 ```
 
-**Token:** JWT firmado con `JWT_SECRET`, payload `{ userId, exp }`, cookie httpOnly 7 días.
+**Token:** JWT firmado con `JWT_SECRET`, payload `{ sub: userId }`, cookie `cf_session` httpOnly 7 días.
 
 **Lectura de sesión (Server):**
 ```ts
-// lib/supabase/server.ts → getUser()
-const token = cookies().get("campaign_token");
-const { userId } = await jose.jwtVerify(token, secret);
+// lib/auth.ts → getSessionUser()
+const token = cookieStore.get("cf_session")?.value;
+const userId = await verifyToken(token);              // jose.jwtVerify
 return prisma.user.findUnique({ where: { id: userId } });
 ```
+
+**Mock mode:** `loginUser()` omite `bcrypt.compare()` cuando `MOCK_MODE=true` (no hay hash real en seed). El JWT se genera igual — el resto del flujo es idéntico.
 
 ---
 
@@ -111,9 +124,9 @@ classDiagram
     class User {
         +id: String (cuid)
         +email: String (unique)
-        +fullName: String
+        +username: String (unique)
         +displayName: String
-        +passwordHash: String
+        +passwordHash: String?
         +avatarUrl: String?
         +createdAt: DateTime
     }
@@ -128,7 +141,6 @@ classDiagram
         +status: CampaignStatus
         +inviteCode: String (unique)
         +isPublic: Boolean
-        +coverImage: String?
         +settings: Json
         +masterId: String (FK)
         +createdAt: DateTime
@@ -146,15 +158,14 @@ classDiagram
         +id: String
         +name: String
         +race: String?
-        +class_: String?
+        +class: String?
         +level: Int
-        +hp / maxHp / tempHp: Int
+        +hitPoints / maxHitPoints: Int
         +armorClass: Int
         +speed: Int
-        +stats: Json (STR,DEX,CON,INT,WIS,CHA)
+        +stats: Json
         +skills: Json
-        +savingThrows: Json
-        +avatarUrl: String?
+        +currency: Json
         +campaignId: String (FK)
         +userId: String (FK)
     }
@@ -162,25 +173,25 @@ classDiagram
     class NPC {
         +id: String
         +name: String
-        +description: String?
-        +backstory: String?
-        +personality: String?
-        +secrets: String?
-        +isVisible: Boolean
+        +race, occupation, age, gender: String?
+        +appearance, personality, backstory: String?
+        +secrets, motivations, quirks: String?
+        +isKnownToParty: Boolean
         +tags: String[]
-        +avatarUrl: String?
         +campaignId: String (FK)
     }
 
     class Session {
         +id: String
-        +title: String
-        +date: DateTime
-        +summary: String?
-        +aiSummary: String?
-        +highlights: String[]
+        +number: Int
+        +title: String?
+        +date: DateTime?
+        +duration: Int?
+        +summary, aiSummary: String?
+        +highlights: Json
         +status: SessionStatus
         +campaignId: String (FK)
+        +masterId: String (FK)
     }
 
     class LoreEntry {
@@ -189,7 +200,7 @@ classDiagram
         +content: String
         +category: LoreCategory
         +tags: String[]
-        +isVisible: Boolean
+        +isPublic: Boolean
         +campaignId: String (FK)
     }
 
@@ -206,19 +217,21 @@ classDiagram
 
 | Entidad | Descripción |
 |---------|-------------|
-| `Monster` | Bestiario con stats, CR, habilidades, acciones |
-| `Location` | Locaciones jerárquicas (región > zona > lugar) |
-| `Faction` | Facciones con alineamiento y objetivos |
-| `Item` | Objetos con rareza, propiedades, valor |
-| `Quest` | Misiones con objetivos, estado, recompensa |
-| `Note` | Notas privadas por usuario/campaña |
-| `ChatRoom` | Salas de chat (public/private/master_only) |
-| `ChatMessage` | Mensajes con tipo (text/dice_roll/system) |
-| `DiceRoll` | Historial de tiradas |
-| `VisualAid` | Imágenes de la galería |
-| `GameMap` | Mapas con marcadores |
-| `TimelineEvent` | Eventos de la línea de tiempo |
-| `GeneratedContent` | Log de contenido generado por IA |
+| `Monster` | Bestiario con stats, CR, habilidades, acciones legendarias |
+| `Location` | Locaciones jerárquicas (parent/children recursivo) |
+| `Faction` | Facciones con alineamiento, objetivos y secretos |
+| `Item` | Objetos con rareza, propiedades JSON, atunement |
+| `Quest` | Misiones con objetivos (Json array), estado, recompensa |
+| `InventoryItem` | Inventario de personaje (join con Item opcional) |
+| `CharacterSpell` | Hechizos de personaje con nivel y escuela |
+| `Note` | Notas privadas por usuario/campaña/personaje |
+| `ChatRoom` | Salas de chat (PUBLIC, PRIVATE, MASTER_ONLY) |
+| `ChatMessage` | Mensajes con tipo (TEXT, DICE_ROLL, SYSTEM, WHISPER) |
+| `DiceRoll` | Historial de tiradas con notación y resultados JSON |
+| `VisualAid` | Galería de imágenes por campaña |
+| `GameMap` | Mapas con marcadores JSON y fog of war |
+| `TimelineEvent` | Eventos de la línea de tiempo con linkedEntities JSON |
+| `GeneratedContent` | Log de contenido generado por IA con prompt y resultado |
 
 ### Enums
 
@@ -227,11 +240,40 @@ classDiagram
 | `CampaignTheme` | FANTASY, HORROR, SCIFI, GRIMDARK, STEAMPUNK, WESTERN, MODERN, POSTAPOCALYPTIC, CUSTOM |
 | `GameSystem` | DND5E, PATHFINDER2E, CALL_OF_CTHULHU, VAMPIRE_MASQUERADE, SHADOWRUN, STARFINDER, CUSTOM |
 | `CampaignStatus` | ACTIVE, PAUSED, COMPLETED, ARCHIVED |
-| `MemberRole` | MASTER, PLAYER |
-| `SessionStatus` | PLANNED, IN_PROGRESS, COMPLETED |
-| `LoreCategory` | HISTORY, GEOGRAPHY, CHARACTERS, MAGIC, RELIGION, POLITICS, OTHER |
+| `MemberRole` | MASTER, PLAYER, SPECTATOR |
+| `SessionStatus` | PLANNED, IN_PROGRESS, COMPLETED, CANCELLED |
+| `LoreCategory` | GENERAL, HISTORY, RELIGION, MAGIC, POLITICS, GEOGRAPHY, CULTURE, BESTIARY, TECHNOLOGY |
 | `ItemRarity` | COMMON, UNCOMMON, RARE, VERY_RARE, LEGENDARY, ARTIFACT |
-| `QuestStatus` | ACTIVE, COMPLETED, FAILED, ABANDONED |
+| `QuestStatus` | ACTIVE, COMPLETED, FAILED, INACTIVE |
+| `MapType` | WORLD, REGION, CITY, DUNGEON, BUILDING, CUSTOM |
+
+> Los enums son tipos nativos de PostgreSQL. **No son compatibles con SQLite** — por eso el mock layer usa strings planos en lugar de SQLite.
+
+---
+
+## Mock Layer (`src/lib/mock/`)
+
+Módulo que reemplaza Prisma para desarrollo sin base de datos, activado con `MOCK_MODE=true`.
+
+```mermaid
+flowchart LR
+    AR[API Route] -->|import prisma| PT[lib/prisma.ts]
+    PT -->|MOCK_MODE=true| MC[mock/client.ts]
+    PT -->|MOCK_MODE=false| PC[PrismaClient real]
+    MC --> QE[mock/query.ts\nwhere / include / select / orderBy]
+    MC --> ST[mock/store.ts\ngetStore / saveStore]
+    ST -->|persiste| DB[(data/mock-db.json)]
+    ST -->|inicia con| SD[mock/seed.ts\ncampaña Strahd precargada]
+```
+
+| Archivo | Responsabilidad |
+|---------|----------------|
+| `mock/seed.ts` | Datos iniciales: 2 usuarios, campaña "La Maldición de Strahd", personaje, 3 NPCs, 2 quests, 3 sesiones, locaciones, facciones, lore |
+| `mock/store.ts` | Store global en memoria + persistencia en `data/mock-db.json`. Sobrevive hot-reload via `globalThis._mockStore` |
+| `mock/query.ts` | Motor de queries: `where` (AND/OR/NOT, operadores `in`, `contains`, relaciones `some`), `include` con relaciones anidadas, `_count`, `select`, `orderBy` |
+| `mock/client.ts` | Clon de la API de Prisma: `findMany`, `findFirst`, `findUnique`, `create`, `update`, `updateMany`, `delete`, `deleteMany`, `upsert`, `count`, `$transaction` |
+
+**Importante:** `lib/prisma.ts` usa `require()` dinámico para el cliente real, de modo que la app no crashea si `@prisma/client` no está generado.
 
 ---
 
@@ -241,10 +283,11 @@ classDiagram
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
-| POST | `/api/auth/login` | Login con email/password, setea cookie JWT | No |
+| POST | `/api/auth/login` | Login con email/password, setea cookie `cf_session` | No |
 | POST | `/api/auth/register` | Registro de nuevo usuario | No |
 | POST | `/api/auth/signout` | Borra cookie de sesión | No |
-| GET | `/api/auth/create-profile` | Crea perfil en DB post-Supabase auth | Sí |
+| GET | `/api/auth/demo-login` | Auto-login como `master@demo.com` → redirect dashboard | No |
+| GET | `/api/auth/me` | Datos del usuario autenticado | Sí |
 
 ### Campañas
 
@@ -252,27 +295,29 @@ classDiagram
 |--------|------|-------------|------|
 | GET | `/api/campaigns` | Lista campañas del usuario | Sí |
 | POST | `/api/campaigns` | Crear nueva campaña | Sí |
-| GET | `/api/campaigns/[id]` | Detalle de campaña | Sí |
-| PUT | `/api/campaigns/[id]` | Editar campaña | Sí (master) |
-| DELETE | `/api/campaigns/[id]` | Eliminar campaña | Sí (master) |
+| GET | `/api/campaigns/by-slug/[slug]` | Datos básicos de campaña por slug | Sí |
 | POST | `/api/campaigns/join` | Unirse con código de invitación | Sí |
-| GET | `/api/campaigns/by-slug/[slug]` | Campaña por slug | Sí |
 
-### Personajes
+### Personajes y PNJs
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
-| GET | `/api/characters` | Lista personajes de campaña | Sí |
-| POST | `/api/characters` | Crear personaje | Sí |
-| GET | `/api/characters/[id]` | Detalle de personaje | Sí |
-| PUT | `/api/characters/[id]` | Actualizar personaje | Sí |
-| DELETE | `/api/characters/[id]` | Eliminar personaje | Sí |
+| POST | `/api/characters` | Crear personaje | Sí (miembro) |
+| POST | `/api/npcs` | Crear PNJ | Sí (master) |
+
+### Contenido de campaña
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| GET/POST | `/api/sessions` | Sesiones | Sí |
+| GET/POST | `/api/lore` | Entradas de wiki/lore | Sí |
+| GET/POST | `/api/gallery` | Galería visual | Sí |
 
 ### IA
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
-| POST | `/api/ai/generate` | Generar contenido (NPC, monstruo, quest, etc.) | Sí (master) |
+| POST | `/api/ai` | Generar contenido (NPC, monstruo, quest, etc.) | Sí (master) |
 | POST | `/api/ai/assistant` | Chat con asistente del máster | Sí (master) |
 
 ### Perfil
@@ -289,10 +334,10 @@ classDiagram
 sequenceDiagram
     actor M as Máster
     participant UI as IA Forge UI
-    participant API as /api/ai/generate
+    participant API as /api/ai
     participant GEN as lib/ai/generators.ts
     participant OAI as OpenAI GPT-4o
-    participant DB as Prisma DB
+    participant DB as Prisma (real o mock)
 
     M->>UI: Selecciona tipo (NPC/Monster/Quest...)
     M->>UI: Completa parámetros opcionales
@@ -308,6 +353,8 @@ sequenceDiagram
     UI->>M: Muestra resultado, opción de guardar
 ```
 
+> En mock mode, la llamada a OpenAI sigue requiriendo `OPENAI_API_KEY`. Si no está configurado, la ruta `/api/ai` devolverá error — esto es esperado.
+
 ---
 
 ## Estructura de archivos — Detalle
@@ -316,78 +363,77 @@ sequenceDiagram
 src/
 ├── app/
 │   ├── (auth)/
-│   │   ├── login/page.tsx          → Client, formulario login
-│   │   └── register/page.tsx       → Client, formulario registro
+│   │   ├── login/page.tsx           → Client, formulario login + Suspense para useSearchParams
+│   │   └── register/page.tsx        → Client, formulario registro
 │   ├── (dashboard)/
-│   │   ├── layout.tsx              → Server, nav top + auth check
+│   │   ├── layout.tsx               → Server, nav top + auth check
 │   │   ├── dashboard/
-│   │   │   ├── page.tsx            → Server, lista campañas + stats
-│   │   │   ├── loading.tsx         → Skeleton de carga
-│   │   │   └── new-campaign/       → Wizard 3 pasos
-│   │   └── profile/page.tsx        → Client, cambiar nombre/contraseña
+│   │   │   ├── page.tsx             → Server, lista campañas + stats
+│   │   │   ├── loading.tsx          → Skeleton de carga
+│   │   │   └── new-campaign/        → Wizard 3 pasos
+│   │   └── profile/page.tsx         → Client, cambiar nombre/contraseña
 │   ├── (campaign)/[campaignSlug]/
-│   │   ├── layout.tsx              → Server, auth + membresía + sidebar + topnav
-│   │   ├── loading.tsx             → Skeleton de carga
-│   │   ├── page.tsx                → Server, overview de campaña
-│   │   ├── characters/             → List + [characterId]/page
-│   │   ├── npcs/                   → List + [npcId]/page
-│   │   ├── monsters/               → List + detail
-│   │   ├── world/                  → Locaciones, facciones
-│   │   ├── quests/                 → Lista de quests
-│   │   ├── items/                  → Inventario global
-│   │   ├── sessions/               → Lista + detalle
-│   │   ├── lore/                   → Wiki con categorías
-│   │   ├── gallery/                → Galería de imágenes
-│   │   ├── notes/                  → Notas
-│   │   ├── chat/                   → Salas de chat
-│   │   ├── dice/                   → Página de dados
-│   │   ├── ai-forge/               → Generador IA (master only)
-│   │   └── settings/               → Config campaña (master only)
-│   ├── api/                        → Route handlers
-│   ├── not-found.tsx               → Página 404
-│   ├── error.tsx                   → Error boundary global
-│   ├── layout.tsx                  → Root layout (metadata, fonts)
-│   └── globals.css                 → Design system tokens + utilities
+│   │   ├── layout.tsx               → Server, auth + membresía + sidebar + topnav
+│   │   ├── loading.tsx              → Skeleton de carga
+│   │   ├── page.tsx                 → Server, overview de campaña
+│   │   ├── characters/              → List + [characterId]/page
+│   │   ├── npcs/                    → List + [npcId]/page
+│   │   ├── monsters/                → Bestiario
+│   │   ├── world/                   → Locaciones, facciones
+│   │   ├── quests/                  → Lista de misiones
+│   │   ├── items/                   → Inventario global
+│   │   ├── sessions/                → Historial de sesiones
+│   │   ├── lore/                    → Wiki con categorías
+│   │   ├── gallery/                 → Galería de imágenes
+│   │   ├── notes/                   → Notas privadas
+│   │   ├── chat/                    → Salas de chat
+│   │   ├── dice/                    → Página de dados
+│   │   ├── ai-forge/                → Generador IA (master only)
+│   │   └── settings/                → Config campaña (master only)
+│   ├── api/                         → Route handlers
+│   ├── not-found.tsx                → Página 404 "Tierra Inexplorada"
+│   ├── error.tsx                    → Error boundary global
+│   ├── layout.tsx                   → Root layout (metadata, fonts)
+│   └── globals.css                  → Design system tokens + utilities
 ├── components/
 │   ├── layout/
-│   │   ├── campaign-sidebar.tsx    → Sidebar colapsable + mobile overlay
-│   │   └── top-nav.tsx             → Breadcrumb + acciones + hamburger mobile
+│   │   ├── campaign-sidebar.tsx     → Sidebar colapsable + overlay mobile
+│   │   └── top-nav.tsx              → Breadcrumb + acciones + hamburger
 │   ├── ai/
-│   │   └── master-assistant.tsx    → Panel flotante chat IA
+│   │   └── master-assistant.tsx     → Panel flotante chat IA
 │   ├── dice/
-│   │   └── dice-tray.tsx           → Panel flotante dados
-│   └── ui/                         → Button, Input, Avatar, Badge, Dialog, etc.
+│   │   └── dice-tray.tsx            → Panel flotante dados
+│   └── ui/                          → Button, Input, Textarea, Select, Badge, etc.
 ├── lib/
-│   ├── ai/generators.ts            → Constructores de prompt + llamadas OpenAI
-│   ├── auth.ts                     → JWT sign/verify, bcrypt hash/compare
-│   ├── prisma.ts                   → Singleton PrismaClient
-│   ├── utils.ts                    → cn(), formatRelativeTime(), getThemeColors()
+│   ├── auth.ts                      → JWT sign/verify, bcrypt, loginUser, registerUser, getSessionUser
+│   ├── prisma.ts                    → Switch condicional: mock client o PrismaClient real
+│   ├── utils.ts                     → cn(), formatRelativeTime(), getThemeColors(), rollDice()
+│   ├── mock/
+│   │   ├── seed.ts                  → Datos iniciales de desarrollo (campaña precargada)
+│   │   ├── store.ts                 → Store global + persistencia JSON
+│   │   ├── query.ts                 → Motor de queries (where/include/select/orderBy)
+│   │   └── client.ts                → Cliente Prisma falso con todos los modelos
+│   ├── ai/generators.ts             → Constructores de prompt + llamadas OpenAI
 │   └── supabase/
-│       ├── server.ts               → getUser(), createClient() server
-│       └── client.ts               → createClient() browser
+│       └── server.ts                → Re-exporta getSessionUser como getUser (compatibilidad)
 ├── store/
-│   └── campaign-store.ts           → Zustand: sidebar, diceTray, aiAssistant
+│   └── campaign-store.ts            → Zustand: sidebar, diceTray, aiAssistant
 └── types/
-    └── index.ts                    → Tipos TypeScript derivados de Prisma
+    └── index.ts                     → Tipos TypeScript
 ```
 
 ---
 
-## Variables de entorno requeridas
+## Variables de entorno
 
-| Variable | Descripción | Requerida |
-|----------|-------------|-----------|
-| `DATABASE_URL` | URL de conexión PostgreSQL (Supabase) | Sí |
-| `NEXT_PUBLIC_SUPABASE_URL` | URL pública de Supabase | Sí |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key de Supabase | Sí |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server-side) | Sí |
-| `JWT_SECRET` | Secreto para firmar tokens JWT | Sí |
-| `OPENAI_API_KEY` | API key de OpenAI (GPT-4o) | Sí |
-| `CLOUDINARY_CLOUD_NAME` | Nombre del cloud en Cloudinary | Opcional |
-| `CLOUDINARY_API_KEY` | API key de Cloudinary | Opcional |
-| `CLOUDINARY_API_SECRET` | API secret de Cloudinary | Opcional |
-| `UPLOADTHING_SECRET` | Secret de UploadThing | Opcional |
-| `NEXT_PUBLIC_APP_URL` | URL pública del app (para OG tags) | Sí |
+| Variable | Descripción | Mock mode | DB real |
+|----------|-------------|-----------|---------|
+| `MOCK_MODE` | `"true"` activa el mock layer | **Requerida** | No |
+| `DATABASE_URL` | URL de conexión PostgreSQL | No necesaria | **Requerida** |
+| `JWT_SECRET` | Secreto para firmar tokens JWT | Opcional (default dev) | **Requerida** |
+| `OPENAI_API_KEY` | API key de OpenAI (GPT-4o) | Opcional | Opcional |
+| `CLOUDINARY_*` | Credenciales Cloudinary | No | Opcional |
+| `UPLOADTHING_SECRET` | Secret de UploadThing | No | Opcional |
 
 ---
 
@@ -402,7 +448,7 @@ Ver `src/app/globals.css` para la lista completa. Variables principales:
 | `--bg-elevated` | `#1a1a26` | Elementos elevados |
 | `--text-primary` | `#f0ece6` | Texto principal |
 | `--text-secondary` | `#9a9087` | Texto secundario |
-| `--text-muted` | `#7a7470` | Texto terciario (4.5:1 contraste) |
+| `--text-muted` | `#7a7470` | Texto terciario (4.5:1 contraste WCAG AA) |
 | `--accent-gold` | `#c9a84c` | Acción primaria, CTAs |
 | `--accent-arcane` | `#7c3aed` | IA, magia, arcano |
 | `--accent-crimson` | `#8b1a1a` | Peligro, horror |
