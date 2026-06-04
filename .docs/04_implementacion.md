@@ -1,6 +1,6 @@
 # CampaignForge — Guía de Implementación
 
-**Versión:** 1.1 | **Última actualización:** 2026-06-04
+**Versión:** 1.4 | **Última actualización:** 2026-06-04
 
 ---
 
@@ -11,96 +11,129 @@
 | Node.js | 20.x LTS |
 | npm | 10.x |
 | Git | 2.x |
-| Cuenta Supabase | — |
-| Cuenta OpenAI | — |
+
+> **No se necesita cuenta de base de datos para desarrollo.** Ver Opción A abajo.
 
 ---
 
-## Setup inicial
+## Setup de desarrollo
 
-### 1. Clonar el repositorio
+Hay dos modos de trabajo. Elegí el que corresponda:
+
+---
+
+### Opción A — Modo Mock (recomendado para desarrollo local)
+
+Sin base de datos. Sin cuentas de servicios externos. Funciona de inmediato.
+
+#### 1. Clonar e instalar
 
 ```bash
 git clone https://github.com/Xenov2030/campaign-forge.git
 cd campaign-forge
-```
-
-### 2. Instalar dependencias
-
-```bash
 npm install
 ```
 
-### 3. Configurar variables de entorno
+#### 2. Variables de entorno
+
+El archivo `.env.local` ya está creado en el repositorio con `MOCK_MODE=true`. Si no existe:
 
 ```bash
-cp .env.example .env
+cp .env.local.example .env.local
 ```
 
-Editar `.env` con los valores correspondientes:
+El contenido mínimo necesario:
 
 ```env
-# Base de datos (Supabase)
-DATABASE_URL="postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres"
-NEXT_PUBLIC_SUPABASE_URL="https://[PROJECT].supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
-SUPABASE_SERVICE_ROLE_KEY="eyJ..."
-
-# Auth
-JWT_SECRET="tu-secreto-minimo-32-caracteres-aqui"
-
-# IA
-OPENAI_API_KEY="sk-..."
-
-# App URL
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-
-# Upload (opcional para desarrollo)
-CLOUDINARY_CLOUD_NAME=""
-CLOUDINARY_API_KEY=""
-CLOUDINARY_API_SECRET=""
+MOCK_MODE=true
+JWT_SECRET=campaign-forge-dev-secret-change-in-production
 ```
 
-### 4. Generar Prisma Client y sincronizar DB
-
-```bash
-npx prisma generate
-npx prisma db push
-```
-
-Para ambientes con migraciones formales:
-```bash
-npx prisma migrate dev --name init
-```
-
-### 5. (Opcional) Poblar con datos de prueba
-
-```bash
-npx prisma db seed
-```
-
-### 6. Ejecutar en desarrollo
+#### 3. Ejecutar
 
 ```bash
 npm run dev
 ```
 
-La app estará disponible en `http://localhost:3000`.
+Listo. La app está en `http://localhost:3000`.
+
+**Usuarios disponibles (cualquier contraseña):**
+
+| Email | Rol |
+|-------|-----|
+| `master@demo.com` | Máster — tiene la campaña "La Maldición de Strahd" |
+| `player@demo.com` | Jugador — tiene un personaje en la campaña |
+
+**Datos precargados:**
+- Campaña: "La Maldición de Strahd" (tema HORROR)
+- 3 PNJs (Strahd, Ismark, Ireena)
+- 3 sesiones (2 completadas, 1 planificada)
+- 2 quests (1 principal, 1 secundaria)
+- 3 locaciones (Barovia, Castillo Ravenloft, Aldea)
+- 2 facciones
+- 2 entradas de lore
+- 1 personaje jugador con inventario
+
+**Persistencia:** los cambios que hagas (crear campañas, PNJs, personajes, etc.) se guardan en `data/mock-db.json` y sobreviven reinicios del servidor.
+
+**Resetear datos:**
+```bash
+npm run mock:reset
+```
 
 ---
 
-## Configuración de Supabase
+### Opción B — Base de datos real (PostgreSQL)
 
-### Crear proyecto
-1. Ir a [supabase.com](https://supabase.com) → New project
-2. Obtener `URL` y `anon key` desde Settings → API
-3. Obtener `service_role key` desde la misma sección
+Para trabajo con datos reales o deploy.
 
-### Habilitar autenticación por email
-Settings → Authentication → Email → Enable email confirmations: **OFF** (para desarrollo, ON en producción)
+#### 1. Clonar e instalar
 
-### Obtener DATABASE_URL
-Settings → Database → Connection string → Direct connection (no pooling para Prisma)
+```bash
+git clone https://github.com/Xenov2030/campaign-forge.git
+cd campaign-forge
+npm install
+```
+
+#### 2. Crear base de datos
+
+**Neon (recomendado, gratuito):**
+1. Ir a [neon.tech](https://neon.tech) → Sign up (GitHub SSO disponible)
+2. Crear proyecto → copiar la connection string
+
+**Alternativas:** Supabase, Railway, Render, o PostgreSQL local.
+
+#### 3. Configurar variables de entorno
+
+```bash
+cp .env.local.example .env.local
+```
+
+Editar `.env.local`:
+
+```env
+MOCK_MODE=false
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
+JWT_SECRET=genera-uno-con-node-e-require-crypto-randomBytes-32-toString-hex
+OPENAI_API_KEY=sk-...   # opcional
+```
+
+#### 4. Inicializar base de datos
+
+```bash
+npm run dev:setup
+# equivale a: npx prisma generate && npx prisma db push && npm run seed
+```
+
+Esto crea las tablas y agrega los usuarios demo:
+- `master@demo.com` / `password123`
+- `player@demo.com` / `password123`
+
+#### 5. Ejecutar
+
+```bash
+npm run dev
+```
 
 ---
 
@@ -112,35 +145,44 @@ Settings → Database → Connection string → Direct connection (no pooling pa
 | `npm run build` | Build de producción |
 | `npm run start` | Iniciar servidor de producción |
 | `npm run lint` | Linting con ESLint |
-| `npx prisma studio` | UI visual para explorar la DB |
+| `npm run seed` | Poblar la DB con datos demo (requiere DB real) |
+| `npm run dev:setup` | Setup completo: generate + push + seed (primera vez con DB real) |
+| `npm run mock:reset` | Resetear `data/mock-db.json` a los datos iniciales del seed |
+| `npx prisma studio` | UI visual para explorar la DB (solo modo real) |
 | `npx prisma db push` | Sincronizar schema sin migraciones |
-| `npx prisma migrate dev` | Crear y aplicar migración |
 | `npx prisma generate` | Regenerar el Prisma Client |
 
 ---
 
-## Deploy en Vercel (recomendado)
+## Deploy en producción
 
-### 1. Conectar repositorio
-1. Ir a [vercel.com](https://vercel.com) → Add new project
-2. Importar el repositorio de GitHub
+### Variables de entorno requeridas en producción
 
-### 2. Configurar variables de entorno
-En el panel de Vercel → Settings → Environment Variables, agregar todas las variables del `.env`.
+```env
+MOCK_MODE=false
+DATABASE_URL=postgresql://...
+JWT_SECRET=secreto-largo-y-aleatorio-minimo-32-chars
+OPENAI_API_KEY=sk-...         # para IA Forge y Asistente
+NEXT_PUBLIC_APP_URL=https://tu-dominio.com
+```
 
-### 3. Configurar `NEXT_PUBLIC_APP_URL`
-Setear con la URL de producción: `https://tu-dominio.vercel.app`
+### Netlify (configuración presente)
 
-### 4. Deploy automático
-Cada push a `main/master` hace deploy automático.
+El proyecto tiene `@netlify/plugin-nextjs` configurado. Solo conectar el repo en [netlify.com](https://netlify.com) y agregar las variables de entorno.
+
+### Vercel
+
+1. Ir a [vercel.com](https://vercel.com) → Add new project → importar repo
+2. Agregar variables de entorno en Settings → Environment Variables
+3. Cada push a `master` hace deploy automático
 
 ---
 
-## Flujo de desarrollo — agregar una funcionalidad nueva
+## Flujo de desarrollo — agregar una funcionalidad
 
-### Paso 1: Leer documentación de contexto
+### Paso 1: Leer contexto
+
 ```bash
-# Leer siempre primero
 cat .docs/CONTEXT.md
 ```
 
@@ -148,29 +190,21 @@ cat .docs/CONTEXT.md
 
 ```bash
 git checkout -b feat/nombre-funcionalidad
-# o para fixes:
-git checkout -b fix/nombre-fix
+# o: fix/nombre-fix
 ```
 
 ### Paso 3: Modificar schema si aplica
 
-```prisma
-// prisma/schema.prisma
-model NuevaEntidad {
-  id         String   @id @default(cuid())
-  campaignId String
-  campaign   Campaign @relation(...)
-  // ...campos
-  createdAt  DateTime @default(now())
-}
-```
+Editar `prisma/schema.prisma`, luego:
 
 ```bash
-npx prisma db push      # desarrollo sin migraciones
-npx prisma generate     # regenerar client
+npx prisma generate   # siempre después de cambiar el schema
+npx prisma db push    # sincronizar con la DB (en modo real)
 ```
 
-### Paso 4: Crear la API route si aplica
+> Si agregás un nuevo modelo, también agregarlo al mock client en `src/lib/mock/client.ts` y al seed en `src/lib/mock/seed.ts`.
+
+### Paso 4: Crear la API route
 
 ```ts
 // src/app/api/[recurso]/route.ts
@@ -178,10 +212,9 @@ import { NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: Request) {
+export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
   // ... lógica
 }
 ```
@@ -190,41 +223,13 @@ export async function GET(req: Request) {
 
 ```
 src/app/(campaign)/[campaignSlug]/[nueva-seccion]/
-├── page.tsx       → Componente principal (Server Component preferido)
+├── page.tsx       → Componente principal
 └── loading.tsx    → Skeleton de carga (siempre agregar)
 ```
 
-```tsx
-// page.tsx — patrón básico
-import { redirect, notFound } from "next/navigation";
-import { getUser } from "@/lib/supabase/server";
-import prisma from "@/lib/prisma";
+### Paso 6: Agregar al sidebar si es sección de campaña
 
-export default async function NuevaPagina({ params }: { params: Promise<{ campaignSlug: string }> }) {
-  const { campaignSlug } = await params;
-  const user = await getUser();
-  if (!user) redirect("/login");
-
-  // fetch de datos con prisma
-  // return JSX
-}
-```
-
-### Paso 6: Agregar al sidebar (si es sección de campaña)
-
-Editar `src/components/layout/campaign-sidebar.tsx`:
-
-```tsx
-const navItems: SidebarItem[] = [
-  // ... items existentes
-  {
-    label: "Nueva Sección",
-    href: `${base}/nueva-seccion`,
-    icon: <IconoRelevante className="h-4 w-4" />,
-    isMasterOnly: false, // o true si es solo para máster
-  },
-];
-```
+Editar `src/components/layout/campaign-sidebar.tsx` → array `navItems`.
 
 ### Paso 7: Actualizar documentación
 
@@ -234,16 +239,16 @@ Obligatorio — ver lineamientos en `CONTEXT.md`.
 
 ## Convenciones de código
 
-### Nomenclatura de archivos
-- Páginas: `page.tsx` (sin nombre)
-- Layouts: `layout.tsx`
-- Loading: `loading.tsx`
-- Error: `error.tsx`
+### Nomenclatura
+
+- Páginas: `page.tsx`
+- Layouts: `layout.tsx`, Loading: `loading.tsx`, Error: `error.tsx`
 - Componentes: `PascalCase.tsx`
 - Utilities: `camelCase.ts`
 - API routes: `route.ts`
 
 ### Imports
+
 ```ts
 // Orden: Next.js → React → externos → internos
 import { redirect } from "next/navigation";
@@ -254,64 +259,72 @@ import { cn } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 ```
 
+### Server vs Client Components
+
+- **Server Component** (default): páginas que solo fetchen datos
+- **Client Component** (`"use client"`): formularios, interactividad, hooks de React, Zustand
+
 ### Clases CSS
+
 ```tsx
-// Usar CSS variables del design system
-// Mobile-first con breakpoints Tailwind
-// cn() para clases condicionales
 className={cn(
-  "base-classes",
-  condition && "conditional-classes",
-  "responsive:breakpoint-classes"
+  "clases-base",
+  condicion && "clases-condicionales",
+  "responsive:clases-breakpoint"
 )}
 ```
-
-### Server vs Client Components
-- **Server Component** (default): páginas que solo fetchen datos y rendericen HTML
-- **Client Component** (`"use client"`): formularios, interactividad, hooks de React, Zustand
 
 ---
 
 ## Convenciones de git
 
 ### Branches
+
 ```
-feat/nombre-funcionalidad    → nueva funcionalidad
-fix/nombre-fix               → corrección de bug
-fix/visuales                 → fixes de UI/UX
-refactor/nombre              → refactoring
-chore/nombre                 → tareas de mantenimiento
+feat/nombre     → nueva funcionalidad
+fix/nombre      → corrección de bug
+refactor/nombre → refactoring sin cambio funcional
+chore/nombre    → mantenimiento, deps, config
 ```
 
 ### Commit messages
+
 Formato: `type(module): descripción en español`
 
-```bash
+```
 feat(ui): agregar módulo de mapas interactivos
-fix(ui): corregir overflow en mobile del sidebar
-refactor(auth): migrar cookies a httpOnly
+fix(auth): corregir validación de contraseña en registro
+refactor(mock): mejorar resolución de relaciones anidadas
 chore(deps): actualizar prisma a v7.x
 ```
 
 ---
 
-## Troubleshooting frecuente
+## Troubleshooting
 
-### Error: "Module '@prisma/client' has no exported member 'PrismaClient'"
-```bash
-npx prisma generate
-```
+### "Unexpected token '<', '<!DOCTYPE...' is not valid JSON"
 
-### Error en seed: tipos no encontrados
-```bash
-npx prisma generate && npx prisma db seed
-```
+La API devuelve HTML en lugar de JSON. Causas:
+1. **Prisma no generado:** `npx prisma generate`
+2. **DB no configurada:** verificar `DATABASE_URL` en `.env.local`
+3. **Solución rápida:** activar `MOCK_MODE=true` en `.env.local`
 
-### Cookie de sesión no setea en desarrollo
-Verificar que `JWT_SECRET` esté configurado en `.env`.
+### Error al login en modo mock
+
+Verificar que `.env.local` tenga `MOCK_MODE=true`. Cualquier contraseña funciona para los usuarios demo.
+
+### Los datos del mock no persisten entre sesiones
+
+Si borraste `data/mock-db.json` o es la primera vez, se recreará desde el seed automáticamente.
+
+### Cookie de sesión no setea
+
+Verificar que `JWT_SECRET` esté configurado. El default de desarrollo funciona pero no debe usarse en producción.
 
 ### OpenAI "You exceeded your current quota"
-Verificar balance y límites en el dashboard de OpenAI.
+
+Verificar balance y límites en el dashboard de OpenAI. La IA Forge no funciona sin créditos.
 
 ### Framer Motion + SSR warnings
-Normal en Next.js App Router. Los componentes `"use client"` con Framer Motion se hidratan correctamente.
+
+Normal en Next.js App Router con componentes `"use client"`. Se hidratan correctamente en el cliente.
