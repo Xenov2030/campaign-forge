@@ -34,6 +34,7 @@ interface SidebarItem {
   icon: React.ReactNode;
   isMasterOnly?: boolean;
   badge?: number;
+  disabled?: boolean;
 }
 
 interface CampaignSidebarProps {
@@ -68,17 +69,17 @@ export function CampaignSidebar({
     { label: "Inicio",       href: base,                      icon: <Home className="h-4 w-4" /> },
     { label: "Personajes",   href: `${base}/characters`,      icon: <Sword className="h-4 w-4" /> },
     { label: "PNJs",         href: `${base}/npcs`,            icon: <Users className="h-4 w-4" /> },
-    { label: "Monstruos",    href: `${base}/monsters`,        icon: <Skull className="h-4 w-4" /> },
-    { label: "Mundo",        href: `${base}/world`,           icon: <Map className="h-4 w-4" /> },
-    { label: "Mapas",        href: `${base}/maps`,            icon: <Map className="h-4 w-4" />, isMasterOnly: true },
-    { label: "Quests",       href: `${base}/quests`,          icon: <Target className="h-4 w-4" /> },
-    { label: "Objetos",      href: `${base}/items`,           icon: <Package className="h-4 w-4" /> },
+    { label: "Monstruos",    href: `${base}/monsters`,        icon: <Skull className="h-4 w-4" />,    disabled: true },
+    { label: "Mundo",        href: `${base}/world`,           icon: <Map className="h-4 w-4" />,      disabled: true },
+    { label: "Mapas",        href: `${base}/maps`,            icon: <Map className="h-4 w-4" />,      isMasterOnly: true, disabled: true },
+    { label: "Quests",       href: `${base}/quests`,          icon: <Target className="h-4 w-4" />,   disabled: true },
+    { label: "Objetos",      href: `${base}/items`,           icon: <Package className="h-4 w-4" />,  disabled: true },
     { label: "Sesiones",     href: `${base}/sessions`,        icon: <Calendar className="h-4 w-4" /> },
     { label: "Lore / Wiki",  href: `${base}/lore`,            icon: <BookOpen className="h-4 w-4" /> },
     { label: "Galería",      href: `${base}/gallery`,         icon: <ImageIcon className="h-4 w-4" /> },
-    { label: "Notas",        href: `${base}/notes`,           icon: <Scroll className="h-4 w-4" /> },
-    { label: "Chat",         href: `${base}/chat`,            icon: <MessageSquare className="h-4 w-4" /> },
-    { label: "Dados",        href: `${base}/dice`,            icon: <Dices className="h-4 w-4" /> },
+    { label: "Notas",        href: `${base}/notes`,           icon: <Scroll className="h-4 w-4" />,   disabled: true },
+    { label: "Chat",         href: `${base}/chat`,            icon: <MessageSquare className="h-4 w-4" />, disabled: true },
+    { label: "Dados",        href: `${base}/dice`,            icon: <Dices className="h-4 w-4" />,    disabled: true },
     { label: "IA Forge",     href: `${base}/ai-forge`,        icon: <Sparkles className="h-4 w-4" />, isMasterOnly: true },
   ];
 
@@ -146,7 +147,46 @@ export function CampaignSidebar({
           aria-label="Secciones de la campaña"
         >
           {visibleItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== base && pathname.startsWith(item.href));
+            const isActive = !item.disabled && (pathname === item.href || (item.href !== base && pathname.startsWith(item.href)));
+
+            if (item.disabled) {
+              return (
+                <span
+                  key={item.href}
+                  title="Próximamente"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm group relative min-h-[40px] opacity-40 cursor-not-allowed select-none"
+                >
+                  <span className="shrink-0" aria-hidden="true">{item.icon}</span>
+                  <AnimatePresence>
+                    {sidebarOpen && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.12 }}
+                        className="truncate font-medium text-[var(--text-muted)] flex-1"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {sidebarOpen && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] shrink-0 leading-none">
+                      Pronto
+                    </span>
+                  )}
+                  {!sidebarOpen && (
+                    <div
+                      role="tooltip"
+                      className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-muted)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
+                    >
+                      {item.label} — Próximamente
+                    </div>
+                  )}
+                </span>
+              );
+            }
+
             return (
               <Link
                 key={item.href}
@@ -159,10 +199,7 @@ export function CampaignSidebar({
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                 )}
                 onClick={() => {
-                  // Close sidebar on mobile after navigation
-                  if (window.innerWidth < 768 && sidebarOpen) {
-                    toggleSidebar();
-                  }
+                  if (window.innerWidth < 768 && sidebarOpen) toggleSidebar();
                 }}
               >
                 <span className="shrink-0" aria-hidden="true">{item.icon}</span>
@@ -179,7 +216,6 @@ export function CampaignSidebar({
                     </motion.span>
                   )}
                 </AnimatePresence>
-                {/* Tooltip for collapsed state (desktop only) */}
                 {!sidebarOpen && (
                   <div
                     role="tooltip"
@@ -196,12 +232,9 @@ export function CampaignSidebar({
         {/* Footer */}
         <div className="border-t border-[var(--border-subtle)] p-3">
           {isMaster && (
-            <Link
-              href={`${base}/settings`}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm transition-colors mb-1 min-h-[40px]",
-                "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
-              )}
+            <span
+              title="Próximamente"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm mb-1 min-h-[40px] opacity-40 cursor-not-allowed select-none"
             >
               <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
               <AnimatePresence>
@@ -210,13 +243,18 @@ export function CampaignSidebar({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-sm"
+                    className="text-sm text-[var(--text-muted)] flex-1"
                   >
                     Configuración
                   </motion.span>
                 )}
               </AnimatePresence>
-            </Link>
+              {sidebarOpen && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] shrink-0 leading-none">
+                  Pronto
+                </span>
+              )}
+            </span>
           )}
 
           <div className={cn("flex items-center gap-2 px-1 py-1", !sidebarOpen && "justify-center")}>
