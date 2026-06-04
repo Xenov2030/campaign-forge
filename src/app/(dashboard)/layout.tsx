@@ -37,17 +37,6 @@ export default async function DashboardLayout({
 
           <div className="h-4 w-px bg-[var(--border-subtle)] hidden md:block" aria-hidden="true" />
 
-          <form action="/api/auth/signout" method="POST">
-            <button
-              type="submit"
-              className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-3 py-2 rounded hover:bg-[var(--bg-elevated)] min-h-[36px]"
-              aria-label="Cerrar sesión"
-            >
-              <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden sm:inline">Salir</span>
-            </button>
-          </form>
-
           <Link
             href="/profile"
             aria-label="Editar perfil"
@@ -60,6 +49,17 @@ export default async function DashboardLayout({
               </AvatarFallback>
             </Avatar>
           </Link>
+
+          <form action="/api/auth/signout" method="POST">
+            <button
+              type="submit"
+              className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-3 py-2 rounded hover:bg-[var(--bg-elevated)] min-h-[36px]"
+              aria-label="Cerrar sesión"
+            >
+              <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </form>
         </nav>
       </header>
 
