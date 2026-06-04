@@ -57,6 +57,11 @@ export default function RegisterPage() {
         }),
       });
 
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("El servidor no está disponible. Verificá que la base de datos esté configurada y ejecutá 'npx prisma generate'.");
+      }
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error al crear la cuenta");
 

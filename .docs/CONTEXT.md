@@ -4,7 +4,7 @@
 
 ---
 
-## Versión actual: `1.2`
+## Versión actual: `1.3`
 
 Historial de versiones en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 

@@ -1,6 +1,6 @@
 # CampaignForge — Documento de Mejoras Pendientes
 
-**Versión:** 1.1 | **Última actualización:** 2026-06-04
+**Versión:** 1.3 | **Última actualización:** 2026-06-04
 
 > Las mejoras están ordenadas por prioridad. Al implementar una, marcarla con `[x]` y moverla al changelog.
 

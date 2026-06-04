@@ -125,27 +125,6 @@ export default function LandingPage() {
             con el poder de la inteligencia artificial.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 h-14 px-8 bg-[var(--accent-gold)] text-[var(--bg-base)] text-base font-bold rounded-[var(--radius-lg)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] font-display tracking-wide cursor-pointer"
-            >
-              <Crown className="h-5 w-5" aria-hidden="true" />
-              Crear cuenta gratis
-            </Link>
-            <a
-              href="/api/auth/demo-login"
-              className="inline-flex items-center gap-2 h-14 px-8 border border-[var(--border-default)] text-[var(--text-primary)] text-base font-medium rounded-[var(--radius-lg)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/5 transition-all cursor-pointer"
-            >
-              <Play className="h-4 w-4" aria-hidden="true" />
-              Probar demo
-            </a>
-          </div>
-
-          <p className="text-xs text-[var(--text-muted)] mt-4">
-            Demo: entra directamente como máster con una campaña de ejemplo lista
-          </p>
-
           {/* Systems */}
           <div className="mt-16 pt-8 border-t border-[var(--border-subtle)]">
             <p className="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-4">

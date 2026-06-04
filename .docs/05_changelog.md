@@ -5,6 +5,29 @@
 
 ---
 
+## [1.3] — 2026-06-04
+
+### fix(auth) — Login robusto, demo login funcional, hero sin CTAs duplicados
+
+**Archivos modificados:**
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/app/page.tsx` | Eliminados botones "Crear cuenta gratis" y "Probar demo" del hero. El usuario es forzado a scrollear al CTA section donde ya están. Elimina redundancia y mejora el flujo. |
+| `src/app/api/auth/demo-login/route.ts` | Reescrito para aceptar `NextRequest` y usar `request.nextUrl.origin` en lugar de `process.env.NEXT_PUBLIC_APP_URL` para garantizar redirects correctos en cualquier entorno. |
+| `src/app/(auth)/login/page.tsx` | Reescrito con: `LoginForm` + `LoginPage` wrapper con `<Suspense>` (requerido por `useSearchParams` en App Router). `useEffect` detecta `?demo=unavailable` y muestra error informativo. Check de `Content-Type` antes de `res.json()` para manejar respuestas HTML de errores del servidor (Prisma no generado). `role="alert"` en div de error. |
+| `src/app/(auth)/register/page.tsx` | Mismo check de `Content-Type` antes de `res.json()` para consistencia. |
+
+**Errores corregidos:**
+
+- `"Unexpected token '<', '<!DOCTYPE ...' is not valid JSON"` al iniciar sesión: ocurría cuando `@prisma/client` no estaba generado, Next.js devolvía HTML 500 en lugar de JSON. Fix: verificar `content-type` antes de parsear.
+- Demo login sin feedback: la redirección a `/login?demo=unavailable` no mostraba nada al usuario. Fix: `useEffect` en login que detecta el param y muestra mensaje descriptivo con instrucciones.
+- `useSearchParams()` sin Suspense: error de Next.js App Router en build. Fix: wrapped en `<Suspense>`.
+
+**Rama:** `fix/visuales`
+
+---
+
 ## [1.2] — 2026-06-04
 
 ### fix(ui) — Demo login, CTAs coherentes, cursor-pointer y hover effects
