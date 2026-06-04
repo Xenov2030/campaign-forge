@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCampaignStore } from "@/store/campaign-store";
+import { APP_VERSION } from "@/lib/version";
 
 interface SidebarItem {
   label: string;
@@ -272,6 +273,15 @@ export function CampaignSidebar({
                 </div>
               )}
             </Link>
+
+            {/* Version badge */}
+            <motion.p
+              animate={{ opacity: sidebarOpen ? 0.35 : 0 }}
+              transition={{ duration: 0.15 }}
+              className="text-[10px] text-[var(--text-muted)] px-4 pt-2 pb-1 select-none"
+            >
+              v{APP_VERSION}
+            </motion.p>
 
           </div>
 

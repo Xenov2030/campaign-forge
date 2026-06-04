@@ -3,6 +3,7 @@ import { getUser } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Crown, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { APP_VERSION } from "@/lib/version";
 
 export default async function DashboardLayout({
   children,
@@ -66,6 +67,12 @@ export default async function DashboardLayout({
       <main className="flex-1">
         {children}
       </main>
+
+      <footer className="h-8 flex items-center justify-end px-6 border-t border-[var(--border-subtle)]/50">
+        <span className="text-[11px] text-[var(--text-muted)] opacity-40 select-none">
+          CampaignForge v{APP_VERSION}
+        </span>
+      </footer>
     </div>
   );
 }
