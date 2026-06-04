@@ -4,7 +4,7 @@
 
 ---
 
-## Versión actual: `1.3`
+## Versión actual: `1.4`
 
 Historial de versiones en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 
@@ -49,8 +49,9 @@ src/
 ├── lib/
 │   ├── ai/                  → Integración OpenAI, generadores
 │   ├── auth.ts              → JWT + bcrypt
-│   ├── prisma.ts            → Singleton Prisma
-│   └── supabase/            → Cliente Supabase (server/client)
+│   ├── prisma.ts            → Switch condicional: mock o Prisma real
+│   ├── mock/                → Mock layer (seed, store, query, client)
+│   └── supabase/            → Re-exporta getSessionUser (compatibilidad)
 ├── store/
 │   └── campaign-store.ts    → Zustand (sidebar, dice, AI assistant state)
 └── types/
@@ -60,7 +61,8 @@ src/
 **Archivos de configuración clave:**
 - `prisma/schema.prisma` — Esquema de base de datos
 - `src/app/globals.css` — Design system (CSS variables, tokens, animaciones)
-- `.env` — Variables de entorno (DATABASE_URL, OPENAI_API_KEY, Supabase)
+- `.env.local` — Variables de entorno (`MOCK_MODE`, `DATABASE_URL`, `JWT_SECRET`, etc.)
+- `.env.local.example` — Plantilla documentada de variables
 - `next.config.ts` — Config Next.js
 
 ---
@@ -71,8 +73,9 @@ src/
 |------|-----------|
 | Framework | Next.js 16.x (App Router) + React 19 + TypeScript 5 |
 | Estilos | Tailwind CSS v4 + CSS Variables (design system propio) |
-| Base de datos | PostgreSQL vía Supabase + Prisma v7 ORM |
-| Auth | JWT (jose) + bcrypt + cookies httpOnly |
+| Base de datos | PostgreSQL (Neon) vía Prisma v7 + adapter-pg |
+| Modo dev | Mock layer JSON (sin DB, activado con `MOCK_MODE=true`) |
+| Auth | JWT (jose) + bcrypt + cookie httpOnly `cf_session` |
 | IA | OpenAI GPT-4o |
 | Estado | Zustand |
 | UI | Radix UI + shadcn/ui pattern + Lucide React + Framer Motion |
@@ -205,9 +208,10 @@ if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
 ## Notas de arquitectura importantes
 
-1. **Auth**: JWT en cookie httpOnly (`campaign_token`), 7 días de expiración. `getUser()` en `lib/supabase/server.ts` lo valida.
-2. **Rutas**: Las rutas de campaña usan `[campaignSlug]` como parámetro. El layout de campaña resuelve el slug en el servidor y valida membresía.
-3. **Sidebar state**: `sidebarOpen` vive en Zustand (`campaign-store.ts`). En mobile se cierra automáticamente al cargar la página.
-4. **IA**: Todas las llamadas a OpenAI pasan por `src/lib/ai/`. El asistente del máster tiene acceso al contexto de la campaña via props.
-5. **Temas**: Los temas de campaña (Fantasy, Horror, SciFi, etc.) modifican las CSS variables via `data-theme` en el layout.
-6. **Prisma**: Usar siempre el singleton de `lib/prisma.ts`. No importar `PrismaClient` directamente.
+1. **Auth**: JWT en cookie httpOnly (`cf_session`), 7 días de expiración. `getUser()` en `lib/supabase/server.ts` re-exporta `getSessionUser()` de `lib/auth.ts`.
+2. **Mock mode**: Activar con `MOCK_MODE=true` en `.env.local`. `lib/prisma.ts` devuelve el mock client en lugar de PrismaClient. El mock client implementa la misma API de Prisma respaldada en `data/mock-db.json`.
+3. **Rutas**: Las rutas de campaña usan `[campaignSlug]`. El layout de campaña resuelve el slug y valida membresía.
+4. **Sidebar state**: `sidebarOpen` vive en Zustand (`campaign-store.ts`). En mobile se cierra automáticamente al cargar la página.
+5. **IA**: Todas las llamadas a OpenAI pasan por `src/lib/ai/`. El asistente del máster tiene acceso al contexto de la campaña via props.
+6. **Temas**: Los temas de campaña (Fantasy, Horror, SciFi, etc.) modifican las CSS variables via `data-theme` en el layout.
+7. **Prisma**: Usar siempre el singleton de `lib/prisma.ts`. No importar `PrismaClient` directamente — garantiza que el switch mock/real funcione.

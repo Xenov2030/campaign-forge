@@ -5,6 +5,35 @@
 
 ---
 
+## [1.4] — 2026-06-04
+
+### feat(mock): modo de desarrollo sin base de datos
+
+**Archivos nuevos:**
+- `src/lib/mock/seed.ts` — Datos iniciales: campaña "La Maldición de Strahd" con 2 usuarios, 3 NPCs, personaje, 3 sesiones, 2 quests, locaciones, facciones, lore precargados.
+- `src/lib/mock/store.ts` — Store global en memoria + persistencia en `data/mock-db.json`. Sobrevive hot-reload via `globalThis._mockStore`.
+- `src/lib/mock/query.ts` — Motor de queries compatible con Prisma: `where` (AND/OR/NOT, operadores `in`/`contains`/`gte`/`lt`, relaciones `some`), `include` con resolución de relaciones anidadas y `_count`, `select`, `orderBy`.
+- `src/lib/mock/client.ts` — Clon del cliente Prisma con todos los modelos: `findMany`, `findFirst`, `findUnique`, `create`, `update`, `updateMany`, `delete`, `deleteMany`, `upsert`, `count`, `$transaction`.
+- `.env.local.example` — Plantilla documentada de variables de entorno.
+
+**Archivos modificados:**
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/lib/prisma.ts` | Reescrito: `require()` dinámico para Prisma real, switch condicional `MOCK_MODE=true → createMockClient()`. La app ya no crashea si `@prisma/client` no está generado. |
+| `src/lib/auth.ts` | `loginUser()` omite `bcrypt.compare()` cuando `MOCK_MODE=true` (el seed no tiene hashes reales). |
+| `package.json` | Nuevos scripts: `mock:reset` (borra `data/mock-db.json`) y `dev:setup` (generate + push + seed para DB real). |
+| `.gitignore` | Agrega `data/mock-db.json` y corrige excepción de `.env.local.example`. |
+
+**Para activar:**
+1. Asegurar que `.env.local` tenga `MOCK_MODE=true` y `JWT_SECRET`
+2. `npm run dev` — sin ningún paso adicional
+3. Login: `master@demo.com` o `player@demo.com` con cualquier contraseña
+
+**Rama:** `fix/visuales`
+
+---
+
 ## [1.3] — 2026-06-04
 
 ### fix(auth) — Login robusto, demo login funcional, hero sin CTAs duplicados
