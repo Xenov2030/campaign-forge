@@ -54,7 +54,14 @@ export function DiceTray() {
 
   return (
     <AnimatePresence>
+      <div
+        key="dice-backdrop"
+        className="fixed inset-0 z-30"
+        onClick={() => setDiceTrayOpen(false)}
+        aria-hidden="true"
+      />
       <motion.div
+        key="dice-panel"
         initial={{ opacity: 0, x: 320 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 320 }}
