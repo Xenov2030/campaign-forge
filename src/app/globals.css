@@ -19,7 +19,7 @@
 
   --text-primary:   #f0ece6;
   --text-secondary: #9a9087;
-  --text-muted:     #5a5550;
+  --text-muted:     #7a7470;
 
   /* Brand / Accent */
   --accent-gold:    #c9a84c;
@@ -235,6 +235,13 @@ h1, h2, h3 {
   box-shadow: var(--shadow-xl), 0 0 30px rgba(201,168,76,0.15);
 }
 
+.campaign-card:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl), 0 0 20px rgba(201,168,76,0.15);
+}
+
 /* ============================================================
    ANIMATIONS
    ============================================================ */
@@ -377,4 +384,50 @@ h1, h2, h3 {
 :focus-visible {
   outline: 2px solid var(--accent-gold);
   outline-offset: 2px;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-float,
+  .animate-shimmer,
+  .animate-pulse-glow,
+  .animate-fade-in-up,
+  .animate-fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .stagger-children > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   MOBILE UTILITIES
+   ============================================================ */
+
+/* Hide scrollbar on mobile while preserving scroll */
+@media (max-width: 767px) {
+  .hide-scrollbar-mobile {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar-mobile::-webkit-scrollbar {
+    display: none;
+  }
 }

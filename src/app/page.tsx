@@ -59,28 +59,32 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg-base)] overflow-hidden">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 h-16 border-b border-[var(--border-subtle)] bg-[var(--bg-base)]/80 backdrop-blur-md">
-        <div className="flex items-center gap-2">
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 h-16 border-b border-[var(--border-subtle)] bg-[var(--bg-base)]/80 backdrop-blur-md"
+        aria-label="Navegación principal"
+      >
+        <Link href="/" className="flex items-center gap-2" aria-label="CampaignForge - Inicio">
           <div className="h-8 w-8 rounded bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/40 flex items-center justify-center">
-            <Crown className="h-4 w-4 text-[var(--accent-gold)]" />
+            <Crown className="h-4 w-4 text-[var(--accent-gold)]" aria-hidden="true" />
           </div>
           <span className="font-display text-lg font-bold text-[var(--text-primary)] tracking-wider">
             CampaignForge
           </span>
-        </div>
-        <div className="flex items-center gap-3">
+        </Link>
+        <div className="flex items-center gap-2 md:gap-3">
           <Link
             href="/login"
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-2 py-1.5"
           >
             Iniciar sesión
           </Link>
           <Link
             href="/register"
-            className="inline-flex items-center gap-1.5 h-9 px-4 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)]"
+            className="inline-flex items-center gap-1.5 h-9 px-3 md:px-4 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)]"
           >
-            Comenzar gratis
-            <ChevronRight className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Comenzar</span>
+            <span className="sm:hidden">Gratis</span>
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         </div>
       </nav>
@@ -103,19 +107,19 @@ export default function LandingPage() {
           }}
         />
 
-        <div className="relative text-center px-6 max-w-5xl mx-auto stagger-children">
+        <div className="relative text-center px-4 sm:px-6 max-w-5xl mx-auto stagger-children">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--accent-gold)]/30 bg-[var(--accent-gold)]/5 text-xs text-[var(--accent-gold)] mb-8">
             <Sparkles className="h-3 w-3" />
             Generación de contenido con GPT-4o
             <Star className="h-3 w-3" />
           </div>
 
-          <h1 className="font-display text-6xl md:text-8xl font-black text-[var(--text-primary)] tracking-tight leading-[0.9] mb-6">
+          <h1 className="font-display text-5xl sm:text-6xl md:text-8xl font-black text-[var(--text-primary)] tracking-tight leading-[0.9] mb-6">
             Forja Tu{" "}
             <span className="gold-text">Leyenda</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 font-body leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 font-body leading-relaxed">
             La plataforma definitiva para campañas de rol. Gestiona personajes, mundos y narrativas
             con el poder de la inteligencia artificial.
           </p>
@@ -157,9 +161,9 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="py-32 px-6 max-w-6xl mx-auto">
+      <section className="py-20 md:py-32 px-4 sm:px-6 max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
             Todo lo que necesitas
           </h2>
           <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto">
@@ -195,13 +199,13 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-32 px-6 text-center relative overflow-hidden">
+      <section className="py-20 md:py-32 px-4 sm:px-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-[var(--accent-gold)]/5 blur-[80px]" />
         </div>
 
         <div className="relative max-w-2xl mx-auto">
-          <h2 className="font-display text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-6">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-6">
             Tu próxima campaña épica
             <br />
             <span className="gold-text">comienza aquí</span>

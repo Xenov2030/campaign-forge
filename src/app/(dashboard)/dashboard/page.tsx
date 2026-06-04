@@ -75,40 +75,41 @@ export default async function DashboardPage() {
   const { masteredCampaigns, playerCampaigns } = await getUserCampaigns(user.id);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-10">
       {/* Header */}
-      <div className="flex items-start justify-between mb-10">
+      <div className="flex items-start justify-between mb-8 md:mb-10 gap-4">
         <div>
           <p className="text-sm text-[var(--text-muted)] uppercase tracking-widest mb-1">
             Bienvenido de vuelta
           </p>
-          <h1 className="font-display text-4xl font-black text-[var(--text-primary)]">
+          <h1 className="font-display text-3xl md:text-4xl font-black text-[var(--text-primary)] truncate">
             {user.displayName}
           </h1>
         </div>
         <Link
           href="/dashboard/new-campaign"
-          className="inline-flex items-center gap-2 h-11 px-5 bg-[var(--accent-gold)] text-[var(--bg-base)] font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] text-sm"
+          className="inline-flex items-center gap-2 h-10 md:h-11 px-4 md:px-5 bg-[var(--accent-gold)] text-[var(--bg-base)] font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] text-sm shrink-0"
         >
-          <Plus className="h-4 w-4" />
-          Nueva campaña
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Nueva campaña</span>
+          <span className="sm:hidden">Nueva</span>
         </Link>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
         {[
           { label: "Campañas como máster", value: masteredCampaigns.length, icon: <Crown className="h-5 w-5" />, color: "var(--accent-gold)" },
           { label: "Campañas como jugador", value: playerCampaigns.length, icon: <Sword className="h-5 w-5" />, color: "#60a5fa" },
           { label: "Total sesiones", value: masteredCampaigns.reduce((acc: number, c) => acc + c._count.sessions, 0), icon: <Calendar className="h-5 w-5" />, color: "#34d399" },
           { label: "Compañeros de aventura", value: masteredCampaigns.reduce((acc: number, c) => acc + c._count.members, 0), icon: <Users className="h-5 w-5" />, color: "#a855f7" },
         ].map((stat, i) => (
-          <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <span style={{ color: stat.color }}>{stat.icon}</span>
-              <span className="text-xs text-[var(--text-muted)] uppercase tracking-wider">{stat.label}</span>
+          <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 md:p-5">
+            <div className="flex items-center gap-2 mb-2 md:mb-3">
+              <span style={{ color: stat.color }} aria-hidden="true">{stat.icon}</span>
+              <span className="text-xs text-[var(--text-muted)] uppercase tracking-wider leading-tight">{stat.label}</span>
             </div>
-            <p className="font-display text-3xl font-bold" style={{ color: stat.color }}>
+            <p className="font-display text-2xl md:text-3xl font-bold" style={{ color: stat.color }}>
               {stat.value}
             </p>
           </div>
