@@ -97,7 +97,7 @@ export default async function LorePage({ params }: PageProps) {
           {/* Categories filter */}
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((cat) => {
-              const count = entries.filter((e) => e.category === cat.id).length;
+              const count = entries.filter((e: (typeof entries)[number]) => e.category === cat.id).length;
               if (count === 0) return null;
               return (
                 <a

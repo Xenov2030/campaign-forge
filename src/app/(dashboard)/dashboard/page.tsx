@@ -90,8 +90,8 @@ export default async function DashboardPage() {
         {[
           { label: "Campañas como máster", value: masteredCampaigns.length, icon: <Crown className="h-4 w-4" />, color: "var(--accent-gold)" },
           { label: "Campañas como jugador", value: playerCampaigns.length, icon: <Sword className="h-4 w-4" />, color: "#60a5fa" },
-          { label: "Total sesiones", value: masteredCampaigns.reduce((acc: number, c) => acc + c._count.sessions, 0), icon: <Calendar className="h-4 w-4" />, color: "#34d399" },
-          { label: "Compañeros de aventura", value: masteredCampaigns.reduce((acc: number, c) => acc + c._count.members, 0), icon: <Users className="h-4 w-4" />, color: "#a855f7" },
+          { label: "Total sesiones", value: masteredCampaigns.reduce((acc: number, c: (typeof masteredCampaigns)[number]) => acc + c._count.sessions, 0), icon: <Calendar className="h-4 w-4" />, color: "#34d399" },
+          { label: "Compañeros de aventura", value: masteredCampaigns.reduce((acc: number, c: (typeof masteredCampaigns)[number]) => acc + c._count.members, 0), icon: <Users className="h-4 w-4" />, color: "#a855f7" },
         ].map((stat, i) => (
           <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-3 md:p-4 hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)] transition-all duration-200">
             <div className="flex items-center gap-1.5 mb-1.5">
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {masteredCampaigns.map((campaign) => {
+            {masteredCampaigns.map((campaign: (typeof masteredCampaigns)[number]) => {
               const themeColor = getThemeColors(campaign.theme);
               return (
                 <Link

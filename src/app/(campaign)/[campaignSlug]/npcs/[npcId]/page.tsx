@@ -119,7 +119,7 @@ export default async function NPCDetailPage({ params }: PageProps) {
             <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-4">
               <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-3">Tags</p>
               <div className="flex flex-wrap gap-1.5">
-                {npc.tags.map((tag) => (
+                {npc.tags.map((tag: string) => (
                   <Badge key={tag} variant="secondary">{tag}</Badge>
                 ))}
               </div>

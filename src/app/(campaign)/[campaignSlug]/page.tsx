@@ -175,7 +175,7 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
 
             {activeQuests.length > 0 ? (
               <div className="space-y-3">
-                {activeQuests.map((quest) => (
+                {activeQuests.map((quest: (typeof activeQuests)[number]) => (
                   <div key={quest.id} className="flex items-center justify-between p-3 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
                     <div>
                       <p className="text-sm font-medium text-[var(--text-primary)]">{quest.name}</p>
