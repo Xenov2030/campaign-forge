@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  Dices,
   Sparkles,
   Bell,
   ChevronRight,
@@ -28,7 +27,7 @@ export function TopNav({
   userAvatarUrl,
   isMaster,
 }: TopNavProps) {
-  const { setDiceTrayOpen, setAIAssistantOpen, toggleSidebar } = useCampaignStore();
+  const { setAIAssistantOpen, toggleSidebar } = useCampaignStore();
 
   return (
     <header className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/80 backdrop-blur-sm shrink-0">
@@ -72,16 +71,6 @@ export function TopNav({
 
       {/* Actions */}
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setDiceTrayOpen(true)}
-          aria-label="Lanzar dados"
-          className="h-9 w-9"
-        >
-          <Dices className="h-4 w-4" aria-hidden="true" />
-        </Button>
-
         {isMaster && (
           <Button
             variant="ghost"

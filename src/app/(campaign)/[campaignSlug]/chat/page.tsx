@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { Send, Loader2, MessageSquare, Dices, X, Sword, Eye, EyeOff } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Send, Loader2, MessageSquare, Sword, Dices } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatMessages, type ChatMessageWithUser } from "@/hooks/useChatMessages";
 import { useCampaignStore } from "@/store/campaign-store";
-import { DiceRoller } from "@/components/dice/dice-roller";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isToday, isYesterday } from "date-fns";
 import { es } from "date-fns/locale";
@@ -41,13 +39,11 @@ export default function ChatPage() {
   const [campaignInfo, setCampaignInfo] = useState<CampaignInfo | null>(null);
   const [input, setInput] = useState("");
   const [loadingRoom, setLoadingRoom] = useState(true);
-  const [dicePanelOpen, setDicePanelOpen] = useState(false);
-  const [masterHidingRolls, setMasterHidingRolls] = useState(false);
   const [bgImage, setBgImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const { setActiveTextRoomId } = useCampaignStore();
+  const { setActiveTextRoomId, setChatSendMessage } = useCampaignStore();
   const { messages, loading: loadingMsgs, sending, sendMessage } = useChatMessages(textRoomId);
 
   useEffect(() => {
@@ -89,6 +85,12 @@ export default function ChatPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.campaignSlug]);
 
+  // Register sendMessage in store so DiceTray can send dice rolls to chat
+  useEffect(() => {
+    setChatSendMessage(sendMessage);
+    return () => setChatSendMessage(null);
+  }, [sendMessage, setChatSendMessage]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -109,18 +111,6 @@ export default function ChatPage() {
       handleSend();
     }
   };
-
-  const handleDiceRoll = useCallback(async (result: { notation: string; rolls: number[]; total: number; modifier: number }) => {
-    if (!textRoomId) return;
-    const modStr = result.modifier !== 0
-      ? (result.modifier > 0 ? `+${result.modifier}` : `${result.modifier}`)
-      : "";
-    const content = `🎲 ${result.notation} → [${result.rolls.join(", ")}]${modStr} = **${result.total}**`;
-    await sendMessage(content, {
-      type: "DICE_ROLL",
-      metadata: { ...result, masterOnly: isMaster ? masterHidingRolls : false },
-    });
-  }, [textRoomId, isMaster, masterHidingRolls, sendMessage]);
 
   const grouped = messages.map((msg, i) => {
     const prev = messages[i - 1];
@@ -148,7 +138,7 @@ export default function ChatPage() {
       <div className="absolute inset-0 bg-[var(--bg-base)]/50 pointer-events-none" />
 
       {/* Chat column — full width */}
-      <div className={cn("relative flex flex-col flex-1 min-w-0 transition-all duration-300", dicePanelOpen && "md:mr-80")}>
+      <div className="relative flex flex-col flex-1 min-w-0">
 
           {/* Header */}
           <div className="shrink-0 h-12 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/70 backdrop-blur-sm flex items-center px-4 gap-2">
@@ -221,87 +211,6 @@ export default function ChatPage() {
             </p>
           </div>
         </div>
-
-        {/* Vertical dice tab — right edge of the screen */}
-        <AnimatePresence>
-          {!dicePanelOpen && (
-            <motion.button
-              key="dice-tab"
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 16 }}
-              transition={{ duration: 0.18 }}
-              onClick={() => setDicePanelOpen(true)}
-              title="Abrir dados"
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 py-4 px-2 bg-[var(--bg-surface)]/90 backdrop-blur-sm border border-r-0 border-[var(--border-subtle)] rounded-l-[var(--radius-lg)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)]/40 hover:bg-[var(--bg-elevated)]/90 transition-all shadow-lg cursor-pointer"
-            >
-              <Dices className="h-4 w-4 shrink-0" />
-              <span
-                className="text-[10px] font-semibold uppercase tracking-widest select-none"
-                style={{ writingMode: "vertical-rl" }}
-              >
-                Dados
-              </span>
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        {/* Dice panel — slides in from right edge */}
-        <AnimatePresence>
-          {dicePanelOpen && (
-            <motion.div
-              key="dice-panel"
-              initial={{ x: 320, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 320, opacity: 0 }}
-              transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="absolute right-0 inset-y-0 w-80 bg-[var(--bg-surface)]/95 backdrop-blur-md border-l border-[var(--border-subtle)] flex flex-col z-10"
-            >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)]">
-                <div className="flex items-center gap-2">
-                  <Dices className="h-4 w-4 text-[var(--accent-gold)]" />
-                  <h2 className="font-display text-[var(--accent-gold)] text-base">Dados</h2>
-                </div>
-                <button
-                  onClick={() => setDicePanelOpen(false)}
-                  className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {isMaster && (
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <div className={cn(
-                      "relative h-4 w-7 rounded-full transition-colors shrink-0",
-                      masterHidingRolls ? "bg-[var(--accent-gold)]" : "bg-[var(--bg-overlay)]"
-                    )}>
-                      <div className={cn(
-                        "absolute top-0.5 h-3 w-3 rounded-full bg-white transition-transform",
-                        masterHidingRolls ? "translate-x-3.5" : "translate-x-0.5"
-                      )} />
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={masterHidingRolls}
-                      onChange={(e) => setMasterHidingRolls(e.target.checked)}
-                      className="sr-only"
-                    />
-                    <span className="text-xs text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] transition-colors">
-                      {masterHidingRolls ? (
-                        <span className="flex items-center gap-1"><EyeOff className="h-3 w-3" /> Tiradas ocultas para jugadores</span>
-                      ) : (
-                        <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> Ocultar mis tiradas</span>
-                      )}
-                    </span>
-                  </label>
-                )}
-                <DiceRoller onRollComplete={handleDiceRoll} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
     </div>
   );
 }

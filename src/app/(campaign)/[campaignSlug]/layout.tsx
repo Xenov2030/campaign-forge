@@ -96,7 +96,7 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
         isMaster={isMaster}
         userId={user.id}
       />
-      <DiceTray />
+      <DiceTray isMaster={isMaster} />
       {isMaster && (
         <MasterAssistant
           campaignId={campaign.id}

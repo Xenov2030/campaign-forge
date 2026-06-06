@@ -35,6 +35,12 @@ interface CampaignStore {
   // Chat
   activeTextRoomId: string | null;
   setActiveTextRoomId: (id: string | null) => void;
+  chatSendMessage: ((content: string, opts?: { type?: string; metadata?: Record<string, unknown> }) => Promise<unknown>) | null;
+  setChatSendMessage: (fn: ((content: string, opts?: { type?: string; metadata?: Record<string, unknown> }) => Promise<unknown>) | null) => void;
+
+  // Master dice hide
+  masterHidingRolls: boolean;
+  setMasterHidingRolls: (v: boolean) => void;
 
   // Voice
   activeVoiceRoomId: string | null;
@@ -77,6 +83,10 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
 
   activeTextRoomId: null,
   setActiveTextRoomId: (id) => set({ activeTextRoomId: id }),
+  chatSendMessage: null,
+  setChatSendMessage: (fn) => set({ chatSendMessage: fn }),
+  masterHidingRolls: false,
+  setMasterHidingRolls: (v) => set({ masterHidingRolls: v }),
 
   activeVoiceRoomId: null,
   setActiveVoiceRoomId: (id) => set({ activeVoiceRoomId: id }),
