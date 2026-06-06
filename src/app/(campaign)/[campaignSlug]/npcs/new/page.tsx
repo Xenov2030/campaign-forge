@@ -50,7 +50,7 @@ export default function NewNPCPage() {
       if (!res.ok) throw new Error(data.error);
       router.push(`/${slug}/npcs/${data.npc.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear PNJ");
+      setError(err instanceof Error ? err.message : "Error al crear NPC");
     } finally {
       setSaving(false);
     }
@@ -60,7 +60,7 @@ export default function NewNPCPage() {
     <div className="max-w-4xl mx-auto px-6 py-8">
       <Link href={`/${slug}/npcs`} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6">
         <ChevronLeft className="h-4 w-4" />
-        Volver a PNJs
+        Volver a NPCs
       </Link>
 
       <div className="flex items-center gap-3 mb-8">
@@ -68,7 +68,7 @@ export default function NewNPCPage() {
           <Users className="h-5 w-5 text-[#34d399]" />
         </div>
         <div>
-          <h1 className="font-display text-3xl font-black text-[var(--text-primary)]">Nuevo PNJ</h1>
+          <h1 className="font-display text-3xl font-black text-[var(--text-primary)]">Nuevo NPC</h1>
           <p className="text-sm text-[var(--text-muted)]">Personaje no jugador para la campaña</p>
         </div>
       </div>
@@ -82,12 +82,12 @@ export default function NewNPCPage() {
               value={portraitUrl}
               onChange={setPortraitUrl}
               folder="npcs"
-              label="Retrato del PNJ"
+              label="Retrato del NPC"
               aspectRatio="portrait"
               className="w-36 shrink-0"
             />
             <div className="flex-1 grid grid-cols-2 gap-4">
-              <Input label="Nombre *" value={form.name} onChange={set("name")} placeholder="Nombre del PNJ" required className="col-span-2" />
+              <Input label="Nombre *" value={form.name} onChange={set("name")} placeholder="Nombre del NPC" required className="col-span-2" />
               <Input label="Raza" value={form.race} onChange={set("race")} placeholder="Humano, Elfo..." />
               <Input label="Ocupación / Rol" value={form.occupation} onChange={set("occupation")} placeholder="Tabernero, Guardia real..." />
               <Input label="Edad" value={form.age} onChange={set("age")} placeholder="35 años, anciano..." />
@@ -144,7 +144,7 @@ export default function NewNPCPage() {
           </Link>
           <Button type="submit" disabled={saving || !campaignId}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Crear PNJ
+            Crear NPC
           </Button>
         </div>
       </form>

@@ -55,15 +55,17 @@ export function useChatMessages(roomId: string | null) {
     const channel = pusher.subscribe(`chat-${roomId}`);
     channelRef.current = channel;
 
-    channel.bind("new-message", (msg: ChatMessageWithUser) => {
+    const handler = (msg: ChatMessageWithUser) => {
       setMessages((prev) => {
         if (prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
-    });
+    };
+
+    channel.bind("new-message", handler);
 
     return () => {
-      channel.unbind_all();
+      channel.unbind("new-message", handler);
       pusher.unsubscribe(`chat-${roomId}`);
       channelRef.current = null;
     };
@@ -94,13 +96,11 @@ export function useChatMessages(roomId: string | null) {
       });
       if (!res.ok) throw new Error("Error enviando mensaje");
       const newMsg: ChatMessageWithUser = await res.json();
-      // Optimistic add when Pusher is not configured
-      if (!getPusherClient()) {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === newMsg.id)) return prev;
-          return [...prev, newMsg];
-        });
-      }
+      // Always add immediately — Pusher broadcast deduplicates via id check
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === newMsg.id)) return prev;
+        return [...prev, newMsg];
+      });
       return newMsg;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error enviando mensaje");

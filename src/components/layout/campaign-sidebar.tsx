@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCampaignStore } from "@/store/campaign-store";
+import { useNotificationStore } from "@/store/notification-store";
 import { useVoiceChannel } from "@/hooks/useVoiceChannel";
 import { APP_VERSION } from "@/lib/version";
 
@@ -80,6 +81,7 @@ export function CampaignSidebar({
     voiceMuted,
     voiceDeafened,
   } = useCampaignStore();
+  const { unreadChatCount } = useNotificationStore();
   const pathname = usePathname();
 
   const {
@@ -202,6 +204,7 @@ export function CampaignSidebar({
       label: "Chat",
       href: `${base}/chat`,
       icon: <MessageSquare className="h-4 w-4" />,
+      badge: unreadChatCount > 0 ? unreadChatCount : undefined,
     },
   ];
 
@@ -378,16 +381,32 @@ export function CampaignSidebar({
                     if (window.innerWidth < 768 && sidebarOpen) toggleSidebar();
                   }}
                 >
-                  <span className="shrink-0">{item.icon}</span>
-                  <motion.span {...textAnim} className="truncate font-medium">
+                  <span className="shrink-0 relative">
+                    {item.icon}
+                    {item.badge !== undefined && !sidebarOpen && (
+                      <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center leading-none">
+                        {item.badge > 9 ? "9+" : item.badge}
+                      </span>
+                    )}
+                  </span>
+                  <motion.span {...textAnim} className="truncate font-medium flex-1">
                     {item.label}
                   </motion.span>
+                  {item.badge !== undefined && sidebarOpen && (
+                    <motion.span
+                      {...textAnim}
+                      className="shrink-0 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1"
+                    >
+                      {item.badge > 99 ? "99+" : item.badge}
+                    </motion.span>
+                  )}
                   {!sidebarOpen && (
                     <div
                       role="tooltip"
                       className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
                     >
                       {item.label}
+                      {item.badge !== undefined && ` (${item.badge})`}
                     </div>
                   )}
                 </Link>

@@ -5,6 +5,7 @@ import { CampaignSidebar } from "@/components/layout/campaign-sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { DiceTray } from "@/components/dice/dice-tray";
 import { MasterAssistant } from "@/components/ai/master-assistant";
+import { CampaignRealtime } from "@/components/realtime/campaign-realtime";
 
 interface CampaignLayoutProps {
   children: React.ReactNode;
@@ -85,11 +86,16 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
           userAvatarUrl={user.avatarUrl ?? undefined}
           isMaster={isMaster}
         />
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
 
+      <CampaignRealtime
+        campaignId={campaign.id}
+        isMaster={isMaster}
+        userId={user.id}
+      />
       <DiceTray />
       {isMaster && (
         <MasterAssistant

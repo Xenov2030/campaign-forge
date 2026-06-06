@@ -62,7 +62,7 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
 
   const sections = [
     { label: "Personajes",  count: campaign._count.characters,  href: `/${campaignSlug}/characters`,  icon: <Sword className="h-5 w-5" />,   color: "#60a5fa" },
-    { label: "PNJs",        count: campaign._count.npcs,         href: `/${campaignSlug}/npcs`,         icon: <Users className="h-5 w-5" />,   color: "#34d399" },
+    { label: "NPCs",        count: campaign._count.npcs,         href: `/${campaignSlug}/npcs`,         icon: <Users className="h-5 w-5" />,   color: "#34d399" },
     { label: "Monstruos",   count: campaign._count.monsters,     href: `/${campaignSlug}/monsters`,     icon: <Skull className="h-5 w-5" />,   color: "#f87171" },
     { label: "Quests",      count: campaign._count.quests,       href: `/${campaignSlug}/quests`,       icon: <Target className="h-5 w-5" />,  color: "#f59e0b" },
     { label: "Sesiones",    count: campaign._count.sessions,     href: `/${campaignSlug}/sessions`,     icon: <Calendar className="h-5 w-5" />,color: "#a855f7" },

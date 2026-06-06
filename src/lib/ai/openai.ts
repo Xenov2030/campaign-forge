@@ -1,14 +1,14 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const AI_ENABLED = !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 10);
+export const AI_ENABLED = !!(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10);
 
-let _openai: OpenAI | null = null;
+let _genAI: GoogleGenerativeAI | null = null;
 
-export function getOpenAI(): OpenAI {
-  if (!_openai) {
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "" });
+export function getGenAI(): GoogleGenerativeAI {
+  if (!_genAI) {
+    _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
   }
-  return _openai;
+  return _genAI;
 }
 
-export default getOpenAI;
+export default getGenAI;

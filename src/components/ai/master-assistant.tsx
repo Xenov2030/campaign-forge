@@ -28,7 +28,7 @@ export function MasterAssistant({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `¡Saludos, Máster! Soy tu asistente para la campaña **${campaignName}**. Puedo ayudarte con ideas narrativas, mecánicas, PNJs, encuentros, y cualquier cosa que necesites para tu partida. ¿En qué puedo ayudarte?`,
+      content: `¡Saludos, Máster! Soy tu asistente para la campaña **${campaignName}**. Puedo ayudarte con ideas narrativas, mecánicas, NPCs, encuentros, y cualquier cosa que necesites para tu partida. ¿En qué puedo ayudarte?`,
       timestamp: new Date(),
     },
   ]);

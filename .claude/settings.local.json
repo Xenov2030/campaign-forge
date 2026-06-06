@@ -11,7 +11,11 @@
       "Bash(git merge *)",
       "Bash(git stash *)",
       "Bash(node *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(sed -n '95,105p' \"C:/Git/Personal/campaign-forge/src/app/\\(campaign\\)/[campaignSlug]/lore/page.tsx\")",
+      "Bash(sed -n '118,128p' \"C:/Git/Personal/campaign-forge/src/app/\\(campaign\\)/[campaignSlug]/npcs/[npcId]/page.tsx\")",
+      "Bash(sed -n '174,182p' \"C:/Git/Personal/campaign-forge/src/app/\\(campaign\\)/[campaignSlug]/page.tsx\")",
+      "Bash(sed -n '89,132p' \"C:/Git/Personal/campaign-forge/src/app/\\(dashboard\\)/dashboard/page.tsx\")"
     ]
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUser } from "@/lib/supabase/server";
+import { getPusherServer, campaignChannel } from "@/lib/pusher/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,15 @@ export async function POST(request: NextRequest) {
       await prisma.campaignMember.create({
         data: { campaignId: campaign.id, userId: user.id, role: "PLAYER" },
       });
+
+      // Notify campaign channel so master sees the new member in real-time
+      const pusher = getPusherServer();
+      if (pusher) {
+        pusher.trigger(campaignChannel(campaign.id), "member-joined", {
+          userId: user.id,
+          displayName: user.displayName,
+        }).catch(() => {});
+      }
     }
 
     return NextResponse.json({ slug: campaign.slug });

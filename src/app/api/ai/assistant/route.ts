@@ -7,7 +7,7 @@ import { askMasterAssistant } from "@/lib/ai/generators";
 export async function POST(request: NextRequest) {
   try {
     if (!AI_ENABLED) {
-      return NextResponse.json({ error: "AI no configurada. Añade OPENAI_API_KEY al .env" }, { status: 503 });
+      return NextResponse.json({ error: "AI no configurada. Añade GEMINI_API_KEY al .env" }, { status: 503 });
     }
 
     const user = await getUser();

@@ -14,7 +14,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     if (!AI_ENABLED) {
-      return NextResponse.json({ error: "AI no configurada. Añade OPENAI_API_KEY al .env" }, { status: 503 });
+      return NextResponse.json({ error: "AI no configurada. Añade GEMINI_API_KEY al .env" }, { status: 503 });
     }
 
     const user = await getUser();
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
-    let model = "gpt-4o";
+    let model = "gemini-2.0-flash";
 
     switch (type) {
       case "NPC":

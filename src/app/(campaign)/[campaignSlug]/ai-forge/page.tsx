@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const GENERATORS = [
-  { id: "NPC",             label: "PNJ",             icon: <Users className="h-5 w-5" />,   color: "#34d399", description: "Personaje no jugador completo con historia y secretos" },
+  { id: "NPC",             label: "NPC",             icon: <Users className="h-5 w-5" />,   color: "#34d399", description: "Personaje no jugador completo con historia y secretos" },
   { id: "MONSTER",         label: "Monstruo",        icon: <Skull className="h-5 w-5" />,   color: "#f87171", description: "Criatura con estadísticas, habilidades y trasfondo" },
   { id: "ITEM",            label: "Objeto",          icon: <Package className="h-5 w-5" />, color: "#f59e0b", description: "Objeto mágico o especial con historia y propiedades" },
   { id: "QUEST",           label: "Quest",           icon: <Target className="h-5 w-5" />,  color: "#a855f7", description: "Misión completa con objetivos y recompensas" },

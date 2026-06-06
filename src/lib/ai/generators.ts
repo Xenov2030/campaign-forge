@@ -1,5 +1,7 @@
-import { getOpenAI } from "./openai";
+import { getGenAI } from "./openai";
 import { CampaignTheme, GameSystem } from "@prisma/client";
+
+const MODEL = "gemini-2.0-flash";
 
 interface CampaignContext {
   name: string;
@@ -34,6 +36,29 @@ function getThemePromptContext(theme: CampaignTheme, system: GameSystem): string
   return `Ambientación: ${themeDescriptions[theme]}. Sistema: ${systemDescriptions[system]}.`;
 }
 
+async function generateJSON<T>(prompt: string, temperature = 0.85): Promise<T> {
+  const genAI = getGenAI();
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    generationConfig: {
+      responseMimeType: "application/json",
+      temperature,
+    },
+  });
+  const result = await model.generateContent(prompt);
+  return JSON.parse(result.response.text()) as T;
+}
+
+async function generateText(prompt: string, temperature = 0.8, maxOutputTokens = 600): Promise<string> {
+  const genAI = getGenAI();
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    generationConfig: { temperature, maxOutputTokens },
+  });
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
 // ============================================================
 // NPC GENERATOR
 // ============================================================
@@ -55,14 +80,10 @@ export interface GeneratedNPC {
   tags: string[];
 }
 
-export async function generateNPC(
-  context: CampaignContext,
-  hints?: string
-): Promise<GeneratedNPC> {
+export async function generateNPC(context: CampaignContext, hints?: string): Promise<GeneratedNPC> {
   const themeCtx = getThemePromptContext(context.theme, context.system);
-  const openai = getOpenAI();
 
-  const prompt = `Eres un maestro narrador de rol. Genera un PNJ (personaje no jugador) detallado y memorable para esta campaña.
+  const prompt = `Eres un maestro narrador de rol. Genera un NPC (personaje no jugador) detallado y memorable para esta campaña.
 
 CONTEXTO DE CAMPAÑA:
 - Nombre: ${context.name}
@@ -70,7 +91,7 @@ CONTEXTO DE CAMPAÑA:
 ${context.description ? `- Descripción: ${context.description}` : ""}
 ${hints ? `- Indicaciones del máster: ${hints}` : ""}
 
-Genera un PNJ con personalidad profunda, historia interesante y secretos que enriquezcan la narrativa. Debe adaptarse perfectamente al tono de la campaña.
+Genera un NPC con personalidad profunda, historia interesante y secretos que enriquezcan la narrativa. Debe adaptarse perfectamente al tono de la campaña.
 
 Responde ÚNICAMENTE con JSON válido con esta estructura exacta:
 {
@@ -92,17 +113,7 @@ Responde ÚNICAMENTE con JSON válido con esta estructura exacta:
   "tags": ["tag1", "tag2", "tag3"]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.9,
-    response_format: { type: "json_object" },
-  });
-
-  const content = response.choices[0].message.content;
-  if (!content) throw new Error("No se generó contenido");
-
-  return JSON.parse(content) as GeneratedNPC;
+  return generateJSON<GeneratedNPC>(prompt, 0.9);
 }
 
 // ============================================================
@@ -130,12 +141,8 @@ export interface GeneratedMonster {
   tags: string[];
 }
 
-export async function generateMonster(
-  context: CampaignContext,
-  hints?: string
-): Promise<GeneratedMonster> {
+export async function generateMonster(context: CampaignContext, hints?: string): Promise<GeneratedMonster> {
   const themeCtx = getThemePromptContext(context.theme, context.system);
-  const openai = getOpenAI();
 
   const prompt = `Eres un diseñador de monstruos para juegos de rol. Crea una criatura única y temática.
 
@@ -168,14 +175,7 @@ Responde ÚNICAMENTE con JSON válido:
   "tags": ["tag1", "tag2"]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.85,
-    response_format: { type: "json_object" },
-  });
-
-  return JSON.parse(response.choices[0].message.content!) as GeneratedMonster;
+  return generateJSON<GeneratedMonster>(prompt, 0.85);
 }
 
 // ============================================================
@@ -194,12 +194,8 @@ export interface GeneratedItem {
   tags: string[];
 }
 
-export async function generateItem(
-  context: CampaignContext,
-  hints?: string
-): Promise<GeneratedItem> {
+export async function generateItem(context: CampaignContext, hints?: string): Promise<GeneratedItem> {
   const themeCtx = getThemePromptContext(context.theme, context.system);
-  const openai = getOpenAI();
 
   const prompt = `Eres un creador de objetos mágicos y especiales para juegos de rol.
 
@@ -227,14 +223,7 @@ Responde ÚNICAMENTE con JSON válido:
   "tags": ["tag1", "tag2"]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.85,
-    response_format: { type: "json_object" },
-  });
-
-  return JSON.parse(response.choices[0].message.content!) as GeneratedItem;
+  return generateJSON<GeneratedItem>(prompt, 0.85);
 }
 
 // ============================================================
@@ -254,12 +243,8 @@ export interface GeneratedQuest {
   tags: string[];
 }
 
-export async function generateQuest(
-  context: CampaignContext,
-  hints?: string
-): Promise<GeneratedQuest> {
+export async function generateQuest(context: CampaignContext, hints?: string): Promise<GeneratedQuest> {
   const themeCtx = getThemePromptContext(context.theme, context.system);
-  const openai = getOpenAI();
 
   const prompt = `Eres un diseñador de aventuras para juegos de rol. Crea una misión/quest completa.
 
@@ -287,19 +272,12 @@ Responde ÚNICAMENTE con JSON válido:
     "other": "favor del gremio de magos"
   },
   "complications": ["complicación 1", "complicación 2"],
-  "npcsInvolved": ["nombre PNJ 1", "nombre PNJ 2"],
+  "npcsInvolved": ["nombre NPC 1", "nombre NPC 2"],
   "locations": ["lugar 1", "lugar 2"],
   "tags": ["tag1", "tag2"]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.9,
-    response_format: { type: "json_object" },
-  });
-
-  return JSON.parse(response.choices[0].message.content!) as GeneratedQuest;
+  return generateJSON<GeneratedQuest>(prompt, 0.9);
 }
 
 // ============================================================
@@ -311,8 +289,6 @@ export async function generateSessionSummary(
   sessionNotes: string,
   previousSummary?: string
 ): Promise<string> {
-  const openai = getOpenAI();
-
   const prompt = `Eres el cronista oficial de la campaña "${context.name}".
 
 NOTAS DE LA SESIÓN:
@@ -329,14 +305,7 @@ Escribe un resumen épico y narrativo de la sesión en español. Debe:
 
 NO incluyas JSON. Solo el texto narrativo del resumen.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.8,
-    max_tokens: 600,
-  });
-
-  return response.choices[0].message.content ?? "No se pudo generar el resumen.";
+  return generateText(prompt, 0.8, 600);
 }
 
 // ============================================================
@@ -354,12 +323,8 @@ export interface GeneratedLocation {
   tags: string[];
 }
 
-export async function generateLocation(
-  context: CampaignContext,
-  hints?: string
-): Promise<GeneratedLocation> {
+export async function generateLocation(context: CampaignContext, hints?: string): Promise<GeneratedLocation> {
   const themeCtx = getThemePromptContext(context.theme, context.system);
-  const openai = getOpenAI();
 
   const prompt = `Eres un diseñador de mundos para juegos de rol.
 
@@ -382,14 +347,7 @@ Responde ÚNICAMENTE con JSON válido:
   "tags": ["tag1", "tag2"]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.85,
-    response_format: { type: "json_object" },
-  });
-
-  return JSON.parse(response.choices[0].message.content!) as GeneratedLocation;
+  return generateJSON<GeneratedLocation>(prompt, 0.85);
 }
 
 // ============================================================
@@ -402,9 +360,9 @@ export async function askMasterAssistant(
   conversationHistory: Array<{ role: "user" | "assistant"; content: string }>
 ): Promise<string> {
   const themeCtx = getThemePromptContext(context.theme, context.system);
-  const openai = getOpenAI();
+  const genAI = getGenAI();
 
-  const systemPrompt = `Eres el Asistente del Máster para la campaña "${context.name}".
+  const systemInstruction = `Eres el Asistente del Máster para la campaña "${context.name}".
 
 Contexto: ${themeCtx}
 ${context.description ? `Descripción: ${context.description}` : ""}
@@ -420,16 +378,19 @@ Eres un experto en juegos de rol y en esta campaña específica. Ayudas al mást
 
 Responde en español, de forma concisa y práctica. Cuando sea relevante, da ejemplos específicos para esta campaña.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...conversationHistory,
-      { role: "user", content: question },
-    ],
-    temperature: 0.7,
-    max_tokens: 800,
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    systemInstruction,
+    generationConfig: { temperature: 0.7, maxOutputTokens: 800 },
   });
 
-  return response.choices[0].message.content ?? "No pude procesar tu pregunta.";
+  const chat = model.startChat({
+    history: conversationHistory.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    })),
+  });
+
+  const result = await chat.sendMessage(question);
+  return result.response.text() || "No pude procesar tu pregunta.";
 }

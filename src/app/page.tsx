@@ -28,7 +28,7 @@ const features = [
   {
     icon: <Sparkles className="h-6 w-6" />,
     title: "IA Generativa",
-    description: "Genera PNJs, monstruos, objetos, quests, ciudades y resúmenes de sesión con GPT-4o.",
+    description: "Genera NPCs, monstruos, objetos, quests, ciudades y resúmenes de sesión con IA.",
     color: "#a855f7",
   },
   {

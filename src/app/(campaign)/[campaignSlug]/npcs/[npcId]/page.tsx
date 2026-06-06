@@ -27,7 +27,7 @@ export default async function NPCDetailPage({ params }: PageProps) {
     <div className="max-w-4xl mx-auto px-6 py-8">
       <Link href={`/${campaignSlug}/npcs`} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6">
         <ChevronLeft className="h-4 w-4" />
-        Volver a PNJs
+        Volver a NPCs
       </Link>
 
       {/* Header */}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
+import { getPusherServer, campaignChannel } from "@/lib/pusher/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,6 +64,16 @@ export async function POST(request: NextRequest) {
         speed: speed ?? 30,
       },
     });
+
+    // Notify campaign so master's characters page refreshes
+    const pusher = getPusherServer();
+    if (pusher) {
+      pusher.trigger(campaignChannel(campaignId), "character-created", {
+        characterId: character.id,
+        characterName: character.name,
+        userId: user.id,
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ character }, { status: 201 });
   } catch (error) {

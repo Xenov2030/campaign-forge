@@ -13,7 +13,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { campaignSlug } = await params;
   const campaign = await prisma.campaign.findUnique({ where: { slug: campaignSlug } });
-  return { title: `PNJs — ${campaign?.name}` };
+  return { title: `NPCs — ${campaign?.name}` };
 }
 
 export default async function NPCsPage({ params }: PageProps) {
@@ -46,7 +46,7 @@ export default async function NPCsPage({ params }: PageProps) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Users className="h-5 w-5 text-[#34d399]" />
-            <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">PNJs</h1>
+            <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">NPCs</h1>
           </div>
           <p className="text-sm text-[var(--text-muted)]">
             {npcs.length} personajes no jugadores
@@ -66,7 +66,7 @@ export default async function NPCsPage({ params }: PageProps) {
               className="inline-flex items-center gap-1.5 h-9 px-4 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all"
             >
               <Plus className="h-3.5 w-3.5" />
-              Nuevo PNJ
+              Nuevo NPC
             </Link>
           </div>
         )}
@@ -78,7 +78,7 @@ export default async function NPCsPage({ params }: PageProps) {
             <Users className="h-10 w-10 text-[#34d399]/50" />
           </div>
           <h3 className="font-display text-xl font-bold text-[var(--text-primary)] mb-3">
-            Sin PNJs todavía
+            Sin NPCs todavía
           </h3>
           <p className="text-[var(--text-secondary)] max-w-sm mx-auto mb-6">
             Crea los personajes que poblarán tu mundo. Usa la IA para generarlos automáticamente.
@@ -110,7 +110,7 @@ export default async function NPCsPage({ params }: PageProps) {
               <div className="flex items-center gap-2 mb-4">
                 <Eye className="h-4 w-4 text-[var(--text-muted)]" />
                 <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-                  {isMaster ? `Todos los PNJs (${npcs.length})` : `Conocidos por el grupo (${knownNPCs.length})`}
+                  {isMaster ? `Todos los NPCs (${npcs.length})` : `Conocidos por el grupo (${knownNPCs.length})`}
                 </h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

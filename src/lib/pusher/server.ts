@@ -19,3 +19,7 @@ export function getPusherServer(): Pusher | null {
 export function chatChannel(roomId: string) {
   return `chat-${roomId}`;
 }
+
+export function campaignChannel(campaignId: string) {
+  return `campaign-${campaignId}`;
+}
