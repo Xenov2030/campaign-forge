@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampaignForge — Changelog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:      #0a0a0f;
+      --bg-surface:   #111118;
+      --bg-elevated:  #1a1a26;
+      --bg-overlay:   #22223a;
+      --border:       #2a2a3a;
+      --border-glow:  #3a3a50;
+      --text-primary: #f0ece6;
+      --text-secondary: #9a9087;
+      --text-muted:   #5a5560;
+      --gold:         #c9a84c;
+      --gold-dim:     #8a6e2a;
+      --gold-glow:    rgba(201,168,76,0.15);
+      --feat:         #34d399;
+      --feat-bg:      rgba(52,211,153,0.1);
+      --feat-border:  rgba(52,211,153,0.25);
+      --fix:          #60a5fa;
+      --fix-bg:       rgba(96,165,250,0.1);
+      --fix-border:   rgba(96,165,250,0.25);
+      --chore:        #a855f7;
+      --chore-bg:     rgba(168,85,247,0.1);
+      --chore-border: rgba(168,85,247,0.25);
+      --major-line:   rgba(201,168,76,0.4);
+      --minor-line:   rgba(90,85,96,0.5);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Background effects ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(124,58,237,0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(42,42,58,0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(42,42,58,0.3) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.3;
+    }
+
+    /* ── Layout ── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 56px 0 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--gold-glow);
+      border: 1px solid rgba(201,168,76,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { color: var(--gold); }
+
+    .logo-name {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.08em;
+    }
+
+    .header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .current-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: var(--gold-glow);
+      border: 1px solid rgba(201,168,76,0.35);
+      font-size: 12px;
+      color: var(--gold);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .current-badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.8); }
+    }
+
+    /* ── Version entries ── */
+    .versions { display: flex; flex-direction: column; gap: 0; }
+
+    .version-entry {
+      position: relative;
+      padding-left: 36px;
+      padding-bottom: 48px;
+    }
+
+    /* Timeline line */
+    .version-entry::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 28px;
+      bottom: 0;
+      width: 1px;
+    }
+
+    .version-entry.major::before { background: var(--major-line); }
+    .version-entry.minor::before { background: var(--minor-line); }
+    .version-entry:last-child::before { display: none; }
+
+    /* Timeline dot */
+    .version-entry::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 20px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 2px solid;
+    }
+
+    .version-entry.major::after {
+      background: var(--gold-glow);
+      border-color: var(--gold);
+      box-shadow: 0 0 12px rgba(201,168,76,0.3);
+    }
+
+    .version-entry.minor::after {
+      background: var(--bg-surface);
+      border-color: var(--border-glow);
+    }
+
+    .version-entry:last-child { padding-bottom: 0; }
+
+    /* Card */
+    .version-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .version-entry.major .version-card {
+      border-color: rgba(201,168,76,0.2);
+    }
+
+    .version-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    .version-entry.major .version-card:hover {
+      border-color: rgba(201,168,76,0.35);
+      box-shadow: 0 4px 32px rgba(201,168,76,0.08);
+    }
+
+    /* Card header */
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .version-entry.major .card-header {
+      background: linear-gradient(135deg, rgba(201,168,76,0.04) 0%, transparent 100%);
+    }
+
+    .version-info { flex: 1; min-width: 0; }
+
+    .version-number {
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .version-entry.major .version-number { color: var(--gold); }
+    .version-entry.minor .version-number { color: var(--text-primary); }
+
+    .version-title {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .version-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .version-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .badge-major {
+      background: var(--gold-glow);
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.3);
+    }
+
+    .badge-minor {
+      background: rgba(90,85,96,0.2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* Card body */
+    .card-body { padding: 16px 20px 20px; }
+
+    /* Sections within a card */
+    .change-section { margin-bottom: 16px; }
+    .change-section:last-child { margin-bottom: 0; }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 8px;
+    }
+
+    .section-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .section-dot.feat  { background: var(--feat); }
+    .section-dot.fix   { background: var(--fix); }
+    .section-dot.chore { background: var(--chore); }
+
+    .section-name {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .section-name.feat  { color: var(--feat); }
+    .section-name.fix   { color: var(--fix); }
+    .section-name.chore { color: var(--chore); }
+
+    /* Change items */
+    .change-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .change-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 7px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .change-item:hover { background: var(--bg-elevated); }
+
+    .change-item::before {
+      content: '—';
+      color: var(--border-glow);
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .change-item strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .change-item .tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      vertical-align: middle;
+    }
+
+    .tag.new   { background: var(--feat-bg); color: var(--feat); border: 1px solid var(--feat-border); }
+    .tag.mod   { background: var(--fix-bg);  color: var(--fix);  border: 1px solid var(--fix-border); }
+    .tag.fix   { background: var(--fix-bg);  color: var(--fix);  border: 1px solid var(--fix-border); }
+    .tag.break { background: var(--chore-bg);color: var(--chore);border: 1px solid var(--chore-border); }
+
+    /* Divider between sections */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 0;
+    }
+
+    /* Branch note */
+    .branch-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 14px;
+      padding: 4px 10px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 48px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Back link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px 0;
+      transition: color 0.15s;
+    }
+
+    .back-link:hover { color: var(--gold); }
+
+    .back-nav {
+      padding: 20px 0 40px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .footer a { color: var(--gold-dim); text-decoration: none; }
+    .footer a:hover { color: var(--gold); }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .wrapper { padding: 0 16px 60px; }
+      .header { padding: 36px 0 28px; }
+      .card-header { flex-direction: column; gap: 8px; }
+      .version-meta { flex-direction: row; align-items: center; }
+      .version-entry { padding-left: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- Back nav -->
+    <nav class="back-nav">
+      <a href="/" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        Volver a la app
+      </a>
+    </nav>
+
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"/>
+            <path d="M5 20h14"/>
+          </svg>
+        </div>
+        <span class="logo-name">CampaignForge</span>
+      </div>
+      <h1>Changelog</h1>
+      <p>Historial completo de versiones, funcionalidades y correcciones.</p>
+      <div class="current-badge">
+        <span class="dot"></span>
+        Versión actual: 2.3
+      </div>
+    </header>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <span class="section-dot feat"></span>
+        <span><strong style="color:var(--feat)">feat</strong> — Nueva funcionalidad</span>
+      </div>
+      <div class="legend-item">
+        <span class="section-dot fix"></span>
+        <span><strong style="color:var(--fix)">fix</strong> — Corrección de bug</span>
+      </div>
+      <div class="legend-item">
+        <span class="section-dot chore"></span>
+        <span><strong style="color:var(--chore)">chore</strong> — Mantenimiento</span>
+      </div>
+      <div class="legend-item">
+        <span class="type-badge badge-major">MAJOR</span>
+        <span>Módulo nuevo / arquitectura</span>
+      </div>
+      <div class="legend-item">
+        <span class="type-badge badge-minor">MINOR</span>
+        <span>Mejoras y correcciones</span>
+      </div>
+    </div>
+
+    <!-- Versions -->
+    <div class="versions">
+
+      <!-- v2.3 -->
+      <div class="version-entry minor" id="v2.3">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v2.3</div>
+              <div class="version-title">Scroll fix · Toaster · Landing CTA · Dashboard UI</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-08</span>
+              <span class="type-badge badge-minor">MINOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot fix"></span>
+                <span class="section-name fix">fix</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag mod">layout</span> <strong>Scroll roto en todas las páginas</strong> — <code>min-h-0</code> en <code>&lt;main&gt;</code> del layout de campaña. Sin este valor, <code>flex-1</code> tiene <code>min-height: auto</code> en CSS y <code>overflow-y-auto</code> no activa.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">auth</span> <strong>Mensajes de error técnicos</strong> eliminados para el usuario final (sin referencias a Prisma, npx, database URL).</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Toaster (Sonner)</strong> montado en el layout de campaña — las notificaciones realtime ahora se muestran visualmente.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">landing</span> <strong>CTAs actualizados:</strong> "Empezar gratis" + "Ver demo" → <strong>Crear cuenta</strong> + <strong>Iniciar sesión</strong>.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">dashboard</span> <strong>Campañas primero</strong> — las secciones de campañas se muestran antes que las estadísticas. Stats reducidos a una fila compacta al pie.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">overview</span> <strong>Contadores compactos</strong> en el detalle de campaña — 8 chips en una sola fila reemplazan las 4 tarjetas grandes y la lista duplicada del sidebar.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              develop
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v2.2 -->
+      <div class="version-entry minor" id="v2.2">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v2.2</div>
+              <div class="version-title">Dados globales · TopNav cleanup · Switch ocultar tiradas</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-07</span>
+              <span class="type-badge badge-minor">MINOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag mod">dice-tray</span> <strong>Bandeja de dados global</strong> — tab vertical fijo en el borde derecho, visible desde cualquier página del workspace (no solo el chat).</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">dice-tray</span> <strong>Switch "ocultar tiradas" rediseñado</strong> (solo máster) — toggle pill animado, labels descriptivos ("Solo tú las ves" / "Todos los jugadores las ven"), ícono Eye/EyeOff.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">campaign-store</span> <strong>Integración dados ↔ chat</strong> — al tirar desde cualquier sección, si el usuario está en <code>/chat</code> el resultado se envía automáticamente como mensaje <code>DICE_ROLL</code>.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="section-divider"></div>
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot fix"></span>
+                <span class="section-name fix">fix</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag mod">top-nav</span> <strong>Botón de dados eliminado</strong> del navbar — tanto para máster como para jugador. El acceso a dados está en la bandeja lateral.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              develop
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v2.1 -->
+      <div class="version-entry minor" id="v2.1">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v2.1</div>
+              <div class="version-title">Realtime campaña · Notificaciones · Gemini · NPCs</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-07</span>
+              <span class="type-badge badge-minor">MINOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>CampaignRealtime</strong> — componente que suscribe al canal Pusher de la campaña. El máster recibe un toast cuando un jugador se une. Las páginas se refrescan automáticamente cuando un jugador se une o crea un personaje.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Badge de no leídos</strong> en el ítem Chat del sidebar — se incrementa con mensajes ajenos recibidos mientras el usuario está en otra sección.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag break">migración</span> <strong>IA: OpenAI GPT-4o → Google Gemini 2.0 Flash</strong> — menor latencia, mismo output. Generadores y asistente del máster migrados. Variable de entorno: <code>GEMINI_API_KEY</code>.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">global</span> <strong>PNJs → NPCs</strong> en toda la interfaz (labels, sidebar, títulos de páginas).</span>
+                </li>
+              </ul>
+            </div>
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              develop
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v2.0 — MAJOR -->
+      <div class="version-entry major" id="v2.0">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v2.0</div>
+              <div class="version-title">Chat en tiempo real · LiveKit voz · Rediseño dice/sidebar</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-07</span>
+              <span class="type-badge badge-major">MAJOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat — Chat de texto en tiempo real</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Mensajes en tiempo real</strong> via Pusher Channels — sin polling, sin refresh. Todos los miembros ven los mensajes al instante.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Renders diferenciados</strong> para mensajes de texto y tiradas de dados (<code>DiceRollMessage</code> con visualización de dados individuales y total destacado).</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Hook <code>useChatMessages</code></strong> — carga inicial + suscripción realtime + deduplicación por ID + optimistic update para el emisor.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">api</span> <strong>Rutas de chat:</strong> <code>GET/POST /api/chat/[roomId]</code>, <code>GET /api/chat/rooms</code>. Salas inicializadas automáticamente en la primera visita al workspace.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">chat</span> <strong>Fondo animado</strong> con la imagen pública más reciente de la galería como overlay sutil.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat — Canales de voz (LiveKit)</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Canales de voz integrados en el sidebar</strong> — "General" y "Dungeon" creados automáticamente. Conexión/desconexión desde la navegación lateral.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Tokens LiveKit</strong> generados server-side para autenticar conexiones de voz por campaña.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">store</span> <strong>Estado de voz en Zustand:</strong> <code>voiceConnected</code>, <code>voiceMuted</code>, <code>voiceDeafened</code>, <code>activeVoiceChannelId</code>.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat — Sidebar rediseñado</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag mod">sidebar</span> <strong>Canales de voz como sub-items</strong> con indicador de conexión activa.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">sidebar</span> <strong>Secciones Sesiones y Lore/Wiki</strong> re-habilitadas y navegables.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">sidebar</span> <strong>Badge de versión</strong> en el footer del sidebar.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Componente <code>DiceRoller</code></strong> extraído y reutilizable (usado en la bandeja y en la página <code>/dice</code>).</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              feat/chat-texto-y-voz → develop
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v1.6 -->
+      <div class="version-entry minor" id="v1.6">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v1.6</div>
+              <div class="version-title">Página de dados · Nav refinado · Versión en UI</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-04</span>
+              <span class="type-badge badge-minor">MINOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <ul class="change-list">
+              <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Página <code>/dice</code></strong> con historial mock por jugador y roller inline.</span></li>
+              <li class="change-item"><span><span class="tag new">nuevo</span> <strong><code>src/lib/version.ts</code></strong> — fuente única de verdad para el número de versión.</span></li>
+              <li class="change-item"><span><span class="tag mod">top-nav</span> Botón IA solo visible para el máster. Avatar navega a <code>/profile</code>.</span></li>
+              <li class="change-item"><span><span class="tag mod">sidebar</span> Badge de versión en footer. Dados habilitados.</span></li>
+              <li class="change-item"><span><span class="tag fix">fix</span> Bandeja de dados no abría: <code>AnimatePresence</code> con <code>return null</code> no detectaba cambio de estado.</span></li>
+            </ul>
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              fix/visuales
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- v1.5 -->
+      <div class="version-entry minor" id="v1.5">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v1.5</div>
+              <div class="version-title">Sidebar reordenado · Texto persistente · Chat/Voz placeholders</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-04</span>
+              <span class="type-badge badge-minor">MINOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <ul class="change-list">
+              <li class="change-item"><span><span class="tag fix">fix</span> Texto del sidebar desaparecía al navegar desde una 404 — <code>AnimatePresence</code> con early-return causaba opacidad 0 atascada.</span></li>
+              <li class="change-item"><span><span class="tag fix">fix</span> Botón toggle del sidebar recortado en desktop por <code>overflow-hidden</code>.</span></li>
+              <li class="change-item"><span><span class="tag new">nuevo</span> Componente <code>UnderConstruction</code> reutilizable.</span></li>
+              <li class="change-item"><span><span class="tag mod">sidebar</span> Reordenamiento completo de ítems. Sesiones y Lore re-habilitados. Chat y Canales de voz agregados.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v1.4 -->
+      <div class="version-entry minor" id="v1.4">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v1.4</div>
+              <div class="version-title">Mock mode — desarrollo sin base de datos</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-04</span>
+              <span class="type-badge badge-minor">MINOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <ul class="change-list">
+              <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Mock layer completo</strong> — cliente Prisma falso respaldado en <code>data/mock-db.json</code>. Activar con <code>MOCK_MODE=true</code>.</span></li>
+              <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Seed precargado:</strong> campaña "La Maldición de Strahd" con 2 usuarios, 3 NPCs, personaje, sesiones, quests, locaciones y lore.</span></li>
+              <li class="change-item"><span><span class="tag mod">prisma.ts</span> Switch condicional: mock client o PrismaClient real según <code>MOCK_MODE</code>.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v1.0–1.3 grouped -->
+      <div class="version-entry minor" id="v1.x">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v1.0 — v1.3</div>
+              <div class="version-title">Fundaciones: lanzamiento inicial + correcciones de UX y auth</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-04</span>
+              <span class="type-badge badge-minor">MINOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">v1.0 — Sistema completo (primer lanzamiento)</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span>Auth completo (registro, login, logout, cambio de contraseña)</span></li>
+                <li class="change-item"><span>Dashboard multi-campaña · Wizard de creación (3 pasos)</span></li>
+                <li class="change-item"><span>Workspace con sidebar · Fichas de personaje · NPCs · Monstruos</span></li>
+                <li class="change-item"><span>Locaciones · Facciones · Items · Quests · Sesiones con resúmenes IA</span></li>
+                <li class="change-item"><span>Wiki/Lore · Galería · Notas · Chat · Dados (d4–d100)</span></li>
+                <li class="change-item"><span>IA Forge (6 generadores) · Asistente del Máster</span></li>
+                <li class="change-item"><span>Temas dinámicos por campaña · Design system CSS completo</span></li>
+              </ul>
+            </div>
+            <div class="section-divider"></div>
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot fix"></span>
+                <span class="section-name fix">v1.1 — Accesibilidad y responsive</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span>Página 404 temática "Tierra Inexplorada" · Error boundary global · Skeletons de carga</span></li>
+                <li class="change-item"><span>Sidebar mobile como overlay · Contraste WCAG AA · <code>prefers-reduced-motion</code></span></li>
+              </ul>
+            </div>
+            <div class="section-divider"></div>
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot fix"></span>
+                <span class="section-name fix">v1.2 — Demo login y cursor-pointer</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span>Demo login (<code>/api/auth/demo-login</code>) · CTAs de landing reorganizados</span></li>
+                <li class="change-item"><span>Cursor-pointer global · Hover effects en inputs y stat cards</span></li>
+              </ul>
+            </div>
+            <div class="section-divider"></div>
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot fix"></span>
+                <span class="section-name fix">v1.3 — Login robusto</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span>Fix "Unexpected token '&lt;'" — check de <code>Content-Type</code> antes de parsear JSON</span></li>
+                <li class="change-item"><span><code>useSearchParams</code> wrapeado en <code>&lt;Suspense&gt;</code> para App Router</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /versions -->
+
+    <footer class="footer">
+      <p>CampaignForge v2.3 &mdash; <a href="/">Volver a la app</a> &mdash; <a href="https://github.com/Xenov2030/campaign-forge" target="_blank" rel="noopener">GitHub</a></p>
+    </footer>
+
+  </div><!-- /wrapper -->
+</body>
+</html>

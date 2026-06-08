@@ -1,6 +1,6 @@
 # CampaignForge — Documentación Técnica
 
-**Versión:** 1.4 | **Última actualización:** 2026-06-04
+**Versión:** 2.3 | **Última actualización:** 2026-06-08
 
 ---
 
@@ -16,17 +16,17 @@
 | Base de datos | PostgreSQL (Neon recomendado) | 15+ |
 | Adaptador DB | `@prisma/adapter-pg` | v7 |
 | Auth | JWT custom (`jose`) + bcryptjs | — |
-| IA | OpenAI SDK (GPT-4o) | — |
+| IA | Google Gemini 2.0 Flash (`@google/generative-ai`) | ^0.24.0 |
+| Realtime (chat) | Pusher Channels (`pusher` + `pusher-js`) | ^5.3 / ^8.5 |
+| Voz | LiveKit (`livekit-server-sdk` + `livekit-client`) | — |
+| Notificaciones UI | Sonner | ^2.0 |
 | Estado global | Zustand | v5 |
 | Animaciones | Framer Motion | v12 |
 | Componentes UI | Radix UI + shadcn/ui pattern | — |
 | Íconos | Lucide React | — |
-| Queries | TanStack React Query | v5 |
 | Forms | React Hook Form + Zod | — |
-| Upload | UploadThing + Cloudinary | — |
-| Deploy | Netlify (config presente) / Vercel | — |
-
-> **Nota:** `@supabase/ssr` y `@supabase/supabase-js` están instalados pero no se usan activamente. `lib/supabase/server.ts` solo re-exporta `getSessionUser` de `lib/auth.ts` por compatibilidad de importaciones.
+| Imágenes | Cloudinary | — |
+| Deploy | Vercel / Netlify (config presente) | — |
 
 ---
 
@@ -36,15 +36,20 @@
 flowchart TD
     subgraph Client["Cliente (Browser)"]
         NC[Next.js Client Components]
-        ZS[Zustand Store]
+        ZS[Zustand Stores\ncampaign-store / notification-store]
+        PJS[pusher-js\nWebSocket]
+        LKC[livekit-client\nVoz WebRTC]
         NC <--> ZS
+        NC <--> PJS
+        NC <--> LKC
     end
 
     subgraph Server["Servidor (Next.js App Router)"]
         SC[Server Components]
         AR[API Route Handlers]
-        MW[Middleware / Auth]
         PTS[lib/prisma.ts]
+        PSS[lib/pusher/server.ts]
+        LKS[livekit-server-sdk]
     end
 
     subgraph DataLayer["Capa de datos"]
@@ -53,8 +58,10 @@ flowchart TD
     end
 
     subgraph External["Servicios Externos"]
-        OAI[OpenAI\nGPT-4o]
-        CDN[Cloudinary\nUploadThing]
+        GEM[Google Gemini\n2.0 Flash]
+        CDN[Cloudinary]
+        PSH[Pusher\nChannels]
+        LKR[LiveKit\nCloud]
     end
 
     Client -->|RSC / fetch| Server
@@ -62,9 +69,14 @@ flowchart TD
     AR --> PTS
     PTS -->|MOCK_MODE=true| MOCK
     PTS -->|MOCK_MODE=false| REAL
-    AR -->|OpenAI SDK| OAI
+    AR -->|Gemini SDK| GEM
     AR -->|Upload| CDN
-    MW -->|JWT verify cookie cf_session| SC
+    AR -->|trigger| PSS
+    PSS -->|HTTP API| PSH
+    PSH -->|WebSocket event| PJS
+    AR -->|generate token| LKS
+    LKS -->|JWT token| Client
+    LKC -->|WebRTC| LKR
 ```
 
 ### Descripción de capas
@@ -73,9 +85,11 @@ flowchart TD
 |------|----------------|
 | **Server Components** | Fetch de datos inicial (Prisma directo), validación de sesión con `getUser()`, renderizado HTML en servidor |
 | **Client Components** | Interactividad, formularios, animaciones, estado local con `useState`, estado global con Zustand |
-| **API Routes** | Mutaciones (POST/PUT/DELETE), llamadas a OpenAI, operaciones que requieren server-side logic |
-| **Middleware** | Protección de rutas, validación JWT |
-| **Zustand Store** | Estado de UI: sidebar open/close, dice tray, AI assistant panel |
+| **API Routes** | Mutaciones (POST/PUT/DELETE), llamadas a Gemini, trigger de eventos Pusher, generación de tokens LiveKit |
+| **Zustand — campaign-store** | Estado de UI: sidebar open/close, dice tray, AI assistant panel, `chatSendMessage` ref, `masterHidingRolls` |
+| **Zustand — notification-store** | `unreadChatCount`: incrementado por `CampaignRealtime` al recibir mensajes ajenos; limpiado al entrar al chat |
+| **CampaignRealtime** | Componente null-render montado en el layout. Suscribe al canal Pusher de campaña y al canal de chat. Llama `router.refresh()` ante eventos de datos, muestra toasts al máster |
+| **useChatMessages** | Hook: carga inicial via API + suscripción realtime Pusher. Deduplicación de mensajes por ID |
 | **Mock Layer** | Reemplaza Prisma cuando `MOCK_MODE=true`; cliente con misma API, respaldado en `data/mock-db.json` |
 
 ---
@@ -103,15 +117,31 @@ sequenceDiagram
 
 **Token:** JWT firmado con `JWT_SECRET`, payload `{ sub: userId }`, cookie `cf_session` httpOnly 7 días.
 
-**Lectura de sesión (Server):**
-```ts
-// lib/auth.ts → getSessionUser()
-const token = cookieStore.get("cf_session")?.value;
-const userId = await verifyToken(token);              // jose.jwtVerify
-return prisma.user.findUnique({ where: { id: userId } });
-```
+---
 
-**Mock mode:** `loginUser()` omite `bcrypt.compare()` cuando `MOCK_MODE=true` (no hay hash real en seed). El JWT se genera igual — el resto del flujo es idéntico.
+## Chat en tiempo real — Flujo Pusher
+
+```mermaid
+sequenceDiagram
+    actor E as Emisor
+    actor R as Receptor
+    participant Hook as useChatMessages
+    participant API as /api/chat/[roomId]
+    participant DB as Prisma
+    participant PSS as pusher server
+    participant PSH as Pusher Cloud
+    participant PJS as pusher-js (receptor)
+
+    E->>Hook: sendMessage(content)
+    Hook->>Hook: Agrega mensaje localmente (optimistic)
+    Hook->>API: POST { content, type, metadata }
+    API->>DB: chatMessage.create(...)
+    API->>PSS: trigger("chat-{roomId}", "new-message", msg)
+    PSS->>PSH: HTTP POST (trigger)
+    PSH->>PJS: WebSocket push
+    PJS->>Hook: handler(msg) — dedup por ID
+    Hook->>Hook: setMessages (receptor actualiza UI)
+```
 
 ---
 
@@ -135,37 +165,44 @@ classDiagram
         +id: String (cuid)
         +name: String
         +slug: String (unique)
-        +description: String?
         +theme: CampaignTheme
         +system: GameSystem
         +status: CampaignStatus
         +inviteCode: String (unique)
-        +isPublic: Boolean
-        +settings: Json
         +masterId: String (FK)
-        +createdAt: DateTime
     }
 
     class CampaignMember {
-        +id: String
         +campaignId: String (FK)
         +userId: String (FK)
         +role: MemberRole
         +joinedAt: DateTime
     }
 
+    class ChatRoom {
+        +id: String
+        +name: String
+        +type: RoomType (PUBLIC/PRIVATE/MASTER_ONLY)
+        +channelType: ChannelType (TEXT/VOICE)
+        +campaignId: String (FK)
+    }
+
+    class ChatMessage {
+        +id: String
+        +content: String
+        +type: MessageType (TEXT/DICE_ROLL/SYSTEM/WHISPER)
+        +metadata: Json
+        +userId: String (FK)
+        +roomId: String (FK)
+        +createdAt: DateTime
+    }
+
     class Character {
         +id: String
         +name: String
-        +race: String?
-        +class: String?
         +level: Int
         +hitPoints / maxHitPoints: Int
-        +armorClass: Int
-        +speed: Int
         +stats: Json
-        +skills: Json
-        +currency: Json
         +campaignId: String (FK)
         +userId: String (FK)
     }
@@ -173,44 +210,26 @@ classDiagram
     class NPC {
         +id: String
         +name: String
-        +race, occupation, age, gender: String?
-        +appearance, personality, backstory: String?
-        +secrets, motivations, quirks: String?
         +isKnownToParty: Boolean
-        +tags: String[]
         +campaignId: String (FK)
     }
 
     class Session {
         +id: String
         +number: Int
-        +title: String?
-        +date: DateTime?
-        +duration: Int?
         +summary, aiSummary: String?
-        +highlights: Json
         +status: SessionStatus
-        +campaignId: String (FK)
-        +masterId: String (FK)
-    }
-
-    class LoreEntry {
-        +id: String
-        +title: String
-        +content: String
-        +category: LoreCategory
-        +tags: String[]
-        +isPublic: Boolean
         +campaignId: String (FK)
     }
 
     User "1" --> "N" Campaign : masters
     User "N" --> "N" Campaign : members via CampaignMember
+    Campaign "1" --> "N" ChatRoom
+    ChatRoom "1" --> "N" ChatMessage
+    ChatMessage --> User
     Campaign "1" --> "N" Character
     Campaign "1" --> "N" NPC
     Campaign "1" --> "N" Session
-    Campaign "1" --> "N" LoreEntry
-    Character --> User : belongs to
 ```
 
 ### Entidades secundarias
@@ -222,58 +241,13 @@ classDiagram
 | `Faction` | Facciones con alineamiento, objetivos y secretos |
 | `Item` | Objetos con rareza, propiedades JSON, atunement |
 | `Quest` | Misiones con objetivos (Json array), estado, recompensa |
-| `InventoryItem` | Inventario de personaje (join con Item opcional) |
-| `CharacterSpell` | Hechizos de personaje con nivel y escuela |
-| `Note` | Notas privadas por usuario/campaña/personaje |
-| `ChatRoom` | Salas de chat (PUBLIC, PRIVATE, MASTER_ONLY) |
-| `ChatMessage` | Mensajes con tipo (TEXT, DICE_ROLL, SYSTEM, WHISPER) |
-| `DiceRoll` | Historial de tiradas con notación y resultados JSON |
+| `LoreEntry` | Wiki con categorías y visibilidad por rol |
+| `Note` | Notas privadas por usuario/campaña |
 | `VisualAid` | Galería de imágenes por campaña |
+| `DiceRoll` | Historial de tiradas con notación y resultados JSON |
 | `GameMap` | Mapas con marcadores JSON y fog of war |
-| `TimelineEvent` | Eventos de la línea de tiempo con linkedEntities JSON |
-| `GeneratedContent` | Log de contenido generado por IA con prompt y resultado |
-
-### Enums
-
-| Enum | Valores |
-|------|---------|
-| `CampaignTheme` | FANTASY, HORROR, SCIFI, GRIMDARK, STEAMPUNK, WESTERN, MODERN, POSTAPOCALYPTIC, CUSTOM |
-| `GameSystem` | DND5E, PATHFINDER2E, CALL_OF_CTHULHU, VAMPIRE_MASQUERADE, SHADOWRUN, STARFINDER, CUSTOM |
-| `CampaignStatus` | ACTIVE, PAUSED, COMPLETED, ARCHIVED |
-| `MemberRole` | MASTER, PLAYER, SPECTATOR |
-| `SessionStatus` | PLANNED, IN_PROGRESS, COMPLETED, CANCELLED |
-| `LoreCategory` | GENERAL, HISTORY, RELIGION, MAGIC, POLITICS, GEOGRAPHY, CULTURE, BESTIARY, TECHNOLOGY |
-| `ItemRarity` | COMMON, UNCOMMON, RARE, VERY_RARE, LEGENDARY, ARTIFACT |
-| `QuestStatus` | ACTIVE, COMPLETED, FAILED, INACTIVE |
-| `MapType` | WORLD, REGION, CITY, DUNGEON, BUILDING, CUSTOM |
-
-> Los enums son tipos nativos de PostgreSQL. **No son compatibles con SQLite** — por eso el mock layer usa strings planos en lugar de SQLite.
-
----
-
-## Mock Layer (`src/lib/mock/`)
-
-Módulo que reemplaza Prisma para desarrollo sin base de datos, activado con `MOCK_MODE=true`.
-
-```mermaid
-flowchart LR
-    AR[API Route] -->|import prisma| PT[lib/prisma.ts]
-    PT -->|MOCK_MODE=true| MC[mock/client.ts]
-    PT -->|MOCK_MODE=false| PC[PrismaClient real]
-    MC --> QE[mock/query.ts\nwhere / include / select / orderBy]
-    MC --> ST[mock/store.ts\ngetStore / saveStore]
-    ST -->|persiste| DB[(data/mock-db.json)]
-    ST -->|inicia con| SD[mock/seed.ts\ncampaña Strahd precargada]
-```
-
-| Archivo | Responsabilidad |
-|---------|----------------|
-| `mock/seed.ts` | Datos iniciales: 2 usuarios, campaña "La Maldición de Strahd", personaje, 3 NPCs, 2 quests, 3 sesiones, locaciones, facciones, lore |
-| `mock/store.ts` | Store global en memoria + persistencia en `data/mock-db.json`. Sobrevive hot-reload via `globalThis._mockStore` |
-| `mock/query.ts` | Motor de queries: `where` (AND/OR/NOT, operadores `in`, `contains`, relaciones `some`), `include` con relaciones anidadas, `_count`, `select`, `orderBy` |
-| `mock/client.ts` | Clon de la API de Prisma: `findMany`, `findFirst`, `findUnique`, `create`, `update`, `updateMany`, `delete`, `deleteMany`, `upsert`, `count`, `$transaction` |
-
-**Importante:** `lib/prisma.ts` usa `require()` dinámico para el cliente real, de modo que la app no crashea si `@prisma/client` no está generado.
+| `TimelineEvent` | Eventos de la línea de tiempo |
+| `GeneratedContent` | Log de contenido generado por IA |
 
 ---
 
@@ -286,7 +260,6 @@ flowchart LR
 | POST | `/api/auth/login` | Login con email/password, setea cookie `cf_session` | No |
 | POST | `/api/auth/register` | Registro de nuevo usuario | No |
 | POST | `/api/auth/signout` | Borra cookie de sesión | No |
-| GET | `/api/auth/demo-login` | Auto-login como `master@demo.com` → redirect dashboard | No |
 | GET | `/api/auth/me` | Datos del usuario autenticado | Sí |
 
 ### Campañas
@@ -296,14 +269,22 @@ flowchart LR
 | GET | `/api/campaigns` | Lista campañas del usuario | Sí |
 | POST | `/api/campaigns` | Crear nueva campaña | Sí |
 | GET | `/api/campaigns/by-slug/[slug]` | Datos básicos de campaña por slug | Sí |
-| POST | `/api/campaigns/join` | Unirse con código de invitación | Sí |
+| POST | `/api/campaigns/join` | Unirse con código + trigger Pusher `member-joined` | Sí |
 
-### Personajes y PNJs
+### Personajes y NPCs
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
-| POST | `/api/characters` | Crear personaje | Sí (miembro) |
-| POST | `/api/npcs` | Crear PNJ | Sí (master) |
+| POST | `/api/characters` | Crear personaje + trigger Pusher `character-created` | Sí (miembro) |
+| POST | `/api/npcs` | Crear NPC | Sí (master) |
+
+### Chat
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| GET | `/api/chat/rooms` | Lista salas de texto/voz por campaña | Sí |
+| GET | `/api/chat/[roomId]` | Lista mensajes con paginación | Sí |
+| POST | `/api/chat/[roomId]` | Enviar mensaje + trigger Pusher `new-message` | Sí |
 
 ### Contenido de campaña
 
@@ -317,8 +298,8 @@ flowchart LR
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
-| POST | `/api/ai` | Generar contenido (NPC, monstruo, quest, etc.) | Sí (master) |
-| POST | `/api/ai/assistant` | Chat con asistente del máster | Sí (master) |
+| POST | `/api/ai` | Generar contenido (NPC, monstruo, quest, etc.) via Gemini | Sí (master) |
+| POST | `/api/ai/assistant` | Chat contextual con asistente del máster | Sí (master) |
 
 ### Perfil
 
@@ -328,118 +309,55 @@ flowchart LR
 
 ---
 
-## Flujo de generación IA
+## Flujo de generación IA (Gemini)
 
 ```mermaid
 sequenceDiagram
     actor M as Máster
-    participant UI as IA Forge UI
+    participant UI as IA Forge
     participant API as /api/ai
     participant GEN as lib/ai/generators.ts
-    participant OAI as OpenAI GPT-4o
-    participant DB as Prisma (real o mock)
+    participant GEM as Gemini 2.0 Flash
+    participant DB as Prisma
 
-    M->>UI: Selecciona tipo (NPC/Monster/Quest...)
-    M->>UI: Completa parámetros opcionales
+    M->>UI: Selecciona tipo + parámetros
     UI->>API: POST { type, params, campaignId }
     API->>API: Verificar auth + rol máster
     API->>GEN: generateContent(type, params, campaign)
     GEN->>GEN: Construir prompt contextual
-    GEN->>OAI: chat.completions.create(messages)
-    OAI-->>GEN: Respuesta JSON estructurada
+    GEN->>GEM: getGenerativeModel + generateContent
+    note over GEM: responseMimeType: "application/json"
+    GEM-->>GEN: JSON estructurado
     GEN->>DB: generatedContent.create(log)
     GEN-->>API: Contenido generado
     API-->>UI: { content, type }
-    UI->>M: Muestra resultado, opción de guardar
+    UI->>M: Muestra resultado
 ```
 
-> En mock mode, la llamada a OpenAI sigue requiriendo `OPENAI_API_KEY`. Si no está configurado, la ruta `/api/ai` devolverá error — esto es esperado.
-
----
-
-## Estructura de archivos — Detalle
-
-```
-src/
-├── app/
-│   ├── (auth)/
-│   │   ├── login/page.tsx           → Client, formulario login + Suspense para useSearchParams
-│   │   └── register/page.tsx        → Client, formulario registro
-│   ├── (dashboard)/
-│   │   ├── layout.tsx               → Server, nav top + auth check
-│   │   ├── dashboard/
-│   │   │   ├── page.tsx             → Server, lista campañas + stats
-│   │   │   ├── loading.tsx          → Skeleton de carga
-│   │   │   └── new-campaign/        → Wizard 3 pasos
-│   │   └── profile/page.tsx         → Client, cambiar nombre/contraseña
-│   ├── (campaign)/[campaignSlug]/
-│   │   ├── layout.tsx               → Server, auth + membresía + sidebar + topnav
-│   │   ├── loading.tsx              → Skeleton de carga
-│   │   ├── page.tsx                 → Server, overview de campaña
-│   │   ├── characters/              → List + [characterId]/page
-│   │   ├── npcs/                    → List + [npcId]/page
-│   │   ├── monsters/                → Bestiario
-│   │   ├── world/                   → Locaciones, facciones
-│   │   ├── quests/                  → Lista de misiones
-│   │   ├── items/                   → Inventario global
-│   │   ├── sessions/                → Historial de sesiones
-│   │   ├── lore/                    → Wiki con categorías
-│   │   ├── gallery/                 → Galería de imágenes
-│   │   ├── notes/                   → Notas privadas
-│   │   ├── chat/                    → Salas de chat
-│   │   ├── dice/                    → Página de dados
-│   │   ├── ai-forge/                → Generador IA (master only)
-│   │   └── settings/                → Config campaña (master only)
-│   ├── api/                         → Route handlers
-│   ├── not-found.tsx                → Página 404 "Tierra Inexplorada"
-│   ├── error.tsx                    → Error boundary global
-│   ├── layout.tsx                   → Root layout (metadata, fonts)
-│   └── globals.css                  → Design system tokens + utilities
-├── components/
-│   ├── layout/
-│   │   ├── campaign-sidebar.tsx     → Sidebar colapsable + overlay mobile
-│   │   └── top-nav.tsx              → Breadcrumb + acciones + hamburger
-│   ├── ai/
-│   │   └── master-assistant.tsx     → Panel flotante chat IA
-│   ├── dice/
-│   │   └── dice-tray.tsx            → Panel flotante dados
-│   └── ui/                          → Button, Input, Textarea, Select, Badge, etc.
-├── lib/
-│   ├── auth.ts                      → JWT sign/verify, bcrypt, loginUser, registerUser, getSessionUser
-│   ├── prisma.ts                    → Switch condicional: mock client o PrismaClient real
-│   ├── utils.ts                     → cn(), formatRelativeTime(), getThemeColors(), rollDice()
-│   ├── mock/
-│   │   ├── seed.ts                  → Datos iniciales de desarrollo (campaña precargada)
-│   │   ├── store.ts                 → Store global + persistencia JSON
-│   │   ├── query.ts                 → Motor de queries (where/include/select/orderBy)
-│   │   └── client.ts                → Cliente Prisma falso con todos los modelos
-│   ├── ai/generators.ts             → Constructores de prompt + llamadas OpenAI
-│   └── supabase/
-│       └── server.ts                → Re-exporta getSessionUser como getUser (compatibilidad)
-├── store/
-│   └── campaign-store.ts            → Zustand: sidebar, diceTray, aiAssistant
-└── types/
-    └── index.ts                     → Tipos TypeScript
-```
+**Asistente del Máster:** usa `model.startChat()` con historial mapeado (`assistant` → `model` para Gemini).
 
 ---
 
 ## Variables de entorno
 
-| Variable | Descripción | Mock mode | DB real |
-|----------|-------------|-----------|---------|
+| Variable | Descripción | Mock | DB real |
+|----------|-------------|------|---------|
 | `MOCK_MODE` | `"true"` activa el mock layer | **Requerida** | No |
-| `DATABASE_URL` | URL de conexión PostgreSQL | No necesaria | **Requerida** |
-| `JWT_SECRET` | Secreto para firmar tokens JWT | Opcional (default dev) | **Requerida** |
-| `OPENAI_API_KEY` | API key de OpenAI (GPT-4o) | Opcional | Opcional |
-| `CLOUDINARY_*` | Credenciales Cloudinary | No | Opcional |
-| `UPLOADTHING_SECRET` | Secret de UploadThing | No | Opcional |
+| `DATABASE_URL` | URL de conexión PostgreSQL | No | **Requerida** |
+| `JWT_SECRET` | Secreto JWT (mín. 32 chars en prod) | Opcional | **Requerida** |
+| `GEMINI_API_KEY` | API key de Google Gemini | Opcional | Opcional |
+| `PUSHER_APP_ID` | ID de la app Pusher | No | Recomendada |
+| `PUSHER_SECRET` | Secret de la app Pusher | No | Recomendada |
+| `NEXT_PUBLIC_PUSHER_KEY` | Key pública Pusher | No | Recomendada |
+| `NEXT_PUBLIC_PUSHER_CLUSTER` | Cluster Pusher (`us2`, `eu`, etc.) | No | Recomendada |
+| `LIVEKIT_API_KEY` | API key de LiveKit | No | Para voz |
+| `LIVEKIT_API_SECRET` | Secret LiveKit | No | Para voz |
+| `NEXT_PUBLIC_LIVEKIT_URL` | URL WebSocket LiveKit | No | Para voz |
+| `CLOUDINARY_*` | Credenciales Cloudinary | No | Para imágenes |
 
 ---
 
 ## Design system — CSS Variables
-
-Ver `src/app/globals.css` para la lista completa. Variables principales:
 
 | Token | Valor | Uso |
 |-------|-------|-----|
@@ -448,12 +366,9 @@ Ver `src/app/globals.css` para la lista completa. Variables principales:
 | `--bg-elevated` | `#1a1a26` | Elementos elevados |
 | `--text-primary` | `#f0ece6` | Texto principal |
 | `--text-secondary` | `#9a9087` | Texto secundario |
-| `--text-muted` | `#7a7470` | Texto terciario (4.5:1 contraste WCAG AA) |
+| `--text-muted` | `#7a7470` | Texto terciario (4.5:1 WCAG AA) |
 | `--accent-gold` | `#c9a84c` | Acción primaria, CTAs |
 | `--accent-arcane` | `#7c3aed` | IA, magia, arcano |
-| `--accent-crimson` | `#8b1a1a` | Peligro, horror |
-| `--font-display` | Cinzel | Títulos, headings |
-| `--font-body` | Crimson Text | Texto narrativo, lore |
-| `--font-ui` | Inter | UI, labels, datos |
-
-Los temas de campaña (`data-theme="horror"`, `"scifi"`, `"grimdark"`) sobrescriben las variables de acento en `globals.css`.
+| `--font-display` | Cinzel | Títulos |
+| `--font-body` | Crimson Text | Texto narrativo |
+| `--font-ui` | Inter | UI, labels |

@@ -1,12 +1,12 @@
 # CampaignForge — Alcance Funcional
 
-**Versión:** 1.1 | **Última actualización:** 2026-06-04
+**Versión:** 2.3 | **Última actualización:** 2026-06-08
 
 ---
 
 ## Descripción del sistema
 
-CampaignForge es una plataforma web multijugador para la gestión integral de campañas de juegos de rol (TTRPG). Permite a narradores (másters) crear y administrar campañas, y a jugadores participar en ellas con fichas de personaje, acceso a lore, chat y tiradas de dados.
+CampaignForge es una plataforma web multijugador para la gestión integral de campañas de juegos de rol (TTRPG). Permite a narradores (másters) crear y administrar campañas, y a jugadores participar en ellas con fichas de personaje, acceso a lore, chat en tiempo real, voz y tiradas de dados.
 
 ---
 
@@ -14,13 +14,13 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 
 | Actor | Descripción |
 |-------|-------------|
-| **Máster** | Creador y administrador de la campaña. Acceso total a todos los módulos, incluidos PNJs ocultos, IA Forge y configuración. |
-| **Jugador** | Miembro de una campaña por invitación. Acceso a personajes propios, lore pública, chat, dados y sesiones. |
+| **Máster** | Creador y administrador de la campaña. Acceso total a todos los módulos, incluidos NPCs ocultos, IA Forge, asistente de IA y configuración. |
+| **Jugador** | Miembro de una campaña por invitación. Acceso a personajes propios, lore pública, chat, dados, sesiones y canales de voz. |
 | **Visitante** | Usuario no autenticado. Solo accede a la landing page y formularios de auth. |
 
 ---
 
-## Módulos en scope (v1.x)
+## Módulos en scope (v2.x)
 
 ### 1. Autenticación
 - Registro con email, nombre real y alias (displayName)
@@ -30,126 +30,125 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 - Redirección automática si no autenticado
 
 ### 2. Dashboard
-- Vista de campañas donde el usuario es máster
+- Vista de campañas donde el usuario es máster (aparece primero)
 - Vista de campañas donde el usuario es jugador
-- Estadísticas rápidas (campañas, sesiones, miembros)
-- Acciones rápidas (nueva campaña, unirse con código)
-- Estado de campaña activa/inactiva visual
+- Estadísticas compactas al pie (campañas, sesiones, miembros)
+- Acciones rápidas: nueva campaña, unirse con código
 
 ### 3. Gestión de campañas
 - Creación wizard 3 pasos: nombre+descripción → tema → sistema de juego
-- Temas disponibles: Fantasy, Horror, SciFi, Grimdark, Steampunk, Western, Modern, PostApocalyptic, Custom
+- Temas: Fantasy, Horror, SciFi, Grimdark, Steampunk, Western, Modern, PostApocalyptic, Custom
 - Sistemas: D&D 5e, Pathfinder 2e, Call of Cthulhu, Vampire: La Mascarada, Shadowrun, Starfinder, Custom
 - Código de invitación único por campaña
-- Unirse a campaña con código de invitación
-- Visibilidad pública/privada de campaña
 - Tema visual dinámico (modifica CSS variables según el tema elegido)
 
 ### 4. Workspace de campaña
 - Layout con sidebar colapsable (240px ↔ 64px en desktop, overlay en mobile)
-- TopNav con breadcrumb, dados rápidos, asistente IA y perfil
-- 15 secciones navegables en sidebar
-- Página de overview con stats, quests activas, miembros y sesiones recientes
+- TopNav con breadcrumb, asistente IA y perfil
+- 8 contadores compactos (chips) para todos los módulos en la página de overview
+- Bandeja de dados persistente en el borde derecho (visible desde cualquier sección)
 
 ### 5. Personajes (Characters)
 - Fichas de personaje completas adaptables a cualquier sistema
 - Estadísticas (STR, DEX, CON, INT, WIS, CHA), HP, CA, velocidad
-- Skills y saving throws
-- Inventario con ítems equipados
-- Hechizos por nivel
-- Relaciones con otros personajes (aliado, enemigo, rival, etc.)
+- Skills, saving throws, inventario, hechizos, relaciones
 - Retrato/avatar del personaje
+- Notificación realtime al máster cuando se crea un personaje
 
-### 6. PNJs (NPCs)
+### 6. NPCs
 - Creación con nombre, descripción, comportamiento, secretos
-- Visibilidad configurable: pública (jugadores la ven) u oculta (solo máster)
+- Visibilidad configurable: pública u oculta (solo máster)
 - Etiquetas de clasificación
 - Retrato/avatar
 
 ### 7. Monstruos
-- Ficha de monstruo con estadísticas, CR, tipo, habilidades especiales
+- Ficha con estadísticas, CR, tipo, habilidades especiales
 - Acciones y acciones legendarias
-- Notas del máster
 
 ### 8. Mundo (World)
-- **Locaciones**: jerarquía de regiones/zonas, descripción, secretos, imagen
-- **Facciones**: nombre, objetivos, alineamiento, relaciones con otras facciones
-- **Items**: nombre, tipo, rareza, propiedades, valor, ¿es artefacto?
-- **Quests**: principal/secundaria/personal, objetivos, estado, recompensa
+- **Locaciones**: jerarquía de regiones/zonas
+- **Facciones**: nombre, objetivos, alineamiento
+- **Items**: rareza, propiedades JSON
+- **Quests**: principal/secundaria/personal, estado, recompensa
 
-### 9. Sesiones (Sessions)
-- Registro de sesiones con fecha, título, resumen manual
+### 9. Sesiones
+- Registro con fecha, título, resumen manual
 - Estado: planned, in-progress, completed
-- Resumen automático via IA (GPT-4o)
+- Resumen automático via IA (Gemini 2.0 Flash)
 - Highlights y notas post-sesión
 
 ### 10. Lore / Wiki
-- Entradas de lore con título, contenido, categoría
-- Categorías: Historia, Geografía, Personajes, Magia, Religión, Política, Otros
-- Etiquetas libres
+- Entradas con título, contenido, categoría y etiquetas
 - Visibilidad por rol
 
 ### 11. Galería (Gallery)
 - Subida de imágenes y ayudas visuales
-- Organización por tipo (mapa, portrait, handout, etc.)
+- La imagen pública más reciente aparece como fondo del chat
 
 ### 12. Notas (Notes)
-- Notas privadas del máster o del jugador
-- No compartidas entre roles
+- Notas privadas del máster o del jugador (no compartidas)
 
-### 13. Chat
-- Salas de chat: pública, privada, solo máster
-- Mensajes de texto y resultados de dados
-- Timestamps
+### 13. Chat en tiempo real ✅
+- Salas de chat de texto por campaña (inicialización automática)
+- Mensajes de texto en tiempo real via Pusher Channels
+- Renders diferenciados para mensajes de texto y tiradas de dados
+- Badge de no leídos en el sidebar cuando el usuario está en otra sección
+- Historial persistente en base de datos
 
-### 14. Dados (Dice)
-- Dado d4, d6, d8, d10, d12, d20, d100
-- Historial de tiradas (últimas 50)
-- Panel flotante en el workspace
-- Dados en topnav para acceso rápido
+### 14. Canales de voz (LiveKit) ✅ sidebar
+- Canales de voz integrados en el sidebar de campaña (General + Dungeon por defecto)
+- Conexión/desconexión desde el sidebar
+- Estado de conexión, mute y deafen persistidos en Zustand
+- Token generado por el servidor via `livekit-server-sdk`
 
-### 15. IA Forge (solo Máster)
-- Generador de NPCs completos
-- Generador de monstruos/encuentros
-- Generador de quests
-- Generador de locaciones
-- Generador de objetos/artefactos
-- Resúmenes de sesión
+### 15. Dados (Dice)
+- Dado d4, d6, d8, d10, d12, d20, d100 con modificadores
+- Historial de tiradas (últimas 50) en sesión
+- **Bandeja flotante** en el borde derecho, visible desde cualquier sección
+- Las tiradas se envían automáticamente al chat si el usuario está en la página de chat
+- Máster puede ocultar sus tiradas a los jugadores (switch en la bandeja)
 
-### 16. Asistente del Máster (solo Máster)
-- Chat contextual con GPT-4o
+### 16. IA Forge (solo Máster)
+- Generador de NPCs, monstruos, quests, locaciones, objetos y resúmenes
+- Modelo: Gemini 2.0 Flash con respuesta JSON nativa
+
+### 17. Asistente del Máster (solo Máster)
+- Chat contextual con Gemini 2.0 Flash
 - Conoce la campaña (nombre, tema, sistema)
-- Flotante en el workspace
+- Panel flotante en el workspace
+- Historial de conversación en la sesión
 
 ---
 
-## Fuera de scope (v1.x) — Planificado para versiones futuras
+## Fuera de scope (v2.x) — Planificado para versiones futuras
 
 | Funcionalidad | Versión estimada |
 |---------------|-----------------|
-| Mapas interactivos con fog of war | v2.x |
-| Chat en tiempo real (WebSocket/Supabase Realtime) | v2.x |
-| Generación de imágenes con DALL-E 3 | v2.x |
-| Timeline interactiva de la campaña | v2.x |
-| Upload de imágenes con UploadThing/Cloudinary | v2.x |
-| Export PDF de fichas de personaje | v2.x |
-| Sistema de notificaciones push | v2.x |
-| Modo presentación (pantalla compartida) | v3.x |
-| App mobile nativa | v3.x |
-| Integración con Roll20 / Foundry VTT | v3.x |
+| Mapas interactivos con fog of war | v3.0 |
+| Upload real de imágenes (Cloudinary integrado) | v2.x |
+| Export PDF de fichas de personaje | v3.0 |
+| Generación de imágenes con IA | v3.0 |
+| Timeline interactiva | v3.0 |
+| Sistema de notificaciones push (campana) | v2.x |
+| Historial de tiradas de dados por campaña/sesión | v2.x |
+| Modo presentación (DM screen) | v3.0 |
+| App mobile nativa | v4.0 |
+| Integración con Roll20 / Foundry VTT | v4.0 |
 
 ---
 
 ## Reglas de negocio clave
 
-1. Solo el máster puede acceder a IA Forge, ver PNJs ocultos y configurar la campaña.
-2. Un usuario puede ser máster de múltiples campañas y jugador de múltiples campañas simultáneamente.
-3. Los jugadores se unen a campañas exclusivamente por código de invitación.
+1. Solo el máster puede acceder a IA Forge, ver NPCs ocultos y configurar la campaña.
+2. Un usuario puede ser máster de múltiples campañas y jugador en múltiples campañas.
+3. Los jugadores se unen exclusivamente por código de invitación.
 4. Los personajes pertenecen a una campaña, no a un usuario globalmente.
-5. Los dados pueden usarlos todos los miembros de la campaña.
+5. Los dados pueden usarlos todos los miembros; el máster puede ocultar sus tiradas.
 6. El asistente IA solo es accesible por el máster.
-7. Las notas son privadas por rol (máster ve las suyas, jugadores las suyas).
+7. Las notas son privadas por rol.
 8. Una campaña tiene exactamente un máster y puede tener N jugadores.
+9. El chat de texto se inicializa automáticamente con una sala "General" en la primera visita al workspace.
+10. Los canales de voz se inicializan con "General" y "Dungeon" automáticamente.
 
 ---
 
@@ -158,8 +157,8 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 ```mermaid
 flowchart TD
     A[Visitante] --> B{¿Tiene cuenta?}
-    B -->|No| C[Registro]
-    B -->|Sí| D[Login]
+    B -->|No| C[Registro /register]
+    B -->|Sí| D[Login /login]
     C --> E[Dashboard]
     D --> E
     E --> F{¿Crear o Unirse?}
@@ -167,5 +166,8 @@ flowchart TD
     F -->|Unirse| H[Código de invitación]
     G --> I[Workspace de campaña]
     H --> I
-    I --> J[Gestión de personajes, mundo, sesiones, chat, dados, IA]
+    I --> J[Sidebar: Personajes / NPCs / Sesiones / Chat / Voz / Dados / IA]
+    J --> K{Rol}
+    K -->|Máster| L[IA Forge + Asistente IA + NPCs ocultos + Config]
+    K -->|Jugador| M[Ficha propia + Lore pública + Chat + Voz + Dados]
 ```

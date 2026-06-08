@@ -1,6 +1,6 @@
 # CampaignForge — Documento de Mejoras Pendientes
 
-**Versión:** 1.4 | **Última actualización:** 2026-06-04
+**Versión:** 2.3 | **Última actualización:** 2026-06-08
 
 > Las mejoras están ordenadas por prioridad. Al implementar una, marcarla con `[x]` y moverla al changelog.
 
@@ -8,140 +8,125 @@
 
 ## Prioridad ALTA — Funcionalidad faltante crítica
 
-### [ ] Sección "Dados" del sidebar — historial de tiradas por jugador
-**Estado:** Sección deshabilitada en sidebar (modelo `DiceRoll` existe en DB, UI no implementada).
-**Decisión de diseño:** El dado flotante del navbar es para tirar dados en tiempo real durante la sesión. La sección "Dados" del sidebar debe ser el **historial de tiradas** de la campaña: quién tiró, qué dado, resultado, fecha/sesión. Filtrable por jugador.
-**Approach sugerido:** Server Component que liste `DiceRoll` filtrados por `campaignId`. Mostrar avatar del jugador, notación (ej: `2d6+3`), resultado total, y si tiene `purpose` mostrarlo. Agrupar por sesión opcional.
-**Versión estimada:** v2.0
+### [ ] Upload real de imágenes (Cloudinary integrado en UI)
+**Estado:** Dependencias instaladas (`cloudinary`), env vars documentadas, pero el flujo de upload no está conectado a la UI.
+**Impacto:** NPCs, personajes y galería no pueden subir imágenes reales desde la app.
+**Approach:** Crear API route `/api/upload` que use el SDK de Cloudinary. Integrar en formularios de NPC, personaje (retrato) y galería.
+**Versión estimada:** v2.4
 
+### [ ] Historial de tiradas de dados por campaña/sesión
+**Estado:** Modelo `DiceRoll` existe en DB. La página `/dice` muestra datos mock hardcodeados.
+**Impacto:** No se persiste el historial real de tiradas.
+**Approach:** POST `/api/dice-rolls` al tirar en la bandeja. GET en `/dice/page.tsx` para listar por campaña, filtrable por sesión y jugador.
+**Versión estimada:** v2.4
 
-
-### [ ] Tiempo real en chat (Supabase Realtime)
-**Estado:** Sidebar habilitado → página "en construcción" (`/chat`). Modelo en DB existe. Sin polling ni WebSocket aún.
-**Impacto:** Sin esto, el chat no es usable en sesiones activas.
-**Approach sugerido:** Usar `supabase.channel()` con Postgres Changes en el componente de chat. Suscribir a `INSERT` en `ChatMessage` filtrado por `chatRoomId`.
-**Versión estimada:** v2.0
-
-### [ ] Canales de voz (LiveKit)
-**Estado:** Sidebar habilitado → página "en construcción" (`/voice`). Sin implementación aún.
-**Impacto:** Permite a los jugadores hablar durante la sesión sin usar herramientas externas.
-**Approach sugerido:** Instalar `@livekit/components-react` y `livekit-client`. Crear sala por `campaignId`. Token generado en API route `/api/livekit/token`.
-**Versión estimada:** v2.0
-
-### [ ] Upload real de imágenes (UploadThing / Cloudinary)
-**Estado:** Las dependencias están instaladas pero el flujo de upload no está integrado en UI.
-**Impacto:** Los PNJs, personajes y galería no pueden subir imágenes reales.
-**Approach sugerido:** Implementar UploadThing para avatares (PNJs, personajes) y galería. Cloudinary para procesamiento.
-**Versión estimada:** v2.0
-
-### [ ] Mapas interactivos con fog of war
-**Estado:** Modelo `GameMap` existe en DB. UI no implementada.
-**Impacto:** Feature prometida en landing page que no existe.
-**Approach sugerido:** Usar Leaflet.js o similar para mapas con marcadores. Fog of war por capas CSS.
-**Versión estimada:** v2.0
+### [ ] Sistema de notificaciones (campana TopNav)
+**Estado:** Botón de campana en TopNav existe pero no hace nada.
+**Impacto:** Usuarios no saben de nuevas sesiones, cambios de campaña, etc. fuera del workspace.
+**Approach:** Tabla `Notification` en DB. Filled por triggers de API. Dropdown al hacer click en la campana. Marcar como leídas.
+**Versión estimada:** v2.4
 
 ---
 
 ## Prioridad MEDIA — Mejoras UX significativas
 
 ### [ ] Skeletons en páginas faltantes
-**Estado:** Se agregaron en dashboard y campaña overview. Faltan en characters, npcs, sessions, lore, etc.
-**Impacto:** Flash de contenido vacío al cargar páginas secundarias.
-**Approach:** Agregar `loading.tsx` en cada subcarpeta de campaña con skeleton apropiado.
-**Versión estimada:** v1.2
-
-### [ ] Export PDF de fichas de personaje
-**Estado:** No implementado.
-**Impacto:** Muy pedido por usuarios de TTRPG para llevar fichas fuera de la plataforma.
-**Approach sugerido:** `@react-pdf/renderer` para generar PDF desde la ficha de personaje.
-**Versión estimada:** v2.0
-
-### [ ] Generación de imágenes con DALL-E 3
-**Estado:** No implementado. API key de OpenAI ya disponible.
-**Impacto:** Enriquece enormemente IA Forge con imágenes para PNJs, locaciones, objetos.
-**Approach sugerido:** Agregar tab "Imagen" en IA Forge. Usar `openai.images.generate()`.
-**Versión estimada:** v2.0
-
-### [ ] Timeline interactiva de la campaña
-**Estado:** Modelo `TimelineEvent` existe en DB. UI no implementada.
-**Impacto:** Dificulta el seguimiento cronológico de la historia.
-**Approach sugerido:** Componente de línea de tiempo horizontal con eventos marcados por sesión.
-**Versión estimada:** v2.0
-
-### [ ] Sistema de notificaciones
-**Estado:** Botón de campana en TopNav existe pero no hace nada.
-**Impacto:** Usuarios no saben cuándo otros miembros realizan acciones (nueva sesión, nuevo personaje, etc.).
-**Approach sugerido:** Tabla `Notification` en DB, llenada por triggers de API. Dropdown en el botón de campana.
-**Versión estimada:** v1.3
-
----
-
-## Prioridad MEDIA — Mejoras de código y calidad
-
-### [ ] Skeletons en subcarpetas de campaña
+**Estado:** Se agregaron en dashboard y campaña overview. Faltan en characters, npcs, sessions, lore, gallery, etc.
 **Archivos a crear:**
 - `src/app/(campaign)/[campaignSlug]/characters/loading.tsx`
 - `src/app/(campaign)/[campaignSlug]/npcs/loading.tsx`
 - `src/app/(campaign)/[campaignSlug]/sessions/loading.tsx`
 - `src/app/(campaign)/[campaignSlug]/lore/loading.tsx`
-- `src/app/(campaign)/[campaignSlug]/quests/loading.tsx`
-- `src/app/(campaign)/[campaignSlug]/items/loading.tsx`
+- `src/app/(campaign)/[campaignSlug]/gallery/loading.tsx`
+
+### [ ] Export PDF de fichas de personaje
+**Estado:** No implementado.
+**Approach:** `@react-pdf/renderer` para generar PDF desde la ficha de personaje.
+**Versión estimada:** v3.0
+
+### [ ] Generación de imágenes con IA (Gemini / Imagen 3)
+**Estado:** No implementado.
+**Approach:** Agregar tab "Imagen" en IA Forge usando Google Imagen 3 o similar.
+**Versión estimada:** v3.0
+
+### [ ] Timeline interactiva de la campaña
+**Estado:** Modelo `TimelineEvent` existe en DB. UI no implementada.
+**Approach:** Componente de línea de tiempo horizontal con eventos marcados por sesión.
+**Versión estimada:** v3.0
+
+### [ ] Mapas interactivos con fog of war
+**Estado:** Modelo `GameMap` existe en DB. UI no implementada.
+**Approach:** Leaflet.js o similar para mapas con marcadores. Fog of war por capas CSS.
+**Versión estimada:** v3.0
+
+---
+
+## Prioridad MEDIA — Mejoras de código y calidad
 
 ### [ ] Indicadores de campo requerido en formularios
-**Estado:** Algunos formularios no marcan visualmente qué campos son obligatorios.
-**Approach:** Agregar asterisco rojo o badge "requerido" en labels de campos con `required`.
+Agregar asterisco rojo o badge "requerido" en labels de campos con `required`.
 
 ### [ ] Contador de caracteres en textareas
-**Estado:** Los textareas de descripción/lore no muestran el límite de caracteres.
-**Approach:** Agregar `maxLength` + contador visual en los textareas principales.
+Agregar `maxLength` + contador visual en textareas principales.
 
 ### [ ] `aria-invalid` y `aria-describedby` en inputs
-**Estado:** El componente `Input` y `Textarea` no tienen estos atributos de accesibilidad.
-**Approach:** Actualizar `src/components/ui/input.tsx` para aceptar y propagar `error` como `aria-invalid` + mensaje vinculado.
+Actualizar `src/components/ui/input.tsx` para aceptar y propagar `error` como `aria-invalid` + mensaje vinculado.
 
-### [ ] `alt` text en imágenes de PNJs y personajes
-**Estado:** Algunas `<img>` de avatares no tienen `alt` descriptivo.
-**Archivos afectados:** `npcs/page.tsx`, `characters/[characterId]/page.tsx`
+### [ ] `alt` text descriptivo en imágenes de NPCs y personajes
+Archivos afectados: `npcs/page.tsx`, `characters/[characterId]/page.tsx`.
 
 ---
 
 ## Prioridad BAJA — Mejoras futuras
 
-### [ ] Modo presentación (pantalla compartida)
-Vista de "DM Screen" donde el máster puede mostrar imágenes, mapas o texto a todos los jugadores en tiempo real.
+### [ ] Modo presentación (DM Screen)
+Vista donde el máster puede mostrar imágenes, mapas o texto a todos los jugadores en tiempo real.
 
 ### [ ] Estilos de impresión
 `@media print` para generar fichas de personaje imprimibles desde el navegador.
 
-### [ ] Optimización de paisaje en mobile
-El layout `h-screen` puede tener problemas con la altura del viewport en landscape mobile (dispositivos con barra de URL del browser).
-
 ### [ ] Integración con Roll20 / Foundry VTT
-Import/export de fichas de personaje en formatos compatibles con plataformas de VTT populares.
+Import/export de fichas en formatos compatibles con plataformas VTT populares.
 
 ### [ ] App mobile nativa
-React Native + Expo para una experiencia nativa en iOS/Android.
+React Native + Expo para experiencia nativa en iOS/Android.
 
 ### [ ] i18n / internacionalización
-La app está en español. Soporte para inglés y portugués como segundo paso.
+La app está en español. Soporte para inglés y portugués.
 
 ---
 
-## Mejoras completadas (v1.2)
+## Mejoras completadas
 
 | Versión | Mejora |
 |---------|--------|
 | v1.1 | Página 404 temática |
 | v1.1 | Error boundary global |
-| v1.1 | Skeletons de carga en dashboard y campaña overview |
+| v1.1 | Skeletons en dashboard y campaña overview |
 | v1.1 | Sidebar mobile como overlay con backdrop |
 | v1.1 | `prefers-reduced-motion` support |
-| v1.2 | Demo login sin necesidad de crear cuenta (`/api/auth/demo-login`) |
-| v1.2 | CTAs de landing page coherentes (sin redundancia) |
-| v1.2 | Cursor-pointer global en todos los elementos interactivos |
-| v1.2 | Hover en inputs, textareas, select, stat cards, botones del wizard |
-| v1.1 | Contraste de `--text-muted` corregido (WCAG AA) |
-| v1.1 | `aria-label` en todos los botones de ícono |
-| v1.1 | Breadcrumb responsivo con truncado en mobile |
-| v1.1 | Touch targets mínimos en botones de navegación |
-| v1.1 | Dashboard nav colapsado en mobile |
+| v1.1 | Contraste `--text-muted` WCAG AA |
+| v1.1 | `aria-label` en botones de ícono |
+| v1.1 | Breadcrumb responsivo |
+| v1.2 | Cursor-pointer global en elementos interactivos |
+| v1.2 | Hover en inputs, textareas, select, stat cards |
+| v1.3 | Login robusto con check de Content-Type |
+| v1.4 | Mock mode (desarrollo sin DB) |
+| v1.5 | Texto del sidebar siempre visible (fix AnimatePresence) |
+| v1.6 | Página de dados con historial |
+| v1.6 | Badge de versión en UI |
+| v2.0 | **Chat de texto en tiempo real (Pusher)** |
+| v2.0 | **Canales de voz en sidebar (LiveKit)** |
+| v2.1 | **Migración de OpenAI a Gemini 2.0 Flash** |
+| v2.1 | Notificaciones realtime en campaña (member-joined, character-created) |
+| v2.1 | Badge de no leídos en Chat del sidebar |
+| v2.1 | Renombrado PNJs → NPCs en toda la UI |
+| v2.2 | Bandeja de dados visible desde cualquier sección |
+| v2.2 | Switch "ocultar tiradas" rediseñado (máster) |
+| v2.2 | Botón de dados eliminado del TopNav |
+| v2.3 | Scroll fix en todas las páginas del workspace |
+| v2.3 | Toaster (Sonner) para notificaciones de campaña |
+| v2.3 | Landing CTA: "Crear cuenta" + "Iniciar sesión" |
+| v2.3 | Mensajes de error amigables para usuario final |
+| v2.3 | Dashboard: campañas primero, stats compactos |
+| v2.3 | Detalle campaña: contadores compactos en chips |

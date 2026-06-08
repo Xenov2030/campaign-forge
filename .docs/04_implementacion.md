@@ -1,6 +1,6 @@
 # CampaignForge — Guía de Implementación
 
-**Versión:** 1.4 | **Última actualización:** 2026-06-04
+**Versión:** 2.3 | **Última actualización:** 2026-06-08
 
 ---
 
@@ -18,10 +18,6 @@
 
 ## Setup de desarrollo
 
-Hay dos modos de trabajo. Elegí el que corresponda:
-
----
-
 ### Opción A — Modo Mock (recomendado para desarrollo local)
 
 Sin base de datos. Sin cuentas de servicios externos. Funciona de inmediato.
@@ -36,13 +32,11 @@ npm install
 
 #### 2. Variables de entorno
 
-El archivo `.env.local` ya está creado en el repositorio con `MOCK_MODE=true`. Si no existe:
-
 ```bash
 cp .env.local.example .env.local
 ```
 
-El contenido mínimo necesario:
+Contenido mínimo necesario:
 
 ```env
 MOCK_MODE=true
@@ -55,37 +49,20 @@ JWT_SECRET=campaign-forge-dev-secret-change-in-production
 npm run dev
 ```
 
-Listo. La app está en `http://localhost:3000`.
+La app está en `http://localhost:3000`.
 
 **Usuarios disponibles (cualquier contraseña):**
 
 | Email | Rol |
 |-------|-----|
-| `master@demo.com` | Máster — tiene la campaña "La Maldición de Strahd" |
-| `player@demo.com` | Jugador — tiene un personaje en la campaña |
+| `master@demo.com` | Máster — campaña "La Maldición de Strahd" precargada |
+| `player@demo.com` | Jugador — personaje en la campaña |
 
-**Datos precargados:**
-- Campaña: "La Maldición de Strahd" (tema HORROR)
-- 3 PNJs (Strahd, Ismark, Ireena)
-- 3 sesiones (2 completadas, 1 planificada)
-- 2 quests (1 principal, 1 secundaria)
-- 3 locaciones (Barovia, Castillo Ravenloft, Aldea)
-- 2 facciones
-- 2 entradas de lore
-- 1 personaje jugador con inventario
-
-**Persistencia:** los cambios que hagas (crear campañas, PNJs, personajes, etc.) se guardan en `data/mock-db.json` y sobreviven reinicios del servidor.
-
-**Resetear datos:**
-```bash
-npm run mock:reset
-```
+> **Nota:** El chat en tiempo real (Pusher) y los canales de voz (LiveKit) requieren las variables de entorno correspondientes. Sin ellas, la app funciona pero esas features quedan sin efecto.
 
 ---
 
 ### Opción B — Base de datos real (PostgreSQL)
-
-Para trabajo con datos reales o deploy.
 
 #### 1. Clonar e instalar
 
@@ -97,11 +74,7 @@ npm install
 
 #### 2. Crear base de datos
 
-**Neon (recomendado, gratuito):**
-1. Ir a [neon.tech](https://neon.tech) → Sign up (GitHub SSO disponible)
-2. Crear proyecto → copiar la connection string
-
-**Alternativas:** Supabase, Railway, Render, o PostgreSQL local.
+**Neon (recomendado, gratuito):** [neon.tech](https://neon.tech) → Sign up → crear proyecto → copiar la connection string.
 
 #### 3. Configurar variables de entorno
 
@@ -109,13 +82,31 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Editar `.env.local`:
+Editar `.env.local` con los valores reales:
 
 ```env
 MOCK_MODE=false
 DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 JWT_SECRET=genera-uno-con-node-e-require-crypto-randomBytes-32-toString-hex
-OPENAI_API_KEY=sk-...   # opcional
+
+# Realtime (chat)
+PUSHER_APP_ID=tu-app-id
+PUSHER_SECRET=tu-secret
+NEXT_PUBLIC_PUSHER_KEY=tu-key
+NEXT_PUBLIC_PUSHER_CLUSTER=us2
+
+# IA (opcional)
+GEMINI_API_KEY=tu-api-key-de-google-ai-studio
+
+# Voz (opcional)
+LIVEKIT_API_KEY=APIxxxxxxxxxx
+LIVEKIT_API_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_LIVEKIT_URL=wss://tu-proyecto.livekit.cloud
+
+# Imágenes (opcional)
+CLOUDINARY_CLOUD_NAME=tu-cloud-name
+CLOUDINARY_API_KEY=tu-api-key
+CLOUDINARY_API_SECRET=tu-api-secret
 ```
 
 #### 4. Inicializar base de datos
@@ -124,10 +115,6 @@ OPENAI_API_KEY=sk-...   # opcional
 npm run dev:setup
 # equivale a: npx prisma generate && npx prisma db push && npm run seed
 ```
-
-Esto crea las tablas y agrega los usuarios demo:
-- `master@demo.com` / `password123`
-- `player@demo.com` / `password123`
 
 #### 5. Ejecutar
 
@@ -142,13 +129,13 @@ npm run dev
 | Comando | Descripción |
 |---------|-------------|
 | `npm run dev` | Servidor de desarrollo con hot reload |
-| `npm run build` | Build de producción |
-| `npm run start` | Iniciar servidor de producción |
+| `npm run build` | Build de producción (incluye `prisma generate`) |
+| `npm run start` | Servidor de producción |
 | `npm run lint` | Linting con ESLint |
 | `npm run seed` | Poblar la DB con datos demo (requiere DB real) |
-| `npm run dev:setup` | Setup completo: generate + push + seed (primera vez con DB real) |
-| `npm run mock:reset` | Resetear `data/mock-db.json` a los datos iniciales del seed |
-| `npx prisma studio` | UI visual para explorar la DB (solo modo real) |
+| `npm run dev:setup` | Setup completo: generate + push + seed |
+| `npm run mock:reset` | Resetear `data/mock-db.json` |
+| `npx prisma studio` | UI visual para explorar la DB |
 | `npx prisma db push` | Sincronizar schema sin migraciones |
 | `npx prisma generate` | Regenerar el Prisma Client |
 
@@ -156,56 +143,56 @@ npm run dev
 
 ## Deploy en producción
 
-### Variables de entorno requeridas en producción
+### Variables de entorno requeridas
 
 ```env
 MOCK_MODE=false
 DATABASE_URL=postgresql://...
-JWT_SECRET=secreto-largo-y-aleatorio-minimo-32-chars
-OPENAI_API_KEY=sk-...         # para IA Forge y Asistente
+JWT_SECRET=secreto-largo-minimo-32-chars
+GEMINI_API_KEY=...
+PUSHER_APP_ID=...
+PUSHER_SECRET=...
+NEXT_PUBLIC_PUSHER_KEY=...
+NEXT_PUBLIC_PUSHER_CLUSTER=...
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+NEXT_PUBLIC_LIVEKIT_URL=...
 NEXT_PUBLIC_APP_URL=https://tu-dominio.com
 ```
-
-### Netlify (configuración presente)
-
-El proyecto tiene `@netlify/plugin-nextjs` configurado. Solo conectar el repo en [netlify.com](https://netlify.com) y agregar las variables de entorno.
 
 ### Vercel
 
 1. Ir a [vercel.com](https://vercel.com) → Add new project → importar repo
-2. Agregar variables de entorno en Settings → Environment Variables
+2. Agregar todas las variables de entorno en Settings → Environment Variables
 3. Cada push a `master` hace deploy automático
+
+### Netlify
+
+El proyecto tiene `@netlify/plugin-nextjs` configurado. Conectar el repo y agregar variables de entorno.
 
 ---
 
 ## Flujo de desarrollo — agregar una funcionalidad
 
 ### Paso 1: Leer contexto
-
 ```bash
 cat .docs/CONTEXT.md
 ```
 
 ### Paso 2: Crear rama
-
 ```bash
 git checkout -b feat/nombre-funcionalidad
-# o: fix/nombre-fix
 ```
 
 ### Paso 3: Modificar schema si aplica
-
-Editar `prisma/schema.prisma`, luego:
-
 ```bash
-npx prisma generate   # siempre después de cambiar el schema
-npx prisma db push    # sincronizar con la DB (en modo real)
+npx prisma generate
+npx prisma db push
 ```
 
-> Si agregás un nuevo modelo, también agregarlo al mock client en `src/lib/mock/client.ts` y al seed en `src/lib/mock/seed.ts`.
+> Si agregás un modelo nuevo, también agregarlo al mock client en `src/lib/mock/client.ts` y al seed en `src/lib/mock/seed.ts`.
 
 ### Paso 4: Crear la API route
-
 ```ts
 // src/app/api/[recurso]/route.ts
 import { NextResponse } from "next/server";
@@ -219,20 +206,26 @@ export async function GET() {
 }
 ```
 
-### Paso 5: Crear la página
+### Paso 5: Si incluye realtime (Pusher)
+```ts
+// En la API route, al final de la mutación:
+import pusher, { campaignChannel } from "@/lib/pusher/server";
+pusher.trigger(campaignChannel(campaignId), "evento-nuevo", payload).catch(() => {});
 
-```
-src/app/(campaign)/[campaignSlug]/[nueva-seccion]/
-├── page.tsx       → Componente principal
-└── loading.tsx    → Skeleton de carga (siempre agregar)
+// En el componente cliente, suscribirse:
+import { getPusherClient } from "@/lib/pusher/client";
+const pusher = getPusherClient();
+if (!pusher) return;
+const ch = pusher.subscribe(`campaign-${campaignId}`);
+const handler = (data: ...) => { /* ... */ };
+ch.bind("evento-nuevo", handler);
+return () => { ch.unbind("evento-nuevo", handler); pusher.unsubscribe(...); };
 ```
 
 ### Paso 6: Agregar al sidebar si es sección de campaña
-
 Editar `src/components/layout/campaign-sidebar.tsx` → array `navItems`.
 
 ### Paso 7: Actualizar documentación
-
 Obligatorio — ver lineamientos en `CONTEXT.md`.
 
 ---
@@ -240,15 +233,10 @@ Obligatorio — ver lineamientos en `CONTEXT.md`.
 ## Convenciones de código
 
 ### Nomenclatura
-
-- Páginas: `page.tsx`
-- Layouts: `layout.tsx`, Loading: `loading.tsx`, Error: `error.tsx`
-- Componentes: `PascalCase.tsx`
-- Utilities: `camelCase.ts`
-- API routes: `route.ts`
+- Páginas: `page.tsx`, Layouts: `layout.tsx`, Loading: `loading.tsx`
+- Componentes: `PascalCase.tsx`, Utilities: `camelCase.ts`, API routes: `route.ts`
 
 ### Imports
-
 ```ts
 // Orden: Next.js → React → externos → internos
 import { redirect } from "next/navigation";
@@ -260,12 +248,10 @@ import prisma from "@/lib/prisma";
 ```
 
 ### Server vs Client Components
-
 - **Server Component** (default): páginas que solo fetchen datos
-- **Client Component** (`"use client"`): formularios, interactividad, hooks de React, Zustand
+- **Client Component** (`"use client"`): formularios, interactividad, hooks de React, Zustand, Pusher
 
 ### Clases CSS
-
 ```tsx
 className={cn(
   "clases-base",
@@ -279,7 +265,6 @@ className={cn(
 ## Convenciones de git
 
 ### Branches
-
 ```
 feat/nombre     → nueva funcionalidad
 fix/nombre      → corrección de bug
@@ -288,19 +273,25 @@ chore/nombre    → mantenimiento, deps, config
 ```
 
 ### Commit messages
-
 Formato: `type(module): descripción en español`
-
 ```
-feat(ui): agregar módulo de mapas interactivos
-fix(auth): corregir validación de contraseña en registro
-refactor(mock): mejorar resolución de relaciones anidadas
-chore(deps): actualizar prisma a v7.x
+feat(chat): agregar mensajes en tiempo real con Pusher
+fix(scroll): agregar min-h-0 en main del layout de campaña
+refactor(ai): migrar de OpenAI a Gemini 2.0
+chore(deps): actualizar @google/generative-ai a ^0.24.0
 ```
 
 ---
 
 ## Troubleshooting
+
+### "Cannot find module '.prisma/client/default'"
+
+El Prisma Client no está generado:
+```bash
+npx prisma generate
+```
+Luego reiniciar el servidor de desarrollo.
 
 ### "Unexpected token '<', '<!DOCTYPE...' is not valid JSON"
 
@@ -309,22 +300,23 @@ La API devuelve HTML en lugar de JSON. Causas:
 2. **DB no configurada:** verificar `DATABASE_URL` en `.env.local`
 3. **Solución rápida:** activar `MOCK_MODE=true` en `.env.local`
 
-### Error al login en modo mock
+### Chat no actualiza en tiempo real
 
-Verificar que `.env.local` tenga `MOCK_MODE=true`. Cualquier contraseña funciona para los usuarios demo.
+Verificar que `PUSHER_*` y `NEXT_PUBLIC_PUSHER_*` estén configurados en `.env.local`.
+Si alguna variable falta, `getPusherClient()` retorna `null` y el chat funciona solo con carga inicial.
 
-### Los datos del mock no persisten entre sesiones
+### Canales de voz no conectan
 
-Si borraste `data/mock-db.json` o es la primera vez, se recreará desde el seed automáticamente.
+Verificar `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` y `NEXT_PUBLIC_LIVEKIT_URL`. Los tokens de LiveKit se generan en `/api/livekit/token`.
+
+### IA Forge no genera contenido
+
+Verificar que `GEMINI_API_KEY` esté configurado y tenga cuota disponible en Google AI Studio. Si no está configurado, `AI_ENABLED` es `false` y las rutas de IA retornan error informativo.
+
+### Los datos del mock no persisten
+
+Si borraste `data/mock-db.json` o es la primera vez, se recreará desde el seed automáticamente al primer request.
 
 ### Cookie de sesión no setea
 
-Verificar que `JWT_SECRET` esté configurado. El default de desarrollo funciona pero no debe usarse en producción.
-
-### OpenAI "You exceeded your current quota"
-
-Verificar balance y límites en el dashboard de OpenAI. La IA Forge no funciona sin créditos.
-
-### Framer Motion + SSR warnings
-
-Normal en Next.js App Router con componentes `"use client"`. Se hidratan correctamente en el cliente.
+Verificar que `JWT_SECRET` esté configurado.
