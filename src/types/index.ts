@@ -72,9 +72,19 @@ export type SessionWithDetails = Session & {
 export type CreateCampaignInput = {
   name: string;
   description?: string;
-  theme: CampaignTheme;
-  system: GameSystem;
+  // Selección múltiple. El primero de themes/systems se persiste como valor
+  // PRINCIPAL en las columnas enum; la selección completa se guarda en settings.
+  themes: CampaignTheme[];
+  tones: string[];
+  systems: GameSystem[];
   isPublic: boolean;
+};
+
+// Estructura guardada en Campaign.settings (Json) para la selección múltiple.
+export type CampaignSettings = {
+  themes?: CampaignTheme[];
+  tones?: string[];
+  systems?: GameSystem[];
 };
 
 export type CreateCharacterInput = {

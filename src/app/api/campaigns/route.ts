@@ -9,11 +9,18 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { name, description, theme, system, isPublic } = body;
+    const { name, description, themes, tones, systems, isPublic } = body;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
+
+    // Las columnas `theme`/`system` son enums de un solo valor: guardamos el
+    // primero elegido como PRINCIPAL (alimenta los colores y las fichas) y el
+    // resto de la selección múltiple va al campo `settings` (Json).
+    const themeList: string[] = Array.isArray(themes) && themes.length ? themes : ["FANTASY"];
+    const systemList: string[] = Array.isArray(systems) && systems.length ? systems : ["DND5E"];
+    const toneList: string[] = Array.isArray(tones) ? tones : [];
 
     let slug = slugify(name);
     let counter = 0;
@@ -27,9 +34,10 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         description: description?.trim(),
         slug,
-        theme: theme ?? "FANTASY",
-        system: system ?? "DND5E",
+        theme: themeList[0] as never,
+        system: systemList[0] as never,
         isPublic: isPublic ?? false,
+        settings: { themes: themeList, tones: toneList, systems: systemList },
         inviteCode: generateInviteCode(),
         masterId: user.id,
       },

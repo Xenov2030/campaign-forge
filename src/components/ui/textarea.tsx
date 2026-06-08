@@ -7,7 +7,7 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, id, ...props }, ref) => {
+  ({ className, label, error, id, required, ...props }, ref) => {
     const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
@@ -18,10 +18,17 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider"
           >
             {label}
+            {required && (
+              <span className="ml-1 text-red-400" aria-hidden="true">
+                *
+              </span>
+            )}
           </label>
         )}
         <textarea
           id={inputId}
+          required={required}
+          aria-required={required}
           className={cn(
             "w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)]",
             "min-h-[100px] px-3 py-2 rounded-[var(--radius-md)] text-sm",

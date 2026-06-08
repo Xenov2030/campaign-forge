@@ -8,7 +8,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, icon, id, ...props }, ref) => {
+  ({ className, type, label, error, icon, id, required, ...props }, ref) => {
     const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
@@ -19,6 +19,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider"
           >
             {label}
+            {required && (
+              <span className="ml-1 text-red-400" aria-hidden="true">
+                *
+              </span>
+            )}
           </label>
         )}
         <div className="relative">
@@ -30,6 +35,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             type={type}
+            required={required}
+            aria-required={required}
             className={cn(
               "w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)]",
               "h-10 px-3 rounded-[var(--radius-md)] text-sm",
