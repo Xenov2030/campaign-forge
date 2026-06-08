@@ -44,14 +44,6 @@ export function TopNav({
         </Button>
 
         <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-sm min-w-0">
-          <Link
-            href="/dashboard"
-            className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors shrink-0"
-            aria-label="Ir al dashboard"
-          >
-            <Home className="h-4 w-4" aria-hidden="true" />
-          </Link>
-          <ChevronRight className="h-3 w-3 text-[var(--text-muted)] shrink-0" aria-hidden="true" />
           <span
             className="text-[var(--text-secondary)] truncate max-w-[100px] sm:max-w-[180px] md:max-w-none"
             title={campaignName}
@@ -71,6 +63,15 @@ export function TopNav({
 
       {/* Actions */}
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
+        <Link
+          href="/dashboard"
+          aria-label="Volver al inicio"
+          className="inline-flex items-center gap-1.5 h-9 px-2.5 rounded-[var(--radius-md)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+        >
+          <Home className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Inicio</span>
+        </Link>
+
         {isMaster && (
           <Button
             variant="ghost"

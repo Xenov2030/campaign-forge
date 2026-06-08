@@ -22,7 +22,6 @@ import {
   Settings,
   Crown,
   ImageIcon,
-  LayoutDashboard,
   Volume2,
   Mic,
   MicOff,
@@ -33,11 +32,15 @@ import {
   X as XIcon,
   PhoneOff,
   Loader2,
+  MoreVertical,
 } from "lucide-react";
+import { toast } from "sonner";
+import * as Popover from "@radix-ui/react-popover";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useCampaignStore } from "@/store/campaign-store";
 import { useNotificationStore } from "@/store/notification-store";
-import { useVoiceChannel } from "@/hooks/useVoiceChannel";
+import { useVoiceChannel, type VoiceParticipant } from "@/hooks/useVoiceChannel";
 
 interface VoiceRoom {
   id: string;
@@ -87,12 +90,18 @@ export function CampaignSidebar({
     connected,
     connecting,
     participants,
+    error: voiceError,
     connect,
     disconnect,
     toggleMute,
     toggleDeafen,
     setParticipantVolume,
   } = useVoiceChannel();
+
+  // Mostrar el error de voz al usuario (antes quedaba silencioso → "no pasa nada")
+  useEffect(() => {
+    if (voiceError) toast.error(voiceError, { description: "Canal de voz" });
+  }, [voiceError]);
 
   const [voiceChannels, setVoiceChannels] =
     useState<VoiceRoom[]>(initialVoiceRooms);
@@ -198,15 +207,15 @@ export function CampaignSidebar({
       href: `${base}/sessions`,
       icon: <Calendar className="h-4 w-4" />,
     },
-    // Communication divider + chat
-    { label: "", href: "", icon: null, divider: true },
-    {
-      label: "Chat",
-      href: `${base}/chat`,
-      icon: <MessageSquare className="h-4 w-4" />,
-      badge: unreadChatCount > 0 ? unreadChatCount : undefined,
-    },
   ];
+
+  // Chat vive en la zona fija de comunicación (no scrollea con las secciones).
+  const chatItem: SidebarItem = {
+    label: "Chat",
+    href: `${base}/chat`,
+    icon: <MessageSquare className="h-4 w-4" />,
+    badge: unreadChatCount > 0 ? unreadChatCount : undefined,
+  };
 
   const visibleItems = navItems.filter(
     (item) => !item.isMasterOnly || isMaster,
@@ -215,6 +224,94 @@ export function CampaignSidebar({
   const textAnim = {
     animate: { opacity: sidebarOpen ? 1 : 0, x: sidebarOpen ? 0 : -8 },
     transition: { duration: 0.12 },
+  };
+
+  // Creación de canales de voz deshabilitada por ahora (el input se cortaba).
+  const CAN_ADD_VOICE_CHANNEL = false;
+
+  // Render de un ítem de navegación — reutilizado en las secciones y en el Chat.
+  const renderNavItem = (item: SidebarItem, key: string | number) => {
+    const isActive =
+      !item.disabled &&
+      (pathname === item.href ||
+        (item.href !== base && pathname.startsWith(item.href)));
+
+    if (item.disabled) {
+      return (
+        <span
+          key={key}
+          title="Próximamente"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm group relative min-h-[40px] opacity-40 cursor-not-allowed select-none"
+        >
+          <span className="shrink-0">{item.icon}</span>
+          <motion.span
+            {...textAnim}
+            className="truncate font-medium text-[var(--text-muted)] flex-1"
+          >
+            {item.label}
+          </motion.span>
+          {sidebarOpen && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] shrink-0 leading-none">
+              Pronto
+            </span>
+          )}
+          {!sidebarOpen && (
+            <div
+              role="tooltip"
+              className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-muted)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
+            >
+              {item.label} — Próximamente
+            </div>
+          )}
+        </span>
+      );
+    }
+
+    return (
+      <Link
+        key={key}
+        href={item.href}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm transition-all duration-150 group relative min-h-[40px]",
+          isActive
+            ? "bg-[var(--accent-gold)]/10 text-[var(--accent-gold)] border border-[var(--accent-gold)]/20"
+            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]",
+        )}
+        onClick={() => {
+          if (window.innerWidth < 768 && sidebarOpen) toggleSidebar();
+        }}
+      >
+        <span className="shrink-0 relative">
+          {item.icon}
+          {item.badge !== undefined && !sidebarOpen && (
+            <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center leading-none">
+              {item.badge > 9 ? "9+" : item.badge}
+            </span>
+          )}
+        </span>
+        <motion.span {...textAnim} className="truncate font-medium flex-1">
+          {item.label}
+        </motion.span>
+        {item.badge !== undefined && sidebarOpen && (
+          <motion.span
+            {...textAnim}
+            className="shrink-0 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1"
+          >
+            {item.badge > 99 ? "99+" : item.badge}
+          </motion.span>
+        )}
+        {!sidebarOpen && (
+          <div
+            role="tooltip"
+            className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
+          >
+            {item.label}
+            {item.badge !== undefined && ` (${item.badge})`}
+          </div>
+        )}
+      </Link>
+    );
   };
 
   // Voice channel actions
@@ -253,11 +350,6 @@ export function CampaignSidebar({
       setAddingChannel(false);
     }
   };
-
-  const remoteParticipants = participants.filter((p) => {
-    const local = participants[0];
-    return p.identity !== local?.identity;
-  });
 
   return (
     <>
@@ -312,6 +404,36 @@ export function CampaignSidebar({
                 {campaignName}
               </p>
             </motion.div>
+
+            {isMaster && sidebarOpen && (
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <button
+                    aria-label="Opciones de la campaña"
+                    className="h-7 w-7 shrink-0 rounded flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    align="end"
+                    sideOffset={6}
+                    className="z-50 min-w-[180px] bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] p-1 shadow-[var(--shadow-lg)]"
+                  >
+                    <DropdownMenu.Item asChild>
+                      <Link
+                        href={`${base}/settings`}
+                        className="flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-sm)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] outline-none cursor-pointer transition-colors"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Configurar campaña
+                      </Link>
+                    </DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
+            )}
           </div>
 
           {/* Nav */}
@@ -319,101 +441,14 @@ export function CampaignSidebar({
             className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5 hide-scrollbar-mobile"
             aria-label="Secciones de la campaña"
           >
-            {visibleItems.map((item, i) => {
-              if (item.divider) {
-                return (
-                  <div
-                    key={`divider-${i}`}
-                    className="my-1.5 mx-3 border-t border-[var(--border-subtle)]"
-                    aria-hidden="true"
-                  />
-                );
-              }
+            {visibleItems.map((item) => renderNavItem(item, item.href))}
+          </nav>
 
-              const isActive =
-                !item.disabled &&
-                (pathname === item.href ||
-                  (item.href !== base && pathname.startsWith(item.href)));
+          {/* ── Comunicación (Chat + Voz) — fijo abajo, no scrollea ── */}
+          <div className="shrink-0 border-t border-[var(--border-subtle)] px-2 pt-2 pb-2 space-y-0.5">
+            {renderNavItem(chatItem, chatItem.href)}
 
-              if (item.disabled) {
-                return (
-                  <span
-                    key={item.href}
-                    title="Próximamente"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm group relative min-h-[40px] opacity-40 cursor-not-allowed select-none"
-                  >
-                    <span className="shrink-0">{item.icon}</span>
-                    <motion.span
-                      {...textAnim}
-                      className="truncate font-medium text-[var(--text-muted)] flex-1"
-                    >
-                      {item.label}
-                    </motion.span>
-                    {sidebarOpen && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] shrink-0 leading-none">
-                        Pronto
-                      </span>
-                    )}
-                    {!sidebarOpen && (
-                      <div
-                        role="tooltip"
-                        className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-muted)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
-                      >
-                        {item.label} — Próximamente
-                      </div>
-                    )}
-                  </span>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm transition-all duration-150 group relative min-h-[40px]",
-                    isActive
-                      ? "bg-[var(--accent-gold)]/10 text-[var(--accent-gold)] border border-[var(--accent-gold)]/20"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]",
-                  )}
-                  onClick={() => {
-                    if (window.innerWidth < 768 && sidebarOpen) toggleSidebar();
-                  }}
-                >
-                  <span className="shrink-0 relative">
-                    {item.icon}
-                    {item.badge !== undefined && !sidebarOpen && (
-                      <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center leading-none">
-                        {item.badge > 9 ? "9+" : item.badge}
-                      </span>
-                    )}
-                  </span>
-                  <motion.span {...textAnim} className="truncate font-medium flex-1">
-                    {item.label}
-                  </motion.span>
-                  {item.badge !== undefined && sidebarOpen && (
-                    <motion.span
-                      {...textAnim}
-                      className="shrink-0 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1"
-                    >
-                      {item.badge > 99 ? "99+" : item.badge}
-                    </motion.span>
-                  )}
-                  {!sidebarOpen && (
-                    <div
-                      role="tooltip"
-                      className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
-                    >
-                      {item.label}
-                      {item.badge !== undefined && ` (${item.badge})`}
-                    </div>
-                  )}
-                </Link>
-              );
-            })}
-
-            {/* ── Voice channels — continuous with nav, no separator ── */}
+            {/* Canales de voz */}
             <div className="pt-1">
               {/* Header row — same style as a nav item */}
               <div className="flex items-center justify-between min-h-[40px]">
@@ -426,7 +461,7 @@ export function CampaignSidebar({
                     Canales de voz
                   </motion.span>
                 </div>
-                {isMaster && sidebarOpen && (
+                {CAN_ADD_VOICE_CHANNEL && isMaster && sidebarOpen && (
                   <button
                     onClick={() => setAddingChannel(true)}
                     title="Añadir canal"
@@ -437,58 +472,69 @@ export function CampaignSidebar({
                 )}
               </div>
 
-              {/* Channel buttons */}
+              {/* Channel buttons + participantes inline (estilo Discord) */}
               {voiceChannels.map((channel) => {
                 const isConnected = activeVoiceChannelId === channel.id;
                 return (
-                  <button
-                    key={channel.id}
-                    onClick={() => handleVoiceClick(channel)}
-                    disabled={
-                      !!connecting && activeVoiceChannelId !== channel.id
-                    }
-                    title={sidebarOpen ? undefined : channel.name}
-                    className={cn(
-                      "w-full flex items-center gap-2 rounded-[var(--radius-md)] text-sm transition-colors group relative min-h-[36px]",
-                      sidebarOpen ? "pl-8 pr-3 py-1.5" : "px-3 py-1.5",
-                      isConnected
-                        ? "text-green-400 bg-green-500/10"
-                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]",
-                      connecting &&
-                        activeVoiceChannelId !== channel.id &&
-                        "opacity-50 cursor-not-allowed",
-                    )}
-                  >
-                    <span className="shrink-0 relative">
-                      <Volume2 className="h-4 w-4" />
-                      {isConnected && (
-                        <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-1 ring-[var(--bg-surface)]" />
+                  <div key={channel.id}>
+                    <button
+                      onClick={() => handleVoiceClick(channel)}
+                      disabled={
+                        !!connecting && activeVoiceChannelId !== channel.id
+                      }
+                      title={sidebarOpen ? undefined : channel.name}
+                      className={cn(
+                        "w-full flex items-center gap-2 rounded-[var(--radius-md)] text-sm transition-colors group relative min-h-[36px]",
+                        sidebarOpen ? "pl-8 pr-3 py-1.5" : "px-3 py-1.5",
+                        isConnected
+                          ? "text-green-400 bg-green-500/10"
+                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]",
+                        connecting &&
+                          activeVoiceChannelId !== channel.id &&
+                          "opacity-50 cursor-not-allowed",
                       )}
-                    </span>
-                    <motion.span
-                      {...textAnim}
-                      className="truncate text-sm font-medium flex-1 text-left"
                     >
-                      {channel.name}
-                    </motion.span>
-                    {isConnected && sidebarOpen && (
-                      <span className="shrink-0">
-                        <PhoneOff className="h-3.5 w-3.5 opacity-60" />
+                      <span className="shrink-0 relative">
+                        <Volume2 className="h-4 w-4" />
+                        {isConnected && (
+                          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-1 ring-[var(--bg-surface)]" />
+                        )}
                       </span>
-                    )}
-                    {!sidebarOpen && (
-                      <div
-                        role="tooltip"
-                        className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
+                      <motion.span
+                        {...textAnim}
+                        className="truncate text-sm font-medium flex-1 text-left"
                       >
                         {channel.name}
+                      </motion.span>
+                      {!sidebarOpen && (
+                        <div
+                          role="tooltip"
+                          className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
+                        >
+                          {channel.name}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Conectados al canal (incluido vos) — estilo Discord */}
+                    {isConnected && sidebarOpen && participants.length > 0 && (
+                      <div className="pl-8 pr-1 pb-1 space-y-0.5">
+                        {participants.map((p) => (
+                          <VoiceParticipantRow
+                            key={p.identity}
+                            p={p}
+                            voiceDeafened={voiceDeafened}
+                            onVolume={setParticipantVolume}
+                          />
+                        ))}
                       </div>
                     )}
-                  </button>
+                  </div>
                 );
               })}
 
-              {/* Add channel input (master only) */}
+              {/* Add channel input (master only) — deshabilitado por ahora */}
+              {CAN_ADD_VOICE_CHANNEL && (
               <AnimatePresence>
                 {addingChannel && sidebarOpen && (
                   <motion.div
@@ -537,12 +583,13 @@ export function CampaignSidebar({
                   </motion.div>
                 )}
               </AnimatePresence>
+              )}
             </div>
-          </nav>
+          </div>
 
           {/* Footer */}
-          <div className="border-t border-[var(--border-subtle)] shrink-0">
-            {/* ── Connected voice controls ── */}
+          <div className="shrink-0">
+            {/* ── Barra de voz conectado (fija, altura constante, sin scroll) ── */}
             <AnimatePresence>
               {connected && (
                 <motion.div
@@ -550,173 +597,65 @@ export function CampaignSidebar({
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="overflow-hidden px-2 pt-2 pb-1 border-b border-[var(--border-subtle)]"
+                  className="overflow-hidden border-b border-[var(--border-subtle)]"
                 >
-                  {/* Connected channel name */}
-                  <motion.div
-                    animate={{ opacity: sidebarOpen ? 1 : 0 }}
-                    transition={{ duration: 0.12 }}
-                    className="flex items-center gap-1.5 px-2 mb-1.5"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
-                    <span className="text-[11px] text-green-400 font-medium truncate">
-                      {connectedChannelName}
-                    </span>
-                  </motion.div>
-
-                  {/* Mute / Deafen buttons */}
-                  <div className="flex gap-1 px-1">
-                    <button
-                      onClick={toggleMute}
-                      title={
-                        voiceMuted
-                          ? "Activar micrófono (Shift+M)"
-                          : "Silenciar micrófono (Shift+M)"
-                      }
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-1.5 text-[11px] px-2 py-1.5 rounded transition-colors",
-                        voiceMuted
-                          ? "bg-red-500/15 text-red-400 border border-red-500/20"
-                          : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-primary)]",
-                      )}
-                    >
-                      {voiceMuted ? (
-                        <MicOff className="h-3 w-3 shrink-0" />
-                      ) : (
-                        <Mic className="h-3 w-3 shrink-0" />
-                      )}
-                      <motion.span
-                        animate={{ opacity: sidebarOpen ? 1 : 0 }}
-                        transition={{ duration: 0.1 }}
-                        className="truncate"
-                      >
-                        {voiceMuted ? "Mudo" : "Mic"}
-                      </motion.span>
-                    </button>
-
-                    <button
-                      onClick={toggleDeafen}
-                      title={
-                        voiceDeafened
-                          ? "Dejar de ensordecer"
-                          : "Ensordecer (no escuchar)"
-                      }
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-1.5 text-[11px] px-2 py-1.5 rounded transition-colors",
-                        voiceDeafened
-                          ? "bg-red-500/15 text-red-400 border border-red-500/20"
-                          : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-primary)]",
-                      )}
-                    >
-                      {voiceDeafened ? (
-                        <VolumeX className="h-3 w-3 shrink-0" />
-                      ) : (
-                        <Headphones className="h-3 w-3 shrink-0" />
-                      )}
-                      <motion.span
-                        animate={{ opacity: sidebarOpen ? 1 : 0 }}
-                        transition={{ duration: 0.1 }}
-                        className="truncate"
-                      >
-                        {voiceDeafened ? "Sordo" : "Escuchar"}
-                      </motion.span>
-                    </button>
-                  </div>
-
-                  {/* Per-user volume sliders (sidebar open + remote participants) */}
-                  <AnimatePresence>
-                    {sidebarOpen && remoteParticipants.length > 0 && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mt-2 space-y-1 overflow-hidden px-1"
-                      >
-                        {remoteParticipants.map((p) => (
-                          <div
-                            key={p.identity}
-                            className="flex items-center gap-2"
-                          >
-                            <span
-                              className={cn(
-                                "h-1.5 w-1.5 rounded-full shrink-0",
-                                p.isSpeaking
-                                  ? "bg-green-500"
-                                  : "bg-[var(--text-muted)]",
-                              )}
-                            />
-                            <span className="text-[11px] text-[var(--text-muted)] truncate flex-1 min-w-0">
-                              {p.name}
-                            </span>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <Volume2 className="h-2.5 w-2.5 text-[var(--text-muted)]" />
-                              <input
-                                type="range"
-                                min={0}
-                                max={100}
-                                step={5}
-                                value={Math.round((p.volume ?? 1) * 100)}
-                                onChange={(e) =>
-                                  setParticipantVolume(
-                                    p.identity,
-                                    parseInt(e.target.value) / 100,
-                                  )
-                                }
-                                disabled={voiceDeafened}
-                                className="w-16 h-1 accent-[var(--accent-gold)] cursor-pointer disabled:opacity-40"
-                                aria-label={`Volumen de ${p.name}`}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </motion.div>
+                  <div
+                    className={cn(
+                      "px-2 py-2 flex items-center gap-1.5",
+                      !sidebarOpen && "flex-col",
                     )}
-                  </AnimatePresence>
+                  >
+                    {sidebarOpen ? (
+                      <span className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+                        <span className="text-[11px] text-green-400 font-medium truncate">
+                          {connectedChannelName}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+                    )}
+
+                    <div className={cn("flex gap-1 shrink-0", !sidebarOpen && "flex-col")}>
+                      <button
+                        onClick={toggleMute}
+                        title={voiceMuted ? "Activar micrófono (Shift+M)" : "Silenciar micrófono (Shift+M)"}
+                        aria-label={voiceMuted ? "Activar micrófono" : "Silenciar micrófono"}
+                        className={cn(
+                          "h-7 w-7 rounded flex items-center justify-center transition-colors",
+                          voiceMuted
+                            ? "bg-red-500/15 text-red-400"
+                            : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-primary)]",
+                        )}
+                      >
+                        {voiceMuted ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                      </button>
+                      <button
+                        onClick={toggleDeafen}
+                        title={voiceDeafened ? "Dejar de ensordecer" : "Ensordecer (no escuchar)"}
+                        aria-label={voiceDeafened ? "Dejar de ensordecer" : "Ensordecer"}
+                        className={cn(
+                          "h-7 w-7 rounded flex items-center justify-center transition-colors",
+                          voiceDeafened
+                            ? "bg-red-500/15 text-red-400"
+                            : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-primary)]",
+                        )}
+                      >
+                        {voiceDeafened ? <VolumeX className="h-3.5 w-3.5" /> : <Headphones className="h-3.5 w-3.5" />}
+                      </button>
+                      <button
+                        onClick={disconnect}
+                        title="Desconectar del canal"
+                        aria-label="Desconectar del canal de voz"
+                        className="h-7 w-7 rounded flex items-center justify-center bg-[var(--bg-elevated)] text-red-400 hover:bg-red-500/15 transition-colors"
+                      >
+                        <PhoneOff className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* ── Settings + Inicio ── */}
-            <div className="px-2 py-2 space-y-0.5">
-              {isMaster && (
-                <span
-                  title="Próximamente"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm min-h-[40px] opacity-40 cursor-not-allowed select-none"
-                >
-                  <Settings className="h-4 w-4 shrink-0" />
-                  <motion.span
-                    animate={{ opacity: sidebarOpen ? 1 : 0 }}
-                    transition={{ duration: 0.12 }}
-                    className="text-sm text-[var(--text-muted)] flex-1 truncate"
-                  >
-                    Configuración
-                  </motion.span>
-                  {sidebarOpen && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] shrink-0 leading-none">
-                      Pronto
-                    </span>
-                  )}
-                </span>
-              )}
-
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm transition-all duration-150 group relative min-h-[40px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
-              >
-                <LayoutDashboard className="h-4 w-4 shrink-0" />
-                <motion.span {...textAnim} className="truncate font-medium">
-                  Volver al inicio
-                </motion.span>
-                {!sidebarOpen && (
-                  <div
-                    role="tooltip"
-                    className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded text-xs text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-[var(--shadow-lg)]"
-                  >
-                    Volver al inicio
-                  </div>
-                )}
-              </Link>
-            </div>
           </div>
         </div>
 
@@ -737,5 +676,94 @@ export function CampaignSidebar({
         </button>
       </motion.aside>
     </>
+  );
+}
+
+// ── Fila de participante de voz (estilo Discord) ──
+// Local: solo muestra nombre + estado. Remoto: click abre popover con el volumen.
+function VoiceParticipantRow({
+  p,
+  voiceDeafened,
+  onVolume,
+}: {
+  p: VoiceParticipant;
+  voiceDeafened: boolean;
+  onVolume: (identity: string, volume: number) => void;
+}) {
+  const dot = (
+    <span
+      className={cn(
+        "h-2 w-2 rounded-full shrink-0 transition-colors",
+        p.isSpeaking ? "bg-green-500" : "bg-[var(--text-muted)]/50",
+      )}
+    />
+  );
+  const micIcon = p.isMuted ? (
+    <MicOff className="h-3.5 w-3.5 text-red-400 shrink-0" />
+  ) : (
+    <Mic className="h-3.5 w-3.5 text-[var(--text-muted)] shrink-0" />
+  );
+  const label = (
+    <span className="text-sm truncate flex-1 min-w-0 text-left">
+      {p.name}
+      {p.isLocal && <span className="text-[var(--text-muted)]"> (vos)</span>}
+    </span>
+  );
+
+  // El participante local no tiene control de volumen (no te regulás a vos mismo).
+  if (p.isLocal) {
+    return (
+      <div className="flex items-center gap-2 px-1 py-0.5 text-[var(--text-secondary)]">
+        {dot}
+        {label}
+        {micIcon}
+      </div>
+    );
+  }
+
+  const pct = Math.round((p.volume ?? 1) * 100);
+
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <button
+          title={`Ajustar volumen de ${p.name}`}
+          className="w-full flex items-center gap-2 px-1 py-0.5 rounded hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-colors"
+        >
+          {dot}
+          {label}
+          {micIcon}
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="right"
+          align="center"
+          sideOffset={8}
+          className="z-50 w-44 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] p-3 shadow-[var(--shadow-lg)]"
+        >
+          <p className="text-xs font-medium text-[var(--text-primary)] mb-2 truncate">
+            {p.name}
+          </p>
+          <div className="flex items-center gap-2">
+            <Volume2 className="h-3.5 w-3.5 text-[var(--text-muted)] shrink-0" />
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={pct}
+              onChange={(e) => onVolume(p.identity, parseInt(e.target.value) / 100)}
+              disabled={voiceDeafened}
+              className="flex-1 h-1 accent-[var(--accent-gold)] cursor-pointer disabled:opacity-40"
+              aria-label={`Volumen de ${p.name}`}
+            />
+            <span className="text-[10px] text-[var(--text-muted)] w-7 text-right tabular-nums">
+              {pct}
+            </span>
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

@@ -4,6 +4,47 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { Room, RemoteParticipant, RemoteTrackPublication, RemoteAudioTrack } from "livekit-client";
 import { useCampaignStore } from "@/store/campaign-store";
 
+// Señales sonoras del canal de voz, generadas con Web Audio (sin assets).
+// Tonos ascendentes = "encendido" (entrar/desmutear); descendentes = "apagado".
+type VoiceCue = "join" | "leave" | "mute" | "unmute" | "deafen" | "undeafen";
+
+const CUE_FREQS: Record<VoiceCue, number[]> = {
+  join: [523.25, 783.99],
+  leave: [783.99, 523.25],
+  mute: [392.0],
+  unmute: [659.25],
+  deafen: [659.25, 392.0],
+  undeafen: [392.0, 659.25],
+};
+
+function playVoiceCue(kind: VoiceCue) {
+  try {
+    const Ctx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    CUE_FREQS[kind].forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = f;
+      const t = now + i * 0.1;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.17);
+    });
+    setTimeout(() => ctx.close().catch(() => {}), 500);
+  } catch {
+    // audio no crítico
+  }
+}
+
 export interface VoiceParticipant {
   sid: string;
   identity: string;
@@ -11,6 +52,7 @@ export interface VoiceParticipant {
   isSpeaking: boolean;
   isMuted: boolean;
   volume: number; // 0-1, current listener volume setting
+  isLocal: boolean; // true para el participante local (vos)
 }
 
 export function useVoiceChannel() {
@@ -35,6 +77,7 @@ export function useVoiceChannel() {
         isSpeaking: local.isSpeaking,
         isMuted: !local.isMicrophoneEnabled,
         volume: 1,
+        isLocal: true,
       });
     }
     room.remoteParticipants?.forEach((p: RemoteParticipant) => {
@@ -45,6 +88,7 @@ export function useVoiceChannel() {
         isSpeaking: p.isSpeaking,
         isMuted: p.isMicrophoneEnabled === false,
         volume: volumesRef.current.get(p.identity) ?? 1,
+        isLocal: false,
       });
     });
     setParticipants(list);
@@ -75,8 +119,14 @@ export function useVoiceChannel() {
       roomRef.current = room;
 
       const refresh = () => snapshotParticipants(room);
-      room.on(RoomEvent.ParticipantConnected, refresh);
-      room.on(RoomEvent.ParticipantDisconnected, refresh);
+      room.on(RoomEvent.ParticipantConnected, () => {
+        playVoiceCue("join");
+        refresh();
+      });
+      room.on(RoomEvent.ParticipantDisconnected, () => {
+        playVoiceCue("leave");
+        refresh();
+      });
       room.on(RoomEvent.TrackMuted, refresh);
       room.on(RoomEvent.TrackUnmuted, refresh);
       room.on(RoomEvent.ActiveSpeakersChanged, refresh);
@@ -91,12 +141,14 @@ export function useVoiceChannel() {
       await room.connect(wsUrl, token);
       await room.localParticipant.setMicrophoneEnabled(true);
       setConnected(true);
+      playVoiceCue("join");
       setVoiceConnected(true);
       setActiveVoiceChannelId(channelId);
       setVoiceMuted(false);
       setVoiceDeafened(false);
       snapshotParticipants(room);
     } catch (err) {
+      console.error("[voice] Error al conectar al canal:", err);
       setError(err instanceof Error ? err.message : "Error conectando al canal de voz");
       roomRef.current = null;
     } finally {
@@ -122,6 +174,7 @@ export function useVoiceChannel() {
     const next = !voiceMuted;
     await roomRef.current.localParticipant.setMicrophoneEnabled(!next);
     setVoiceMuted(next);
+    playVoiceCue(next ? "mute" : "unmute");
     snapshotParticipants(roomRef.current);
   }, [connected, voiceMuted, setVoiceMuted, snapshotParticipants]);
 
@@ -129,6 +182,7 @@ export function useVoiceChannel() {
     if (!roomRef.current || !connected) return;
     const next = !voiceDeafened;
     setVoiceDeafened(next);
+    playVoiceCue(next ? "deafen" : "undeafen");
     // Set volume on all remote audio tracks
     roomRef.current.remoteParticipants?.forEach((p: RemoteParticipant) => {
       p.audioTrackPublications?.forEach((pub: RemoteTrackPublication) => {
