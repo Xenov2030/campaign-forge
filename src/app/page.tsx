@@ -5,11 +5,11 @@ import {
   Users,
   Map,
   BookOpen,
-  Dices,
   Crown,
   ChevronRight,
   Star,
-  Play,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 
 const features = [
@@ -203,16 +203,16 @@ export default function LandingPage() {
               href="/register"
               className="inline-flex items-center gap-2 h-14 px-10 bg-[var(--accent-gold)] text-[var(--bg-base)] text-lg font-bold rounded-[var(--radius-lg)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] font-display cursor-pointer"
             >
-              <Dices className="h-5 w-5" aria-hidden="true" />
-              Empezar gratis
+              <UserPlus className="h-5 w-5" aria-hidden="true" />
+              Crear cuenta
             </Link>
-            <a
-              href="/api/auth/demo-login"
+            <Link
+              href="/login"
               className="inline-flex items-center gap-2 h-14 px-8 border border-[var(--border-default)] text-[var(--text-secondary)] text-base rounded-[var(--radius-lg)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-all cursor-pointer"
             >
-              <Play className="h-4 w-4" aria-hidden="true" />
-              Ver demo primero
-            </a>
+              <LogIn className="h-4 w-4" aria-hidden="true" />
+              Iniciar sesión
+            </Link>
           </div>
         </div>
       </section>

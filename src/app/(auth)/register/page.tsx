@@ -59,7 +59,7 @@ export default function RegisterPage() {
 
       const contentType = res.headers.get("content-type") ?? "";
       if (!contentType.includes("application/json")) {
-        throw new Error("El servidor no está disponible. Verificá que la base de datos esté configurada y ejecutá 'npx prisma generate'.");
+        throw new Error("Hubo un problema al conectarse. Intentá de nuevo en unos segundos.");
       }
 
       const data = await res.json();

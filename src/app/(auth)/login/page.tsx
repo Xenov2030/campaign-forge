@@ -15,10 +15,9 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Show message if coming from failed demo login
   useEffect(() => {
     if (searchParams.get("demo") === "unavailable") {
-      setError("El usuario demo no existe todavía. Ejecutá 'npx prisma db seed' para crearlo, o creá una cuenta nueva.");
+      setError("El acceso de prueba no está disponible por ahora. Creá una cuenta nueva para empezar.");
     }
   }, [searchParams]);
 
@@ -34,10 +33,9 @@ function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      // Handle non-JSON responses (e.g. server misconfiguration, Prisma not generated)
       const contentType = res.headers.get("content-type") ?? "";
       if (!contentType.includes("application/json")) {
-        throw new Error("El servidor no está disponible. Verificá que la base de datos esté configurada y ejecutá 'npx prisma generate'.");
+        throw new Error("Hubo un problema al conectarse. Intentá de nuevo en unos segundos.");
       }
 
       const data = await res.json();
