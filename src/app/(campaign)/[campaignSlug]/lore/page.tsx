@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
-import { BookOpen, Plus, Tag, Lock, Globe } from "lucide-react";
+import { BookOpen, Plus, Lock, Globe } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 interface PageProps {

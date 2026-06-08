@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Crown, ChevronLeft, Sparkles } from "lucide-react";
+import { Crown, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,9 +42,6 @@ export default function NewCampaignPage() {
     system: "DND5E",
     isPublic: false,
   });
-
-  const selectedTheme = THEMES.find((t) => t.id === form.theme)!;
-  const themeColor = getThemeColors(form.theme);
 
   const handleCreate = async () => {
     if (!form.name.trim()) {

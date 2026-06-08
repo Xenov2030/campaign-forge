@@ -1,0 +1,22 @@
+#!/bin/sh
+# Gate de calidad — corre antes de cada commit.
+# Bloquea el commit si TypeScript o ESLint encuentran errores, para que no se
+# acumule deuda silenciosa (recordá: en Next 16 `next build` ya no corre lint).
+#
+# Para saltarlo puntualmente (usar con criterio): git commit --no-verify
+
+echo "▶ pre-commit: typecheck + lint…"
+
+echo "  • TypeScript (tsc -p tsconfig.hook.json)"
+if ! npx tsc -p tsconfig.hook.json; then
+  echo "✗ TypeScript falló — corregí los errores o usá --no-verify si es intencional."
+  exit 1
+fi
+
+echo "  • ESLint"
+if ! npx eslint .; then
+  echo "✗ ESLint falló — corregí los errores o usá --no-verify si es intencional."
+  exit 1
+fi
+
+echo "✓ pre-commit OK"

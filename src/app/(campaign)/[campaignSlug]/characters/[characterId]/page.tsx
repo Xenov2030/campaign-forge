@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, Sword, Heart, Shield, Zap, Star, User } from "lucide-react";
+import { ChevronLeft, Heart, Shield, Zap, Star, User } from "lucide-react";
 import { formatModifier } from "@/lib/utils";
 
 interface PageProps {

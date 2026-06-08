@@ -18,25 +18,25 @@ function formatTime(dateStr: string) {
 }
 
 function formatDiceRoll(msg: ChatMessageWithUser) {
-  const m = msg.metadata as any;
-  if (m?.rolls?.length) {
-    const rolls = m.rolls as number[];
-    const total = m.total as number;
-    const notation = m.notation as string;
-    const modifier = m.modifier as number;
-    return { rolls, total, notation, modifier };
+  const m = msg.metadata;
+  const rolls = m?.rolls as number[] | undefined;
+  if (rolls?.length) {
+    return {
+      rolls,
+      total: (m.total as number) ?? 0,
+      notation: (m.notation as string) ?? "",
+      modifier: (m.modifier as number) ?? 0,
+    };
   }
   return null;
 }
 
 interface CurrentUser { id: string; displayName: string; avatarUrl: string | null; }
-interface CampaignInfo { id: string; masterId: string; }
 
 export default function ChatPage() {
   const params = useParams<{ campaignSlug: string }>();
   const [textRoomId, setTextRoomId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
-  const [campaignInfo, setCampaignInfo] = useState<CampaignInfo | null>(null);
   const [input, setInput] = useState("");
   const [loadingRoom, setLoadingRoom] = useState(true);
   const [bgImage, setBgImage] = useState<string | null>(null);
@@ -57,22 +57,21 @@ export default function ChatPage() {
         if (!campaignRes.ok || !userRes.ok) return;
         const campaign = await campaignRes.json();
         const user = await userRes.json();
-        setCampaignInfo({ id: campaign.id, masterId: campaign.masterId });
         setCurrentUser(user);
 
         fetch(`/api/gallery?campaignId=${campaign.id}`)
           .then((r) => r.ok ? r.json() : null)
           .then((data) => {
-            const aids = data?.aids ?? [];
-            const publicImg = aids.find((a: any) => a.isPublic && a.imageUrl);
-            if (publicImg) setBgImage(publicImg.imageUrl);
+            const aids: { isPublic?: boolean; imageUrl?: string }[] = data?.aids ?? [];
+            const publicImg = aids.find((a) => a.isPublic && a.imageUrl);
+            if (publicImg?.imageUrl) setBgImage(publicImg.imageUrl);
           })
           .catch(() => {});
 
         const roomsRes = await fetch(`/api/chat/rooms?campaignId=${campaign.id}`);
         if (!roomsRes.ok) return;
-        const rooms = await roomsRes.json();
-        const textRoom = rooms.find((r: any) => r.channelType === "TEXT");
+        const rooms: { id: string; channelType: string }[] = await roomsRes.json();
+        const textRoom = rooms.find((r) => r.channelType === "TEXT");
         if (textRoom) {
           setTextRoomId(textRoom.id);
           setActiveTextRoomId(textRoom.id);
@@ -94,8 +93,6 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const isMaster = currentUser && campaignInfo && currentUser.id === campaignInfo.masterId;
 
   const handleSend = async () => {
     const trimmed = input.trim();

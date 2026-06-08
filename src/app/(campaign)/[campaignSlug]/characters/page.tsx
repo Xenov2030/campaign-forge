@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { Plus, Sword, Heart, Shield, Zap } from "lucide-react";
-import { formatModifier } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string }>;
@@ -133,7 +132,6 @@ function CharacterCard({
   campaignSlug: string;
   isOwn?: boolean;
 }) {
-  const stats = character.stats as Record<string, number> | null;
   const hpPercent = character.maxHitPoints > 0
     ? Math.round((character.hitPoints / character.maxHitPoints) * 100)
     : 100;
@@ -148,6 +146,7 @@ function CharacterCard({
       {/* Header */}
       <div className="h-20 bg-gradient-to-r from-[var(--bg-elevated)] to-[var(--bg-overlay)] flex items-center p-4 relative">
         {character.portraitUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={character.portraitUrl}
             alt={character.name}

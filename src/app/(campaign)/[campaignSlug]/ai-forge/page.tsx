@@ -4,7 +4,7 @@ import { useState, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Users, Skull, Package, Target, Map,
-  FileText, Loader2, Save, Copy, Check, RefreshCw
+  FileText, Copy, Check, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

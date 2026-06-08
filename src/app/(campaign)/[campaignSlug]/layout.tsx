@@ -62,7 +62,7 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
         orderBy: { createdAt: "asc" },
       });
 
-  const serializedVoiceRooms = finalVoiceRooms.map((r: any) => ({
+  const serializedVoiceRooms = finalVoiceRooms.map((r: { id: string; name: string; type: string }) => ({
     id: r.id,
     name: r.name,
     type: r.type as "PUBLIC" | "PRIVATE" | "MASTER_ONLY",

@@ -1,23 +1,44 @@
-import type { MockDB } from "./seed";
+import type { MockDB, MockRecord } from "./seed";
+
+// ── Input shapes (imitan los args de Prisma, sin acoplarse a sus tipos) ──
+
+export type WhereInput = Record<string, unknown>;
+export type IncludeInput = Record<string, unknown>;
+export type SelectInput = Record<string, unknown>;
+export type OrderByInput = Record<string, unknown> | Record<string, unknown>[];
+
+/** Operadores de filtro soportados dentro de un campo del where. */
+type FilterOps = {
+  equals?: unknown;
+  in?: unknown[];
+  notIn?: unknown[];
+  contains?: string;
+  mode?: string;
+  not?: unknown;
+  gte?: number;
+  gt?: number;
+  lte?: number;
+  lt?: number;
+};
 
 // ── Where matching ────────────────────────────────────────────
 
-export function matchWhere(record: any, where: any): boolean {
+export function matchWhere(record: MockRecord, where?: WhereInput): boolean {
   if (!where) return true;
 
   for (const [key, value] of Object.entries(where)) {
     if (key === "AND") {
       if (!Array.isArray(value)) return false;
-      if (!value.every((c) => matchWhere(record, c))) return false;
+      if (!value.every((c) => matchWhere(record, c as WhereInput))) return false;
       continue;
     }
     if (key === "OR") {
       if (!Array.isArray(value)) return false;
-      if (!value.some((c) => matchWhere(record, c))) return false;
+      if (!value.some((c) => matchWhere(record, c as WhereInput))) return false;
       continue;
     }
     if (key === "NOT") {
-      if (matchWhere(record, value)) return false;
+      if (matchWhere(record, value as WhereInput)) return false;
       continue;
     }
 
@@ -25,39 +46,40 @@ export function matchWhere(record: any, where: any): boolean {
 
     // Relation operator: { members: { some: {...} } } — skip, return true
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      const keys = Object.keys(value as object);
+      const op = value as FilterOps;
+      const keys = Object.keys(value);
       if (keys.some((k) => ["some", "every", "none"].includes(k))) continue;
 
-      if ("equals" in (value as any)) {
-        if (fieldVal !== (value as any).equals) return false;
+      if ("equals" in op) {
+        if (fieldVal !== op.equals) return false;
         continue;
       }
-      if ("in" in (value as any)) {
-        if (!((value as any).in as any[]).includes(fieldVal)) return false;
+      if ("in" in op) {
+        if (!(op.in as unknown[]).includes(fieldVal)) return false;
         continue;
       }
-      if ("notIn" in (value as any)) {
-        if (((value as any).notIn as any[]).includes(fieldVal)) return false;
+      if ("notIn" in op) {
+        if ((op.notIn as unknown[]).includes(fieldVal)) return false;
         continue;
       }
-      if ("contains" in (value as any)) {
+      if ("contains" in op) {
         const haystack = String(fieldVal ?? "");
-        const needle = String((value as any).contains);
-        const ci = (value as any).mode === "insensitive";
+        const needle = String(op.contains);
+        const ci = op.mode === "insensitive";
         const match = ci
           ? haystack.toLowerCase().includes(needle.toLowerCase())
           : haystack.includes(needle);
         if (!match) return false;
         continue;
       }
-      if ("not" in (value as any)) {
-        if (fieldVal === (value as any).not) return false;
+      if ("not" in op) {
+        if (fieldVal === op.not) return false;
         continue;
       }
-      if ("gte" in (value as any) && fieldVal < (value as any).gte) return false;
-      if ("gt" in (value as any) && fieldVal <= (value as any).gt) return false;
-      if ("lte" in (value as any) && fieldVal > (value as any).lte) return false;
-      if ("lt" in (value as any) && fieldVal >= (value as any).lt) return false;
+      if ("gte" in op && (fieldVal as number) < (op.gte as number)) return false;
+      if ("gt" in op && (fieldVal as number) <= (op.gt as number)) return false;
+      if ("lte" in op && (fieldVal as number) > (op.lte as number)) return false;
+      if ("lt" in op && (fieldVal as number) >= (op.lt as number)) return false;
       continue;
     }
 
@@ -69,11 +91,11 @@ export function matchWhere(record: any, where: any): boolean {
 
 // ── Compound unique key: { campaignId_userId: { campaignId, userId } } ──
 
-export function matchCompoundWhere(record: any, where: any): boolean {
+export function matchCompoundWhere(record: MockRecord, where: WhereInput): boolean {
   for (const [key, value] of Object.entries(where)) {
     // Detect compound key: key contains _ and value is an object
     if (key.includes("_") && typeof value === "object" && value !== null && !(record[key] !== undefined)) {
-      const allMatch = Object.entries(value as object).every(
+      const allMatch = Object.entries(value as Record<string, unknown>).every(
         ([k, v]) => record[k] === v
       );
       if (!allMatch) return false;
@@ -158,35 +180,43 @@ const RELATIONS: Record<string, Record<string, RelDef>> = {
 
 // ── Include / _count resolution ───────────────────────────────
 
-export function applyInclude(record: any, include: any, storeKey: string, store: MockDB): any {
+type NestedRelOpts = { where?: WhereInput; include?: IncludeInput; select?: SelectInput };
+
+export function applyInclude(
+  record: MockRecord,
+  include: IncludeInput | undefined,
+  storeKey: string,
+  store: MockDB
+): MockRecord {
   if (!include) return record;
-  const result = { ...record };
+  const result: MockRecord = { ...record };
   const rels = RELATIONS[storeKey] ?? {};
 
   for (const [field, opts] of Object.entries(include)) {
     // _count: { select: { members: true, sessions: true } }
     if (field === "_count") {
-      const countSelect = typeof opts === "object" && opts !== null && "select" in (opts as object)
-        ? (opts as any).select
-        : opts;
-      result._count = {};
-      for (const [countField, selected] of Object.entries(countSelect as object)) {
+      const countSelect = (typeof opts === "object" && opts !== null && "select" in opts
+        ? (opts as { select: Record<string, unknown> }).select
+        : opts) as Record<string, unknown>;
+      const counts: Record<string, number> = {};
+      for (const [countField, selected] of Object.entries(countSelect)) {
         if (!selected) continue;
         const rel = rels[countField];
-        result._count[countField] = rel
-          ? (store[rel.storeKey] as any[]).filter((r) => r[rel.foreignKey] === record[rel.localKey]).length
+        counts[countField] = rel
+          ? (store[rel.storeKey] as MockRecord[]).filter((r) => r[rel.foreignKey] === record[rel.localKey]).length
           : 0;
       }
+      result._count = counts;
       continue;
     }
 
     const rel = rels[field];
     if (!rel) continue;
 
-    const all = store[rel.storeKey] as any[];
-    const nested = typeof opts === "object" && opts !== null && ("include" in (opts as object) || "select" in (opts as object))
-      ? opts as any
-      : null;
+    const all = store[rel.storeKey] as MockRecord[];
+    const nested = (typeof opts === "object" && opts !== null && ("include" in opts || "select" in opts)
+      ? opts
+      : null) as NestedRelOpts | null;
 
     if (rel.isMany) {
       let related = all.filter((r) => r[rel.foreignKey] === record[rel.localKey]);
@@ -198,7 +228,7 @@ export function applyInclude(record: any, include: any, storeKey: string, store:
       if (nested?.select) related = related.map((r) => applySelect(r, nested.select));
       result[field] = related;
     } else {
-      let related = all.find((r) => r[rel.foreignKey] === record[rel.localKey]) ?? null;
+      let related: MockRecord | null = all.find((r) => r[rel.foreignKey] === record[rel.localKey]) ?? null;
       if (related && nested?.include) {
         related = applyInclude(related, nested.include, rel.storeKey as string, store);
       }
@@ -212,9 +242,9 @@ export function applyInclude(record: any, include: any, storeKey: string, store:
 
 // ── Select projection ─────────────────────────────────────────
 
-export function applySelect(record: any, select: any): any {
+export function applySelect(record: MockRecord, select?: SelectInput): MockRecord {
   if (!select) return record;
-  const out: any = {};
+  const out: MockRecord = {};
   for (const [k, v] of Object.entries(select)) {
     if (v) out[k] = record[k];
   }
@@ -223,14 +253,14 @@ export function applySelect(record: any, select: any): any {
 
 // ── OrderBy ───────────────────────────────────────────────────
 
-export function applyOrderBy(records: any[], orderBy: any): any[] {
+export function applyOrderBy(records: MockRecord[], orderBy?: OrderByInput): MockRecord[] {
   if (!orderBy) return records;
   const orders = Array.isArray(orderBy) ? orderBy : [orderBy];
   return [...records].sort((a, b) => {
     for (const order of orders) {
       for (const [field, dir] of Object.entries(order)) {
-        const av = a[field];
-        const bv = b[field];
+        const av = a[field] as number | string;
+        const bv = b[field] as number | string;
         const cmp = av < bv ? -1 : av > bv ? 1 : 0;
         if (cmp !== 0) return dir === "desc" ? -cmp : cmp;
       }

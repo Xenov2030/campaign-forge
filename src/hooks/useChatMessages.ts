@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import type { Channel } from "pusher-js";
 import { getPusherClient } from "@/lib/pusher/client";
 
 export interface ChatMessageWithUser {
@@ -24,7 +25,7 @@ export function useChatMessages(roomId: string | null) {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<Channel | null>(null);
 
   const fetchHistory = useCallback(async (id: string) => {
     setLoading(true);
@@ -43,6 +44,9 @@ export function useChatMessages(roomId: string | null) {
 
   useEffect(() => {
     if (!roomId) {
+      // Reset intencional al salir de una sala: sincroniza el estado con el cambio
+      // de la dependencia externa (roomId). No es derivable — messages es estado de fetch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages([]);
       return;
     }

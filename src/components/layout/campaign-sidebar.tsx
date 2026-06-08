@@ -38,7 +38,6 @@ import { cn } from "@/lib/utils";
 import { useCampaignStore } from "@/store/campaign-store";
 import { useNotificationStore } from "@/store/notification-store";
 import { useVoiceChannel } from "@/hooks/useVoiceChannel";
-import { APP_VERSION } from "@/lib/version";
 
 interface VoiceRoom {
   id: string;
@@ -139,18 +138,6 @@ export function CampaignSidebar({
       icon: <Users className="h-4 w-4" />,
     },
     {
-      label: "Monstruos",
-      href: `${base}/monsters`,
-      icon: <Skull className="h-4 w-4" />,
-      disabled: true,
-    },
-    {
-      label: "Mundo",
-      href: `${base}/world`,
-      icon: <Map className="h-4 w-4" />,
-      disabled: true,
-    },
-    {
       label: "Quests",
       href: `${base}/quests`,
       icon: <Target className="h-4 w-4" />,
@@ -163,27 +150,16 @@ export function CampaignSidebar({
       disabled: true,
     },
     {
-      label: "Notas",
-      href: `${base}/notes`,
-      icon: <Scroll className="h-4 w-4" />,
+      label: "Monstruos",
+      href: `${base}/monsters`,
+      icon: <Skull className="h-4 w-4" />,
       disabled: true,
     },
     {
-      label: "Sesiones",
-      href: `${base}/sessions`,
-      icon: <Calendar className="h-4 w-4" />,
-    },
-    {
-      label: "Lore / Wiki",
-      href: `${base}/lore`,
-      icon: <BookOpen className="h-4 w-4" />,
-    },
-    // Master only
-    {
-      label: "Galería",
-      href: `${base}/gallery`,
-      icon: <ImageIcon className="h-4 w-4" />,
-      isMasterOnly: true,
+      label: "Mundo",
+      href: `${base}/world`,
+      icon: <Map className="h-4 w-4" />,
+      disabled: true,
     },
     {
       label: "Mapas",
@@ -193,10 +169,34 @@ export function CampaignSidebar({
       disabled: true,
     },
     {
+      label: "Lore / Wiki",
+      href: `${base}/lore`,
+      icon: <BookOpen className="h-4 w-4" />,
+    },
+    {
+      label: "Notas",
+      href: `${base}/notes`,
+      icon: <Scroll className="h-4 w-4" />,
+      disabled: true,
+    },
+    // Master only
+    {
+      label: "Galería",
+      href: `${base}/gallery`,
+      icon: <ImageIcon className="h-4 w-4" />,
+      isMasterOnly: true,
+    },
+    {
       label: "IA Forge",
       href: `${base}/ai-forge`,
       icon: <Sparkles className="h-4 w-4" />,
       isMasterOnly: true,
+    },
+    // Sesiones al final
+    {
+      label: "Sesiones",
+      href: `${base}/sessions`,
+      icon: <Calendar className="h-4 w-4" />,
     },
     // Communication divider + chat
     { label: "", href: "", icon: null, divider: true },
@@ -226,7 +226,7 @@ export function CampaignSidebar({
     if (activeVoiceChannelId === channel.id) {
       await disconnect();
     } else {
-      await connect(channel.id, channel.name);
+      await connect(channel.id);
     }
   };
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { ImageIcon, Plus, X, Loader2, Trash2, ZoomIn, Eye, EyeOff } from "lucide-react";
+import { ImageIcon, Plus, X, Loader2, Trash2, ZoomIn, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -50,7 +50,6 @@ export default function GalleryPage() {
   const slug = params.campaignSlug as string;
 
   const [campaignId, setCampaignId] = useState<string | null>(null);
-  const [isMaster, setIsMaster] = useState(false);
   const [aids, setAids] = useState<VisualAid[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -66,19 +65,12 @@ export default function GalleryPage() {
     fetch(`/api/campaigns/by-slug/${slug}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.id) {
-          setCampaignId(d.id);
-          // Check if user is master by comparing with stored session
-          fetch("/api/auth/me").then((r) => r.json()).then((u) => {
-            setIsMaster(d.masterId === u?.id);
-          }).catch(() => {});
-        }
+        if (d.id) setCampaignId(d.id);
       });
   }, [slug]);
 
   const loadAids = useCallback(async () => {
     if (!campaignId) return;
-    setLoading(true);
     try {
       const r = await fetch(`/api/gallery?campaignId=${campaignId}`);
       const d = await r.json();

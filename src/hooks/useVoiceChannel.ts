@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import type { Room, RemoteParticipant, RemoteTrackPublication, RemoteAudioTrack } from "livekit-client";
 import { useCampaignStore } from "@/store/campaign-store";
 
 export interface VoiceParticipant {
@@ -20,10 +21,10 @@ export function useVoiceChannel() {
 
   const { voiceMuted, setVoiceMuted, voiceDeafened, setVoiceDeafened, setActiveVoiceChannelId, setVoiceConnected } = useCampaignStore();
 
-  const roomRef = useRef<any>(null);
+  const roomRef = useRef<Room | null>(null);
   const volumesRef = useRef<Map<string, number>>(new Map()); // identity → volume
 
-  const snapshotParticipants = useCallback((room: any) => {
+  const snapshotParticipants = useCallback((room: Room) => {
     const list: VoiceParticipant[] = [];
     const local = room.localParticipant;
     if (local) {
@@ -36,7 +37,7 @@ export function useVoiceChannel() {
         volume: 1,
       });
     }
-    room.remoteParticipants?.forEach((p: any) => {
+    room.remoteParticipants?.forEach((p: RemoteParticipant) => {
       list.push({
         sid: p.sid,
         identity: p.identity,
@@ -49,7 +50,7 @@ export function useVoiceChannel() {
     setParticipants(list);
   }, []);
 
-  const connect = useCallback(async (channelId: string, channelName: string) => {
+  const connect = useCallback(async (channelId: string) => {
     if (connecting) return;
     // Disconnect from previous room first
     if (roomRef.current) {
@@ -129,9 +130,10 @@ export function useVoiceChannel() {
     const next = !voiceDeafened;
     setVoiceDeafened(next);
     // Set volume on all remote audio tracks
-    roomRef.current.remoteParticipants?.forEach((p: any) => {
-      p.audioTrackPublications?.forEach((pub: any) => {
-        if (pub.track) pub.track.setVolume(next ? 0 : (volumesRef.current.get(p.identity) ?? 1));
+    roomRef.current.remoteParticipants?.forEach((p: RemoteParticipant) => {
+      p.audioTrackPublications?.forEach((pub: RemoteTrackPublication) => {
+        const track = pub.track as RemoteAudioTrack | undefined;
+        if (track) track.setVolume(next ? 0 : (volumesRef.current.get(p.identity) ?? 1));
       });
     });
     // Also mute mic when deafening
@@ -146,8 +148,9 @@ export function useVoiceChannel() {
     volumesRef.current.set(identity, volume);
     const participant = roomRef.current.remoteParticipants?.get(identity);
     if (participant) {
-      participant.audioTrackPublications?.forEach((pub: any) => {
-        if (pub.track) pub.track.setVolume(voiceDeafened ? 0 : volume);
+      participant.audioTrackPublications?.forEach((pub: RemoteTrackPublication) => {
+        const track = pub.track as RemoteAudioTrack | undefined;
+        if (track) track.setVolume(voiceDeafened ? 0 : volume);
       });
     }
     setParticipants((prev) =>

@@ -48,9 +48,8 @@ export async function POST(request: NextRequest) {
       description: campaign.description ?? undefined,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
-    let model = "gemini-2.0-flash";
+    let result: unknown;
+    const model = "gemini-2.0-flash";
 
     switch (type) {
       case "NPC":

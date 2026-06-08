@@ -5,30 +5,33 @@ export const MOCK_PLAYER_ID = "mock-user-player-01";
 export const MOCK_CAMPAIGN_ID = "mock-campaign-strahd-01";
 export const MOCK_CAMPAIGN_SLUG = "la-maldicion-de-strahd";
 
+/** Un registro genérico del mock: imita una fila de Prisma sin acoplarse a sus tipos. */
+export type MockRecord = Record<string, unknown>;
+
 export interface MockDB {
-  users: any[];
-  campaigns: any[];
-  campaignMembers: any[];
-  characters: any[];
-  inventoryItems: any[];
-  characterSpells: any[];
-  characterRelationships: any[];
-  npcs: any[];
-  monsters: any[];
-  locations: any[];
-  factions: any[];
-  items: any[];
-  quests: any[];
-  sessions: any[];
-  notes: any[];
-  chatRooms: any[];
-  chatMessages: any[];
-  diceRolls: any[];
-  loreEntries: any[];
-  timelineEvents: any[];
-  gameMaps: any[];
-  visualAids: any[];
-  generatedContent: any[];
+  users: MockRecord[];
+  campaigns: MockRecord[];
+  campaignMembers: MockRecord[];
+  characters: MockRecord[];
+  inventoryItems: MockRecord[];
+  characterSpells: MockRecord[];
+  characterRelationships: MockRecord[];
+  npcs: MockRecord[];
+  monsters: MockRecord[];
+  locations: MockRecord[];
+  factions: MockRecord[];
+  items: MockRecord[];
+  quests: MockRecord[];
+  sessions: MockRecord[];
+  notes: MockRecord[];
+  chatRooms: MockRecord[];
+  chatMessages: MockRecord[];
+  diceRolls: MockRecord[];
+  loreEntries: MockRecord[];
+  timelineEvents: MockRecord[];
+  gameMaps: MockRecord[];
+  visualAids: MockRecord[];
+  generatedContent: MockRecord[];
 }
 
 export const seedData: MockDB = {

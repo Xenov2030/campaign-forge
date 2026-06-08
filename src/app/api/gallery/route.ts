@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ aids });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
@@ -87,7 +87,7 @@ export async function DELETE(request: NextRequest) {
 
     await prisma.visualAid.delete({ where: { id } });
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

@@ -3,6 +3,8 @@ import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { getPusherServer, chatChannel } from "@/lib/pusher/server";
 
+type CampaignAccess = { masterId: string; members: { userId: string }[] };
+
 // GET /api/chat/[roomId]/messages?limit=50&before=cursor
 export async function GET(
   request: NextRequest,
@@ -23,9 +25,9 @@ export async function GET(
     });
     if (!room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
 
-    const campaign = room.campaign as any;
+    const campaign = room.campaign as CampaignAccess;
     const isMaster = campaign.masterId === user.id;
-    const isMember = isMaster || campaign.members.some((m: { userId: string }) => m.userId === user.id);
+    const isMember = isMaster || campaign.members.some((m) => m.userId === user.id);
     if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     if (room.type === "MASTER_ONLY" && !isMaster) {
@@ -47,7 +49,9 @@ export async function GET(
     // Filter out master-only dice rolls for non-master users
     const filtered = isMaster
       ? messages.reverse()
-      : messages.filter((m: any) => !(m.metadata as any)?.masterOnly).reverse();
+      : messages.filter(
+          (m: { metadata?: Record<string, unknown> | null }) => !m.metadata?.masterOnly
+        ).reverse();
     return NextResponse.json(filtered);
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -74,9 +78,9 @@ export async function POST(
     });
     if (!room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
 
-    const campaign = room.campaign as any;
+    const campaign = room.campaign as CampaignAccess;
     const isMaster = campaign.masterId === user.id;
-    const isMember = isMaster || campaign.members.some((m: { userId: string }) => m.userId === user.id);
+    const isMember = isMaster || campaign.members.some((m) => m.userId === user.id);
     if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     if (room.type === "MASTER_ONLY" && !isMaster) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });

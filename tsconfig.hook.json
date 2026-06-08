@@ -1,0 +1,5 @@
+{
+  "//": "tsconfig acotado para el pre-commit hook: igual al base pero sin chequear .next (output generado/volátil).",
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", ".next"]
+}

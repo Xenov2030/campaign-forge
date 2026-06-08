@@ -4,8 +4,7 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import {
   Sword, Users, Calendar, Target, BookOpen,
-  Map, Skull, Package, Clock, Crown, Sparkles,
-  Plus, MessageSquare
+  Map, Skull, Package, Crown, Sparkles,
 } from "lucide-react";
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
 

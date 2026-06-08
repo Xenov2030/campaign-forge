@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
-import { Plus, Calendar, Clock, FileText, CheckCircle, Circle } from "lucide-react";
+import { Plus, Calendar, Clock, CheckCircle, Circle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 interface PageProps {

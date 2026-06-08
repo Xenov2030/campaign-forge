@@ -3,8 +3,6 @@ import Link from "next/link";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { Plus, Users, Eye, EyeOff, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { formatRelativeTime } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string }>;
@@ -157,7 +155,6 @@ export default async function NPCsPage({ params }: PageProps) {
 function NPCCard({
   npc,
   campaignSlug,
-  isMaster,
   isHidden,
 }: {
   npc: Awaited<ReturnType<typeof prisma.nPC.findMany>>[0];
@@ -173,6 +170,7 @@ function NPCCard({
       {/* Portrait */}
       <div className="h-24 bg-gradient-to-br from-[var(--bg-elevated)] to-[var(--bg-overlay)] flex items-center justify-center relative overflow-hidden">
         {npc.portraitUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={npc.portraitUrl} alt={npc.name} className="w-full h-full object-cover" />
         ) : (
           <div className="h-14 w-14 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center">

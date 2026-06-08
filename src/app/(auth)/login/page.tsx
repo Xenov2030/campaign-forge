@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Crown, Eye, EyeOff, Sword } from "lucide-react";
@@ -13,13 +13,11 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (searchParams.get("demo") === "unavailable") {
-      setError("El acceso de prueba no está disponible por ahora. Creá una cuenta nueva para empezar.");
-    }
-  }, [searchParams]);
+  const [error, setError] = useState<string | null>(
+    searchParams.get("demo") === "unavailable"
+      ? "El acceso de prueba no está disponible por ahora. Creá una cuenta nueva para empezar."
+      : null
+  );
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

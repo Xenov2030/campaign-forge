@@ -45,18 +45,6 @@ async function getUserCampaigns(userId: string) {
   return { masteredCampaigns, playerCampaigns };
 }
 
-const themeLabels: Record<string, string> = {
-  FANTASY: "Fantasía Medieval",
-  HORROR: "Horror Lovecraftiano",
-  SCIFI: "Ciencia Ficción",
-  GRIMDARK: "Grimdark",
-  STEAMPUNK: "Steampunk",
-  WESTERN: "Western",
-  MODERN: "Contemporáneo",
-  POSTAPOCALYPTIC: "Post-Apocalíptico",
-  CUSTOM: "Personalizado",
-};
-
 const systemLabels: Record<string, string> = {
   DND5E: "D&D 5e",
   PATHFINDER2E: "Pathfinder 2e",

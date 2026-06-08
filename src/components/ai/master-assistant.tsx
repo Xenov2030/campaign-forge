@@ -22,7 +22,6 @@ interface MasterAssistantProps {
 export function MasterAssistant({
   campaignId,
   campaignName,
-  campaignTheme,
 }: MasterAssistantProps) {
   const { aiAssistantOpen, setAIAssistantOpen } = useCampaignStore();
   const [messages, setMessages] = useState<Message[]>([
