@@ -85,26 +85,6 @@ export default async function DashboardPage() {
         </h1>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
-        {[
-          { label: "Campañas como máster", value: masteredCampaigns.length, icon: <Crown className="h-4 w-4" />, color: "var(--accent-gold)" },
-          { label: "Campañas como jugador", value: playerCampaigns.length, icon: <Sword className="h-4 w-4" />, color: "#60a5fa" },
-          { label: "Total sesiones", value: masteredCampaigns.reduce((acc: number, c: (typeof masteredCampaigns)[number]) => acc + c._count.sessions, 0), icon: <Calendar className="h-4 w-4" />, color: "#34d399" },
-          { label: "Compañeros de aventura", value: masteredCampaigns.reduce((acc: number, c: (typeof masteredCampaigns)[number]) => acc + c._count.members, 0), icon: <Users className="h-4 w-4" />, color: "#a855f7" },
-        ].map((stat, i) => (
-          <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-3 md:p-4 hover:border-[var(--border-default)] hover:bg-[var(--bg-elevated)] transition-all duration-200">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span style={{ color: stat.color }} aria-hidden="true">{stat.icon}</span>
-              <span className="text-[11px] text-[var(--text-muted)] uppercase tracking-wider leading-tight">{stat.label}</span>
-            </div>
-            <p className="font-display text-xl md:text-2xl font-bold" style={{ color: stat.color }}>
-              {stat.value}
-            </p>
-          </div>
-        ))}
-      </div>
-
       {/* My Campaigns */}
       {masteredCampaigns.length > 0 && (
         <section className="mb-10">
@@ -264,6 +244,24 @@ export default async function DashboardPage() {
               Unirse con código
             </Link>
           </div>
+        </div>
+      )}
+
+      {/* Compact stats strip — below campaigns */}
+      {(masteredCampaigns.length > 0 || playerCampaigns.length > 0) && (
+        <div className="flex flex-wrap gap-x-6 gap-y-2 pt-6 mt-2 border-t border-[var(--border-subtle)]">
+          {[
+            { label: "campañas como máster", value: masteredCampaigns.length, icon: <Crown className="h-3.5 w-3.5" />, color: "var(--accent-gold)" },
+            { label: "como jugador", value: playerCampaigns.length, icon: <Sword className="h-3.5 w-3.5" />, color: "#60a5fa" },
+            { label: "sesiones", value: masteredCampaigns.reduce((acc: number, c: (typeof masteredCampaigns)[number]) => acc + c._count.sessions, 0), icon: <Calendar className="h-3.5 w-3.5" />, color: "#34d399" },
+            { label: "aventureros", value: masteredCampaigns.reduce((acc: number, c: (typeof masteredCampaigns)[number]) => acc + c._count.members, 0), icon: <Users className="h-3.5 w-3.5" />, color: "#a855f7" },
+          ].map((stat, i) => (
+            <span key={i} className="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
+              <span style={{ color: stat.color }} aria-hidden="true">{stat.icon}</span>
+              <span className="font-semibold" style={{ color: stat.color }}>{stat.value}</span>
+              <span>{stat.label}</span>
+            </span>
+          ))}
         </div>
       )}
 

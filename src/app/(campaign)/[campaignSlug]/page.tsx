@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Sword, Users, Calendar, Target, BookOpen,
   Map, Skull, Package, Clock, Crown, Sparkles,
-  Plus, ArrowRight, MessageSquare
+  Plus, MessageSquare
 } from "lucide-react";
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
 
@@ -136,22 +136,20 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
         </div>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        {sections.slice(0, 4).map((section) => (
+      {/* Compact stats row */}
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-6">
+        {sections.map((section) => (
           <Link
             key={section.label}
             href={section.href}
-            className="group bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 hover:border-[var(--border-default)] transition-all"
+            className="group flex items-center gap-2 px-3 py-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-md)] hover:border-[var(--border-default)] transition-all min-w-0"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span style={{ color: section.color }}>{section.icon}</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] transition-colors" />
+            <span style={{ color: section.color }} className="[&>svg]:h-3.5 [&>svg]:w-3.5 shrink-0">{section.icon}</span>
+            <div className="min-w-0 hidden sm:block">
+              <p className="font-bold text-sm leading-none" style={{ color: section.color }}>{section.count}</p>
+              <p className="text-[10px] text-[var(--text-muted)] truncate mt-0.5">{section.label}</p>
             </div>
-            <p className="font-display text-2xl font-bold" style={{ color: section.color }}>
-              {section.count}
-            </p>
-            <p className="text-xs text-[var(--text-muted)] mt-0.5">{section.label}</p>
+            <p className="font-bold text-sm sm:hidden" style={{ color: section.color }}>{section.count}</p>
           </Link>
         ))}
       </div>
@@ -279,25 +277,6 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
             </div>
           )}
 
-          {/* Quick sections */}
-          <div className="space-y-2">
-            {sections.slice(4).map((section) => (
-              <Link
-                key={section.label}
-                href={section.href}
-                className="flex items-center justify-between p-3 rounded-[var(--radius-md)] bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-default)] transition-all group"
-              >
-                <div className="flex items-center gap-2">
-                  <span style={{ color: section.color }}>{section.icon}</span>
-                  <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{section.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[var(--text-muted)]">{section.count}</span>
-                  <ArrowRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
     </div>
