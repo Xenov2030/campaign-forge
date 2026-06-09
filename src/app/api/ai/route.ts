@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
-import { AI_ENABLED } from "@/lib/ai/openai";
+import { AI_ENABLED } from "@/lib/ai/gemini";
 import {
   generateNPC,
   generateMonster,

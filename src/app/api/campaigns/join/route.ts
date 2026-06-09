@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: "pending", campaignName: campaign.name });
   } catch (error) {
     console.error("Join request error:", error);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Error interno" },
+      { status: 500 }
+    );
   }
 }

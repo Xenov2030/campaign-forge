@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Users, Sparkles, Check } from "lucide-react";
+import { ChevronLeft, Users, UserPlus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -40,24 +40,29 @@ export default function JoinCampaignPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-6 py-10">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
       <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6">
         <ChevronLeft className="h-4 w-4" />
         Volver al dashboard
       </Link>
 
-      <div className="text-center mb-8">
+      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      {/* Panel informativo */}
+      <div className="text-center lg:text-left">
         <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#60a5fa]/10 border border-[#60a5fa]/20 mb-4">
           <Users className="h-8 w-8 text-[#60a5fa]" />
         </div>
-        <h1 className="font-display text-3xl font-black text-[var(--text-primary)] mb-2">
+        <h1 className="font-display text-3xl lg:text-4xl font-black text-[var(--text-primary)] mb-2">
           Unirse a campaña
         </h1>
-        <p className="text-[var(--text-secondary)]">
-          Introduce el código de invitación que te dio el máster
+        <p className="text-[var(--text-secondary)] lg:text-lg max-w-md mx-auto lg:mx-0">
+          Introduce el código de invitación que te dio el máster. Tu solicitud le llegará y,
+          cuando la acepte, la campaña aparecerá en tu dashboard.
         </p>
       </div>
 
+      {/* Panel del formulario */}
+      <div className="w-full max-w-md mx-auto lg:mx-0">
       {sent ? (
         <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 shadow-[var(--shadow-lg)] text-center">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent-nature)]/10 border border-[var(--accent-nature)]/30 mb-3">
@@ -100,12 +105,14 @@ export default function JoinCampaignPage() {
           )}
 
           <Button type="submit" loading={loading} className="w-full" size="lg">
-            <Sparkles className="h-4 w-4" />
+            <UserPlus className="h-4 w-4" />
             Solicitar unirse
           </Button>
         </form>
       </div>
       )}
+      </div>
+      </div>
     </div>
   );
 }

@@ -7,10 +7,24 @@ import { toast } from "sonner";
 import { Save, ArrowLeft, Globe, Lock, Trash2, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ImageCropUpload } from "@/components/ui/image-crop-upload";
+import { getThemeColors } from "@/lib/utils";
+
+const THEMES = [
+  { id: "FANTASY", label: "Fantasía Medieval", emoji: "⚔️" },
+  { id: "HORROR", label: "Horror Lovecraftiano", emoji: "🐙" },
+  { id: "SCIFI", label: "Ciencia Ficción", emoji: "🚀" },
+  { id: "GRIMDARK", label: "Grimdark", emoji: "💀" },
+  { id: "STEAMPUNK", label: "Steampunk", emoji: "⚙️" },
+  { id: "WESTERN", label: "Western", emoji: "🤠" },
+  { id: "MODERN", label: "Contemporáneo", emoji: "🌆" },
+  { id: "POSTAPOCALYPTIC", label: "Post-Apocalíptico", emoji: "☢️" },
+  { id: "CUSTOM", label: "Personalizado", emoji: "✨" },
+];
 
 interface Props {
   slug: string;
-  initial: { name: string; description: string; isPublic: boolean };
+  initial: { name: string; description: string; isPublic: boolean; bannerImage: string; theme: string };
 }
 
 export function CampaignSettingsForm({ slug, initial }: Props) {
@@ -18,12 +32,16 @@ export function CampaignSettingsForm({ slug, initial }: Props) {
   const [name, setName] = useState(initial.name);
   const [description, setDescription] = useState(initial.description);
   const [isPublic, setIsPublic] = useState(initial.isPublic);
+  const [bannerImage, setBannerImage] = useState(initial.bannerImage ?? "");
+  const [theme, setTheme] = useState(initial.theme);
   const [saving, setSaving] = useState(false);
 
   const dirty =
     name !== initial.name ||
     description !== initial.description ||
-    isPublic !== initial.isPublic;
+    isPublic !== initial.isPublic ||
+    bannerImage !== initial.bannerImage ||
+    theme !== initial.theme;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +54,7 @@ export function CampaignSettingsForm({ slug, initial }: Props) {
       const res = await fetch(`/api/campaigns/by-slug/${slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description, isPublic }),
+        body: JSON.stringify({ name: name.trim(), description, isPublic, bannerImage, theme }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error al guardar");
@@ -69,6 +87,20 @@ export function CampaignSettingsForm({ slug, initial }: Props) {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+            Banner de la campaña
+          </label>
+          <ImageCropUpload
+            value={bannerImage}
+            onChange={setBannerImage}
+            folder="campaign-banners"
+            label="Subir banner"
+            aspect="banner"
+            className="max-w-md"
+          />
+        </div>
+
         <Input
           label="Nombre de la campaña"
           value={name}
@@ -88,6 +120,37 @@ export function CampaignSettingsForm({ slug, initial }: Props) {
             rows={4}
             className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 py-2 rounded-[var(--radius-md)] text-sm placeholder:text-[var(--text-muted)] hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors resize-none"
           />
+        </div>
+
+        {/* Ambientación / tema */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+            Ambientación
+          </label>
+          <div role="radiogroup" aria-label="Ambientación de la campaña" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {THEMES.map((t) => {
+              const tc = getThemeColors(t.id);
+              const selected = theme === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setTheme(t.id)}
+                  className={`flex items-center gap-2 p-3 rounded-[var(--radius-md)] text-sm font-medium border transition-all text-left ${
+                    selected
+                      ? "border-current"
+                      : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:text-[var(--text-primary)]"
+                  }`}
+                  style={selected ? { borderColor: `${tc.primary}50`, color: tc.primary, background: `${tc.primary}10` } : {}}
+                >
+                  <span className="text-lg" aria-hidden="true">{t.emoji}</span>
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Visibilidad */}

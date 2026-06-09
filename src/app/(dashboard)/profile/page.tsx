@@ -3,60 +3,102 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Lock, Save, Loader2, ChevronLeft, Check } from "lucide-react";
+import { toast } from "sonner";
+import { User, Lock, Save, Loader2, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageCropUpload } from "@/components/ui/image-crop-upload";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [aliasForm, setAliasForm] = useState({ displayName: "" });
+  const [account, setAccount] = useState({ displayName: "", email: "" });
+  const [initial, setInitial] = useState({ displayName: "", email: "" });
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [passwordForm, setPasswordForm] = useState({ current: "", next: "", confirm: "" });
-  const [aliasSaving, setAliasSaving] = useState(false);
+  const [accountSaving, setAccountSaving] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
-  const [aliasMsg, setAliasMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const [passwordMsg, setPasswordMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Prefill con el nombre actual.
+  // Prefill con los datos actuales.
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((u) => {
-        if (u?.displayName) setAliasForm({ displayName: u.displayName });
+        if (!u) return;
+        const next = { displayName: u.displayName ?? "", email: u.email ?? "" };
+        setAccount(next);
+        setInitial(next);
+        setAvatarUrl(u.avatarUrl ?? "");
       })
       .catch(() => {});
   }, []);
 
-  const handleAlias = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAliasSaving(true);
-    setAliasMsg(null);
+  const accountDirty =
+    account.displayName !== initial.displayName || account.email !== initial.email;
+
+  // El avatar se guarda al instante al recortar/subir.
+  const handleAvatar = async (url: string) => {
+    setAvatarUrl(url);
     try {
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "display_name", displayName: aliasForm.displayName }),
+        body: JSON.stringify({ action: "avatar", avatarUrl: url }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setAliasMsg({ ok: true, text: `Nombre visible actualizado a "${data.displayName}"` });
-      setAliasForm({ displayName: data.displayName });
+      toast.success("Foto de perfil actualizada");
       router.refresh();
     } catch (err) {
-      setAliasMsg({ ok: false, text: err instanceof Error ? err.message : "Error al guardar" });
+      toast.error(err instanceof Error ? err.message : "Error al guardar la foto");
+    }
+  };
+
+  const handleAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!account.displayName.trim()) {
+      toast.error("El nombre visible no puede estar vacío");
+      return;
+    }
+    setAccountSaving(true);
+    try {
+      // Email primero: puede fallar por formato o por estar en uso.
+      if (account.email.trim().toLowerCase() !== initial.email.toLowerCase()) {
+        const res = await fetch("/api/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "email", email: account.email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+      }
+      if (account.displayName.trim() !== initial.displayName) {
+        const res = await fetch("/api/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "display_name", displayName: account.displayName }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+      }
+      setInitial({ displayName: account.displayName.trim(), email: account.email.trim().toLowerCase() });
+      setAccount((a) => ({ displayName: a.displayName.trim(), email: a.email.trim().toLowerCase() }));
+      toast.success("Datos de cuenta actualizados");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al guardar");
     } finally {
-      setAliasSaving(false);
+      setAccountSaving(false);
     }
   };
 
   const handlePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPasswordMsg(null);
     if (passwordForm.next !== passwordForm.confirm) {
-      setPasswordMsg({ ok: false, text: "Las contraseñas nuevas no coinciden" });
+      toast.error("Las contraseñas nuevas no coinciden");
       return;
     }
     if (passwordForm.next.length < 8) {
-      setPasswordMsg({ ok: false, text: "La nueva contraseña debe tener al menos 8 caracteres" });
+      toast.error("La nueva contraseña debe tener al menos 8 caracteres");
       return;
     }
     setPasswordSaving(true);
@@ -68,62 +110,74 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setPasswordMsg({ ok: true, text: "Contraseña actualizada correctamente" });
+      toast.success("Contraseña actualizada correctamente");
       setPasswordForm({ current: "", next: "", confirm: "" });
     } catch (err) {
-      setPasswordMsg({ ok: false, text: err instanceof Error ? err.message : "Error al cambiar contraseña" });
+      toast.error(err instanceof Error ? err.message : "Error al cambiar contraseña");
     } finally {
       setPasswordSaving(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-10">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-5"
       >
         <ChevronLeft className="h-4 w-4" />
         Volver al dashboard
       </Link>
 
-      <h1 className="font-display text-3xl font-black text-[var(--text-primary)] mb-8">Mi perfil</h1>
+      <h1 className="font-display text-3xl font-black text-[var(--text-primary)] mb-6">Mi perfil</h1>
 
-      {/* Alias / display name */}
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 mb-5">
+      <div className="grid gap-5 md:grid-cols-2 md:items-start">
+      {/* Cuenta: avatar + nombre + email */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <div className="flex items-center gap-2 mb-4">
           <User className="h-4 w-4 text-[var(--accent-gold)]" />
-          <h2 className="font-semibold text-[var(--text-primary)]">Nombre visible</h2>
+          <h2 className="font-semibold text-[var(--text-primary)]">Cuenta</h2>
         </div>
-        <p className="text-sm text-[var(--text-muted)] mb-4">
-          Es el alias que verán el resto de jugadores en la plataforma.
-        </p>
-        <form onSubmit={handleAlias} className="space-y-4">
-          <Input
-            label="Nuevo nombre visible"
-            value={aliasForm.displayName}
-            onChange={(e) => setAliasForm({ displayName: e.target.value })}
-            placeholder="El Gran Máster, NicoR, Arquero de Sombras…"
-            required
-          />
-          {aliasMsg && (
-            <div className={`flex items-center gap-2 px-4 py-3 rounded-[var(--radius-md)] text-sm ${
-              aliasMsg.ok
-                ? "bg-green-900/20 border border-green-800/50 text-green-400"
-                : "bg-red-900/20 border border-red-800/50 text-red-400"
-            }`}>
-              {aliasMsg.ok && <Check className="h-4 w-4 shrink-0" />}
-              {aliasMsg.text}
-            </div>
-          )}
-          <Button type="submit" disabled={aliasSaving}>
-            {aliasSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Guardar nombre
-          </Button>
+        <form onSubmit={handleAccount} className="flex gap-5">
+          {/* Avatar */}
+          <div className="shrink-0 w-24">
+            <ImageCropUpload
+              value={avatarUrl}
+              onChange={handleAvatar}
+              folder="avatars"
+              label="Foto"
+              aspect="square"
+              className="rounded-full overflow-hidden [&>button]:rounded-full"
+            />
+            <p className="text-[10px] text-[var(--text-muted)] text-center mt-1.5">Toca para cambiar</p>
+          </div>
+
+          {/* Nombre + email */}
+          <div className="flex-1 min-w-0 space-y-3">
+            <Input
+              label="Nombre visible"
+              value={account.displayName}
+              onChange={(e) => setAccount((a) => ({ ...a, displayName: e.target.value }))}
+              placeholder="El Gran Máster, NicoR…"
+              required
+            />
+            <Input
+              label="Correo electrónico"
+              type="email"
+              value={account.email}
+              onChange={(e) => setAccount((a) => ({ ...a, email: e.target.value }))}
+              placeholder="tu@correo.com"
+              required
+            />
+            <Button type="submit" disabled={accountSaving || !accountDirty}>
+              {accountSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Guardar cambios
+            </Button>
+          </div>
         </form>
       </div>
 
-      {/* Password */}
+      {/* Contraseña */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <div className="flex items-center gap-2 mb-4">
           <Lock className="h-4 w-4 text-[var(--accent-arcane)]" />
@@ -154,21 +208,12 @@ export default function ProfilePage() {
             placeholder="Repite la nueva contraseña"
             required
           />
-          {passwordMsg && (
-            <div className={`flex items-center gap-2 px-4 py-3 rounded-[var(--radius-md)] text-sm ${
-              passwordMsg.ok
-                ? "bg-green-900/20 border border-green-800/50 text-green-400"
-                : "bg-red-900/20 border border-red-800/50 text-red-400"
-            }`}>
-              {passwordMsg.ok && <Check className="h-4 w-4 shrink-0" />}
-              {passwordMsg.text}
-            </div>
-          )}
           <Button type="submit" disabled={passwordSaving} variant="arcane">
             {passwordSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
             Cambiar contraseña
           </Button>
         </form>
+      </div>
       </div>
     </div>
   );

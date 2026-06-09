@@ -1,4 +1,4 @@
-import { getGenAI } from "./openai";
+import { getGenAI } from "./gemini";
 import { CampaignTheme, GameSystem } from "@prisma/client";
 
 const MODEL = "gemini-2.0-flash";

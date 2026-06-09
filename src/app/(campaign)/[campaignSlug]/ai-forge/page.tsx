@@ -271,7 +271,7 @@ function AIForgeInner({ params }: { params: Promise<{ campaignSlug: string }> })
           </div>
           <div>
             <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">IA Forge</h1>
-            <p className="text-sm text-[var(--text-muted)]">Genera contenido narrativo con GPT-4o</p>
+            <p className="text-sm text-[var(--text-muted)]">Genera contenido narrativo con Gemini</p>
           </div>
         </div>
       </div>
@@ -369,7 +369,7 @@ function AIForgeInner({ params }: { params: Promise<{ campaignSlug: string }> })
                   </div>
                 </div>
                 <p className="text-[var(--text-muted)] text-sm">Forjando {selectedGen.label}...</p>
-                <p className="text-[var(--text-muted)] text-xs mt-1">GPT-4o está trabajando</p>
+                <p className="text-[var(--text-muted)] text-xs mt-1">Gemini está trabajando</p>
               </motion.div>
             )}
 
@@ -383,7 +383,7 @@ function AIForgeInner({ params }: { params: Promise<{ campaignSlug: string }> })
               >
                 <p className="text-red-400 font-medium mb-2">Error al generar</p>
                 <p className="text-[var(--text-muted)] text-sm">{error}</p>
-                <p className="text-xs text-[var(--text-muted)] mt-3">Verifica que tu API key de OpenAI esté configurada</p>
+                <p className="text-xs text-[var(--text-muted)] mt-3">Verifica que tu API key de Gemini esté configurada</p>
               </motion.div>
             )}
 

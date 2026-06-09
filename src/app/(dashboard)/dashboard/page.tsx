@@ -10,6 +10,7 @@ import {
   Calendar,
   ArrowRight,
   BookOpen,
+  UserPlus,
 } from "lucide-react";
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
 
@@ -65,15 +66,24 @@ export default async function DashboardPage() {
   const { masteredCampaigns, playerCampaigns } = await getUserCampaigns(user.id);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
       {/* Header */}
-      <div className="mb-8 md:mb-10">
-        <p className="text-sm text-[var(--text-muted)] uppercase tracking-widest mb-1">
-          Bienvenido de vuelta
-        </p>
-        <h1 className="font-display text-3xl md:text-4xl font-black text-[var(--text-primary)] truncate">
-          {user.displayName}
-        </h1>
+      <div className="mb-8 md:mb-10 flex items-end justify-between gap-4 flex-wrap">
+        <div className="min-w-0">
+          <p className="text-sm text-[var(--text-muted)] uppercase tracking-widest mb-1">
+            Bienvenido de vuelta
+          </p>
+          <h1 className="font-display text-3xl md:text-4xl font-black text-[var(--text-primary)] truncate">
+            {user.displayName}
+          </h1>
+        </div>
+        <Link
+          href="/dashboard/join"
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] border border-[var(--border-default)] text-sm font-medium text-[var(--text-primary)] hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors shrink-0"
+        >
+          <UserPlus className="h-4 w-4" aria-hidden="true" />
+          Unirse a campaña
+        </Link>
       </div>
 
       {/* My Campaigns */}
@@ -107,10 +117,10 @@ export default async function DashboardPage() {
                 >
                   {/* Cover */}
                   <div
-                    className="h-28 relative flex items-end p-4"
+                    className="h-36 relative flex items-end p-4"
                     style={{
-                      background: campaign.coverImage
-                        ? `url(${campaign.coverImage}) center/cover`
+                      background: (campaign.bannerImage || campaign.coverImage)
+                        ? `url(${campaign.bannerImage || campaign.coverImage}) center/cover`
                         : `linear-gradient(135deg, ${themeColor.bg} 0%, ${themeColor.primary}20 100%)`,
                     }}
                   >
@@ -186,14 +196,19 @@ export default async function DashboardPage() {
                   className="group campaign-card block bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] overflow-hidden hover:border-[var(--border-default)] transition-all"
                 >
                   <div
-                    className="h-28 relative flex items-end p-4"
+                    className="h-36 relative flex items-end p-4"
                     style={{
-                      background: `linear-gradient(135deg, ${themeColor.bg} 0%, ${themeColor.primary}20 100%)`,
+                      background: (campaign.bannerImage || campaign.coverImage)
+                        ? `url(${campaign.bannerImage || campaign.coverImage}) center/cover`
+                        : `linear-gradient(135deg, ${themeColor.bg} 0%, ${themeColor.primary}20 100%)`,
                     }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="relative">
-                      <span className="text-xs text-[var(--text-muted)]">Máster: {campaign.master.displayName}</span>
+                      <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/15 text-white/90 font-medium">
+                        <Crown className="h-3 w-3 text-[var(--accent-gold)]" aria-hidden="true" />
+                        {campaign.master.displayName}
+                      </span>
                     </div>
                   </div>
                   <div className="p-4">
@@ -204,6 +219,10 @@ export default async function DashboardPage() {
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
                         {campaign._count.members} jugadores
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {campaign._count.sessions} sesiones
                       </span>
                     </div>
                   </div>

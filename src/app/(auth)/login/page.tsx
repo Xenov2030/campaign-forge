@@ -63,14 +63,35 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)] px-4">
-      {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute top-1/3 left-1/3 w-80 h-80 rounded-full bg-[var(--accent-gold)]/4 blur-[100px]" />
-        <div className="absolute bottom-1/3 right-1/3 w-64 h-64 rounded-full bg-[var(--accent-arcane)]/6 blur-[80px]" />
-      </div>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-[var(--bg-base)]">
+      {/* Panel de branding — solo en desktop */}
+      <aside className="relative hidden lg:flex flex-col justify-center px-12 xl:px-20 border-r border-[var(--border-subtle)] overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute top-1/3 left-1/4 w-96 h-96 rounded-full bg-[var(--accent-gold)]/6 blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full bg-[var(--accent-arcane)]/8 blur-[100px]" />
+        </div>
+        <div className="relative max-w-md">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-[var(--radius-xl)] bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 mb-6">
+            <Crown className="h-8 w-8 text-[var(--accent-gold)]" aria-hidden="true" />
+          </div>
+          <h2 className="font-display text-5xl font-black text-[var(--text-primary)] tracking-wider mb-4">
+            CampaignForge
+          </h2>
+          <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
+            Forja tu próxima gran aventura. Gestiona campañas, personajes y mundos en un solo lugar.
+          </p>
+        </div>
+      </aside>
 
-      <div className="relative w-full max-w-md animate-fade-in-up">
+      {/* Panel del formulario */}
+      <div className="relative flex items-center justify-center px-4 py-12">
+        {/* Background effects (visibles sobre todo en móvil) */}
+        <div className="absolute inset-0 pointer-events-none lg:hidden" aria-hidden="true">
+          <div className="absolute top-1/3 left-1/3 w-80 h-80 rounded-full bg-[var(--accent-gold)]/4 blur-[100px]" />
+          <div className="absolute bottom-1/3 right-1/3 w-64 h-64 rounded-full bg-[var(--accent-arcane)]/6 blur-[80px]" />
+        </div>
+
+        <div className="relative w-full max-w-md animate-fade-in-up">
         <div className="text-center mb-8">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-[var(--radius-xl)] bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 mb-4">
             <Crown className="h-7 w-7 text-[var(--accent-gold)]" aria-hidden="true" />
@@ -157,6 +178,7 @@ function LoginForm() {
             ← Volver al inicio
           </Link>
         </p>
+        </div>
       </div>
     </div>
   );

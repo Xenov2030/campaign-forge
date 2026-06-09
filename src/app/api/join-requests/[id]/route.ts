@@ -84,6 +84,20 @@ export async function POST(
       if (pusher) pusher.trigger(userChannel(jr.userId), "notification", notif).catch(() => {});
     }
 
+    // La solicitud ya fue respondida: quitamos la notificación de la campana del máster.
+    // Best-effort: si el filtro JSON fallara, el GET igual filtra las respondidas.
+    try {
+      await prisma.notification.deleteMany({
+        where: {
+          userId: jr.campaign.masterId,
+          type: "JOIN_REQUEST",
+          data: { path: ["joinRequestId"], equals: id },
+        },
+      });
+    } catch (e) {
+      console.error("No se pudo borrar la notificación de solicitud:", e);
+    }
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Join request action error:", error);

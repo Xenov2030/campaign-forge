@@ -20,7 +20,7 @@ export default async function CampaignSettingsPage({ params }: PageProps) {
 
   const campaign = await prisma.campaign.findUnique({
     where: { slug: campaignSlug },
-    select: { id: true, name: true, description: true, isPublic: true, masterId: true },
+    select: { id: true, name: true, description: true, isPublic: true, bannerImage: true, theme: true, masterId: true },
   });
   if (!campaign) notFound();
 
@@ -34,6 +34,8 @@ export default async function CampaignSettingsPage({ params }: PageProps) {
         name: campaign.name,
         description: campaign.description ?? "",
         isPublic: campaign.isPublic,
+        bannerImage: campaign.bannerImage ?? "",
+        theme: campaign.theme,
       }}
     />
   );

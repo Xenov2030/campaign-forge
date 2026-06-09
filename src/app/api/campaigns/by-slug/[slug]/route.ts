@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CampaignTheme } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getUser } from "@/lib/supabase/server";
+
+const VALID_THEMES = new Set<string>(Object.values(CampaignTheme));
 
 export async function GET(
   request: NextRequest,
@@ -44,10 +47,18 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const data: { name?: string; description?: string | null; isPublic?: boolean } = {};
+    const data: {
+      name?: string;
+      description?: string | null;
+      isPublic?: boolean;
+      bannerImage?: string | null;
+      theme?: CampaignTheme;
+    } = {};
     if (typeof body.name === "string" && body.name.trim()) data.name = body.name.trim();
     if (typeof body.description === "string") data.description = body.description.trim() || null;
     if (typeof body.isPublic === "boolean") data.isPublic = body.isPublic;
+    if ("bannerImage" in body) data.bannerImage = typeof body.bannerImage === "string" && body.bannerImage ? body.bannerImage : null;
+    if (typeof body.theme === "string" && VALID_THEMES.has(body.theme)) data.theme = body.theme as CampaignTheme;
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: "Nada para actualizar" }, { status: 400 });
