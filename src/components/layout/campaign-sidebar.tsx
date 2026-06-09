@@ -33,11 +33,13 @@ import {
   PhoneOff,
   Loader2,
   MoreVertical,
+  LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as Popover from "@radix-ui/react-popover";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useConfirmStore } from "@/store/confirm-store";
 import { useCampaignStore } from "@/store/campaign-store";
 import { useNotificationStore } from "@/store/notification-store";
 import { useVoiceChannel, type VoiceParticipant } from "@/hooks/useVoiceChannel";
@@ -65,6 +67,7 @@ interface CampaignSidebarProps {
   isMaster: boolean;
   campaignName: string;
   campaignTheme: string;
+  userId: string;
   voiceRooms: VoiceRoom[];
 }
 
@@ -73,8 +76,38 @@ export function CampaignSidebar({
   campaignId,
   isMaster,
   campaignName,
+  userId,
   voiceRooms: initialVoiceRooms,
 }: CampaignSidebarProps) {
+  const confirmAction = useConfirmStore((s) => s.confirm);
+
+  const handleLeave = async () => {
+    const first = await confirmAction({
+      title: "Abandonar campaña",
+      description: `Vas a salir de "${campaignName}". Se eliminará tu personaje y dejarás de ver esta campaña.`,
+      confirmLabel: "Continuar",
+      danger: true,
+    });
+    if (!first) return;
+    const second = await confirmAction({
+      title: "¿Estás seguro?",
+      description: "Esta acción no se puede deshacer.",
+      confirmLabel: "Sí, abandonar",
+      danger: true,
+    });
+    if (!second) return;
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/members/${userId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "No se pudo abandonar la campaña");
+      }
+      toast.success("Abandonaste la campaña");
+      window.location.href = "/dashboard";
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error");
+    }
+  };
   const {
     sidebarOpen,
     toggleSidebar,
@@ -405,7 +438,7 @@ export function CampaignSidebar({
               </p>
             </motion.div>
 
-            {isMaster && sidebarOpen && (
+            {sidebarOpen && (
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <button
@@ -419,17 +452,30 @@ export function CampaignSidebar({
                   <DropdownMenu.Content
                     align="end"
                     sideOffset={6}
-                    className="z-50 min-w-[180px] bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] p-1 shadow-[var(--shadow-lg)]"
+                    className="z-50 min-w-[190px] bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] p-1 shadow-[var(--shadow-lg)]"
                   >
-                    <DropdownMenu.Item asChild>
-                      <Link
-                        href={`${base}/settings`}
-                        className="flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-sm)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] outline-none cursor-pointer transition-colors"
+                    {isMaster ? (
+                      <DropdownMenu.Item asChild>
+                        <Link
+                          href={`${base}/settings`}
+                          className="flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-sm)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] outline-none cursor-pointer transition-colors"
+                        >
+                          <Settings className="h-4 w-4" />
+                          Configurar campaña
+                        </Link>
+                      </DropdownMenu.Item>
+                    ) : (
+                      <DropdownMenu.Item
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          handleLeave();
+                        }}
+                        className="flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-sm)] text-sm text-red-400 hover:bg-red-500/10 outline-none cursor-pointer transition-colors"
                       >
-                        <Settings className="h-4 w-4" />
-                        Configurar campaña
-                      </Link>
-                    </DropdownMenu.Item>
+                        <LogOut className="h-4 w-4" />
+                        Abandonar campaña
+                      </DropdownMenu.Item>
+                    )}
                   </DropdownMenu.Content>
                 </DropdownMenu.Portal>
               </DropdownMenu.Root>

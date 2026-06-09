@@ -76,6 +76,7 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
         isMaster={isMaster}
         campaignName={campaign.name}
         campaignTheme={campaign.theme}
+        userId={user.id}
         voiceRooms={serializedVoiceRooms}
       />
 

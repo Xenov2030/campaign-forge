@@ -46,14 +46,21 @@ export function CampaignRealtime({ campaignId, isMaster, userId }: Props) {
       router.refresh();
     };
 
+    // Un jugador fue expulsado o abandonó la campaña.
+    const onMemberLeft = () => {
+      router.refresh();
+    };
+
     channel.bind("member-joined", onMemberJoined);
     channel.bind("character-created", onCharacterCreated);
     channel.bind("character-updated", onCharacterUpdated);
+    channel.bind("member-left", onMemberLeft);
 
     return () => {
       channel.unbind("member-joined", onMemberJoined);
       channel.unbind("character-created", onCharacterCreated);
       channel.unbind("character-updated", onCharacterUpdated);
+      channel.unbind("member-left", onMemberLeft);
       pusher.unsubscribe(`campaign-${campaignId}`);
     };
   }, [campaignId, isMaster, router]);

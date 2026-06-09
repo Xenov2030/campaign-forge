@@ -93,3 +93,44 @@ export async function PATCH(
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+// DELETE /api/characters/[id] — borrar personaje (dueño o master).
+// El cascade del schema limpia inventario, hechizos y relaciones.
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+    const character = (await prisma.character.findUnique({
+      where: { id },
+      select: { userId: true, campaignId: true, campaign: { select: { masterId: true } } },
+    })) as CharOwner | null;
+
+    if (!character) return NextResponse.json({ error: "Personaje no encontrado" }, { status: 404 });
+
+    const isMaster = character.campaign.masterId === user.id;
+    const isOwner = character.userId === user.id;
+    if (!isMaster && !isOwner) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
+    await prisma.character.delete({ where: { id } });
+
+    const pusher = getPusherServer();
+    if (pusher) {
+      pusher
+        .trigger(campaignChannel(character.campaignId), "character-updated", { characterId: id })
+        .catch(() => {});
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Character DELETE error:", error);
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

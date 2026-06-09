@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { ChevronLeft, Sword } from "lucide-react";
 import { CharacterForm } from "@/components/campaign/character-form";
+import { CharacterDangerZone } from "@/components/campaign/character-danger-zone";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; characterId: string }>;
@@ -75,6 +76,15 @@ export default async function EditCharacterPage({ params }: PageProps) {
           armorClass: character.armorClass,
           speed: character.speed,
         }}
+      />
+
+      <CharacterDangerZone
+        slug={campaignSlug}
+        characterId={characterId}
+        campaignId={character.campaignId}
+        targetUserId={character.userId}
+        mode={isMaster && !isOwner ? "kick" : "deleteCharacter"}
+        characterName={character.name}
       />
     </div>
   );
