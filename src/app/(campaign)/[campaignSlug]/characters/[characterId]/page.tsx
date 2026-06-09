@@ -87,38 +87,36 @@ export default async function CharacterDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Core stats row */}
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex items-center gap-2 px-4 py-2 bg-red-900/20 border border-red-800/30 rounded-[var(--radius-md)]">
-              <Heart className="h-4 w-4 text-red-400" />
-              <div>
-                <p className="text-xs text-red-400/70">Puntos de Golpe</p>
+          {/* Core stats row — celdas del mismo tamaño */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="flex items-center gap-2 px-4 py-3 bg-red-900/20 border border-red-800/30 rounded-[var(--radius-md)] min-w-0">
+              <Heart className="h-4 w-4 text-red-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-red-400/70 truncate">Puntos de Golpe</p>
                 <p className="text-lg font-bold text-red-400">{character.hitPoints}<span className="text-sm font-normal text-red-400/70">/{character.maxHitPoints}</span></p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-900/20 border border-blue-800/30 rounded-[var(--radius-md)]">
-              <Shield className="h-4 w-4 text-blue-400" />
-              <div>
-                <p className="text-xs text-blue-400/70">Clase de Armadura</p>
+            <div className="flex items-center gap-2 px-4 py-3 bg-blue-900/20 border border-blue-800/30 rounded-[var(--radius-md)] min-w-0">
+              <Shield className="h-4 w-4 text-blue-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-blue-400/70 truncate">Clase de Armadura</p>
                 <p className="text-lg font-bold text-blue-400">{character.armorClass}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-yellow-900/20 border border-yellow-800/30 rounded-[var(--radius-md)]">
-              <Zap className="h-4 w-4 text-yellow-400" />
-              <div>
-                <p className="text-xs text-yellow-400/70">Velocidad</p>
+            <div className="flex items-center gap-2 px-4 py-3 bg-yellow-900/20 border border-yellow-800/30 rounded-[var(--radius-md)] min-w-0">
+              <Zap className="h-4 w-4 text-yellow-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-yellow-400/70 truncate">Velocidad</p>
                 <p className="text-lg font-bold text-yellow-400">{character.speed} ft</p>
               </div>
             </div>
-            {character.background && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-purple-900/20 border border-purple-800/30 rounded-[var(--radius-md)]">
-                <Star className="h-4 w-4 text-purple-400" />
-                <div>
-                  <p className="text-xs text-purple-400/70">Trasfondo</p>
-                  <p className="text-sm font-bold text-purple-400">{character.background}</p>
-                </div>
+            <div className="flex items-center gap-2 px-4 py-3 bg-purple-900/20 border border-purple-800/30 rounded-[var(--radius-md)] min-w-0">
+              <Star className="h-4 w-4 text-purple-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-purple-400/70 truncate">Trasfondo</p>
+                <p className="text-sm font-bold text-purple-400 truncate">{character.background || "—"}</p>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

@@ -49,17 +49,18 @@ interface StatInputProps {
 function StatInput({ label, value, onChange }: StatInputProps) {
   const mod = Math.floor((value - 10) / 2);
   return (
-    <div className="flex flex-col items-center gap-1 bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] p-3 border border-[var(--border-subtle)]">
-      <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">{label}</p>
+    <div className="flex flex-col items-center gap-0.5 bg-[var(--bg-elevated)] rounded-[var(--radius-md)] p-2 border border-[var(--border-subtle)]">
+      <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wide">{label}</p>
       <input
         type="number"
         min={1}
         max={30}
         value={value}
         onChange={(e) => onChange(Math.max(1, Math.min(30, parseInt(e.target.value) || 10)))}
-        className="w-14 text-center font-display text-2xl font-black text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--accent-gold)]/40 focus:border-[var(--accent-gold)] focus:outline-none transition-colors"
+        onWheel={(e) => e.currentTarget.blur()}
+        className="w-11 text-center font-display text-xl font-black text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--accent-gold)]/40 focus:border-[var(--accent-gold)] focus:outline-none transition-colors"
       />
-      <p className={`text-sm font-bold ${mod >= 0 ? "text-green-400" : "text-red-400"}`}>
+      <p className={`text-xs font-bold ${mod >= 0 ? "text-green-400" : "text-red-400"}`}>
         {mod >= 0 ? "+" : ""}{mod}
       </p>
     </div>
@@ -175,6 +176,7 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
               <input
                 type="number" min={1} max={20} value={form.level}
                 onChange={setNum("level")}
+                onWheel={(e) => e.currentTarget.blur()}
                 className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
               />
             </div>
@@ -195,10 +197,10 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
       </div>
 
       {/* Atributos */}
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
-        <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-2">Estadísticas</h2>
-        <p className="text-sm text-[var(--text-muted)] mb-5">Puntuaciones de habilidad — el modificador se calcula automáticamente</p>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-5">
+        <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-1">Estadísticas</h2>
+        <p className="text-xs text-[var(--text-muted)] mb-3">Puntuaciones de habilidad — el modificador se calcula automáticamente</p>
+        <div className="grid grid-cols-6 gap-2 mb-4">
           {(["str", "dex", "con", "int", "wis", "cha"] as const).map((stat) => (
             <StatInput
               key={stat}
@@ -208,20 +210,20 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
             />
           ))}
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Puntos de golpe</label>
-            <input type="number" min={1} value={form.hitPoints} onChange={setNum("hitPoints")}
+            <input type="number" min={1} value={form.hitPoints} onChange={setNum("hitPoints")} onWheel={(e) => e.currentTarget.blur()}
               className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors" />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Clase de armadura</label>
-            <input type="number" min={1} value={form.armorClass} onChange={setNum("armorClass")}
+            <input type="number" min={1} value={form.armorClass} onChange={setNum("armorClass")} onWheel={(e) => e.currentTarget.blur()}
               className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors" />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Velocidad (pies)</label>
-            <input type="number" min={0} step={5} value={form.speed} onChange={setNum("speed")}
+            <input type="number" min={0} step={5} value={form.speed} onChange={setNum("speed")} onWheel={(e) => e.currentTarget.blur()}
               className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors" />
           </div>
         </div>
