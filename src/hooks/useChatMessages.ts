@@ -20,27 +20,65 @@ export interface ChatMessageWithUser {
   };
 }
 
+const PAGE_SIZE = 50;
+
 export function useChatMessages(roomId: string | null) {
   const [messages, setMessages] = useState<ChatMessageWithUser[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [typingUsers, setTypingUsers] = useState<{ userId: string; displayName: string }[]>([]);
   const channelRef = useRef<Channel | null>(null);
+  const typingTimeouts = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const lastTypingSent = useRef(0);
 
   const fetchHistory = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/chat/${id}/messages?limit=50`);
+      const res = await fetch(`/api/chat/${id}/messages?limit=${PAGE_SIZE}`);
       if (!res.ok) throw new Error("Error cargando mensajes");
       const data: ChatMessageWithUser[] = await res.json();
       setMessages(data);
+      setHasMore(data.length >= PAGE_SIZE);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Carga la página anterior usando el cursor `before` (el mensaje más viejo).
+  // Devuelve cuántos mensajes nuevos se prependieron (para preservar el scroll).
+  const loadMore = useCallback(async (): Promise<number> => {
+    if (!roomId) return 0;
+    const oldest = messages[0];
+    if (!oldest) return 0;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/chat/${roomId}/messages?limit=${PAGE_SIZE}&before=${encodeURIComponent(oldest.createdAt)}`
+      );
+      if (!res.ok) return 0;
+      const older: ChatMessageWithUser[] = await res.json();
+      setHasMore(older.length >= PAGE_SIZE);
+      if (older.length === 0) return 0;
+      let added = 0;
+      setMessages((prev) => {
+        const existing = new Set(prev.map((m) => m.id));
+        const fresh = older.filter((m) => !existing.has(m.id));
+        added = fresh.length;
+        return [...fresh, ...prev];
+      });
+      return added;
+    } catch {
+      return 0;
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [roomId, messages]);
 
   useEffect(() => {
     if (!roomId) {
@@ -74,14 +112,35 @@ export function useChatMessages(roomId: string | null) {
       setMessages((prev) => prev.filter((m) => m.id !== data.id));
     };
 
+    const onTyping = (data: { userId: string; displayName: string }) => {
+      setTypingUsers((prev) =>
+        prev.some((u) => u.userId === data.userId) ? prev : [...prev, data]
+      );
+      const timeouts = typingTimeouts.current;
+      const existing = timeouts.get(data.userId);
+      if (existing) clearTimeout(existing);
+      timeouts.set(
+        data.userId,
+        setTimeout(() => {
+          setTypingUsers((prev) => prev.filter((u) => u.userId !== data.userId));
+          timeouts.delete(data.userId);
+        }, 3500)
+      );
+    };
+
     channel.bind("new-message", handler);
     channel.bind("message-edited", onEdited);
     channel.bind("message-deleted", onDeleted);
+    channel.bind("user-typing", onTyping);
 
+    const timeouts = typingTimeouts.current;
     return () => {
       channel.unbind("new-message", handler);
       channel.unbind("message-edited", onEdited);
       channel.unbind("message-deleted", onDeleted);
+      channel.unbind("user-typing", onTyping);
+      timeouts.forEach((t) => clearTimeout(t));
+      timeouts.clear();
       pusher.unsubscribe(`chat-${roomId}`);
       channelRef.current = null;
     };
@@ -161,11 +220,25 @@ export function useChatMessages(roomId: string | null) {
     [roomId]
   );
 
+  // Avisa que estás escribiendo (throttle de 2.5s para no spamear el endpoint).
+  const notifyTyping = useCallback(() => {
+    if (!roomId) return;
+    const now = Date.now();
+    if (now - lastTypingSent.current < 2500) return;
+    lastTypingSent.current = now;
+    fetch(`/api/chat/${roomId}/typing`, { method: "POST" }).catch(() => {});
+  }, [roomId]);
+
   return {
     messages,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     sending,
     error,
+    typingUsers,
+    notifyTyping,
     sendMessage,
     addMessageLocal,
     editMessage,

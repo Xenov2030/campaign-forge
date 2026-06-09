@@ -74,9 +74,12 @@ export default function ChatPage() {
   const [bgImage, setBgImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const atBottomRef = useRef(true);
+  const loadingMoreRef = useRef(false);
 
   const { setActiveTextRoomId, setChatSendMessage } = useCampaignStore();
-  const { messages, loading: loadingMsgs, sending, sendMessage, editMessage, deleteMessage } = useChatMessages(textRoomId);
+  const { messages, loading: loadingMsgs, loadingMore, hasMore, loadMore, sending, typingUsers, notifyTyping, sendMessage, editMessage, deleteMessage } = useChatMessages(textRoomId);
 
   useEffect(() => {
     async function load() {
@@ -122,9 +125,36 @@ export default function ChatPage() {
     return () => setChatSendMessage(null);
   }, [sendMessage, setChatSendMessage]);
 
+  // Autoscroll al fondo solo si el usuario ya estaba abajo (no al cargar historial).
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (atBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    // Cerca del tope → cargar la página anterior preservando la posición visual.
+    if (el.scrollTop < 80 && hasMore && !loadingMoreRef.current) {
+      loadingMoreRef.current = true;
+      const prevHeight = el.scrollHeight;
+      loadMore()
+        .then((added) => {
+          if (added > 0) {
+            requestAnimationFrame(() => {
+              if (scrollRef.current) {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight - prevHeight;
+              }
+            });
+          }
+        })
+        .finally(() => {
+          loadingMoreRef.current = false;
+        });
+    }
+  };
 
   // Auto-grow del textarea según el contenido (hasta max-h-32 = 128px).
   const adjustHeight = () => {
@@ -182,6 +212,16 @@ export default function ChatPage() {
     return { msg, isContinuation, showDateDivider };
   });
 
+  const typingOthers = typingUsers.filter((u) => u.userId !== currentUser?.id);
+  const typingText =
+    typingOthers.length === 1
+      ? `${typingOthers[0].displayName} está escribiendo…`
+      : typingOthers.length === 2
+        ? `${typingOthers[0].displayName} y ${typingOthers[1].displayName} están escribiendo…`
+        : typingOthers.length > 2
+          ? "Varias personas están escribiendo…"
+          : null;
+
   return (
     <div className="relative flex h-full overflow-hidden">
       {/* Animated base — always visible */}
@@ -206,7 +246,11 @@ export default function ChatPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5"
+          >
             {loadingRoom || loadingMsgs ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-5 w-5 animate-spin text-[var(--text-muted)]" />
@@ -220,7 +264,13 @@ export default function ChatPage() {
                 <p className="text-xs opacity-60">¡Aventureros, la historia comienza aquí!</p>
               </div>
             ) : (
-              grouped.map(({ msg, isContinuation, showDateDivider }) => (
+              <>
+                {loadingMore && (
+                  <div className="flex justify-center py-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-[var(--text-muted)]" />
+                  </div>
+                )}
+                {grouped.map(({ msg, isContinuation, showDateDivider }) => (
                 <div key={msg.id}>
                   {showDateDivider && <DateDivider date={msg.createdAt} />}
                   <motion.div
@@ -241,13 +291,21 @@ export default function ChatPage() {
                     )}
                   </motion.div>
                 </div>
-              ))
+                ))}
+              </>
             )}
             <div ref={messagesEndRef} />
           </div>
 
           {/* Input bar */}
           <div className="shrink-0 px-4 pb-4 pt-2 bg-[var(--bg-surface)]/50 backdrop-blur-sm border-t border-[var(--border-subtle)]">
+            <div className="h-4 px-1 mb-0.5">
+              {typingText && (
+                <p className="text-[11px] text-[var(--text-muted)] italic truncate animate-pulse">
+                  {typingText}
+                </p>
+              )}
+            </div>
             <div className="flex items-end gap-2 bg-[var(--bg-elevated)]/90 rounded-[var(--radius-md)] border border-[var(--border-default)] focus-within:border-[var(--border-strong)] px-3 py-2 backdrop-blur-sm transition-colors">
               <textarea
                 ref={inputRef}
@@ -255,6 +313,7 @@ export default function ChatPage() {
                 onChange={(e) => {
                   setInput(e.target.value);
                   adjustHeight();
+                  notifyTyping();
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Escribe un mensaje..."
