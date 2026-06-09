@@ -139,7 +139,7 @@ export default function GalleryPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

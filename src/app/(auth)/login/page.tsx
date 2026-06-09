@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Crown, Eye, EyeOff, Sword } from "lucide-react";
@@ -18,6 +18,17 @@ function LoginForm() {
       ? "El acceso de prueba no está disponible por ahora. Creá una cuenta nueva para empezar."
       : null
   );
+  const [remember, setRemember] = useState(false);
+
+  // Prefill del email recordado (sincronización con localStorage, sistema externo).
+  useEffect(() => {
+    const saved = localStorage.getItem("cf_remember_email");
+    if (!saved) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setEmail(saved);
+    setRemember(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +49,10 @@ function LoginForm() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error al iniciar sesión");
+
+      // Solo recordamos el email (no la contraseña — eso lo maneja el navegador).
+      if (remember) localStorage.setItem("cf_remember_email", email);
+      else localStorage.removeItem("cf_remember_email");
 
       window.location.href = "/dashboard";
     } catch (err) {
@@ -104,6 +119,16 @@ function LoginForm() {
                 </button>
               </div>
             </div>
+
+            <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="h-4 w-4 rounded accent-[var(--accent-gold)] cursor-pointer"
+              />
+              <span className="text-sm text-[var(--text-secondary)]">Recordarme</span>
+            </label>
 
             {error && (
               <div role="alert" className="px-4 py-3 rounded-[var(--radius-md)] bg-red-900/20 border border-red-800/50 text-red-400 text-sm">

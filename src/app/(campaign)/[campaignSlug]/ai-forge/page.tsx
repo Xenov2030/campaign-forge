@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Users, Skull, Package, Target, Map,
@@ -193,9 +194,13 @@ function formatResult(type: string, data: Record<string, unknown>): React.ReactN
   return renderers[type]?.(data) ?? <pre className="text-xs text-[var(--text-muted)]">{JSON.stringify(data, null, 2)}</pre>;
 }
 
-export default function AIForgePage({ params }: { params: Promise<{ campaignSlug: string }> }) {
+function AIForgeInner({ params }: { params: Promise<{ campaignSlug: string }> }) {
   const { campaignSlug } = use(params);
-  const [selectedType, setSelectedType] = useState("NPC");
+  const searchParams = useSearchParams();
+  const typeParam = searchParams.get("type");
+  const [selectedType, setSelectedType] = useState(
+    GENERATORS.some((g) => g.id === typeParam) ? (typeParam as string) : "NPC",
+  );
   const [hints, setHints] = useState("");
   const [sessionNotes, setSessionNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -257,7 +262,7 @@ export default function AIForgePage({ params }: { params: Promise<{ campaignSlug
   const selectedGen = GENERATORS.find((g) => g.id === selectedType)!;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -432,5 +437,13 @@ export default function AIForgePage({ params }: { params: Promise<{ campaignSlug
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AIForgePage({ params }: { params: Promise<{ campaignSlug: string }> }) {
+  return (
+    <Suspense fallback={null}>
+      <AIForgeInner params={params} />
+    </Suspense>
   );
 }
