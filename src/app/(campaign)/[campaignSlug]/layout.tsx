@@ -85,6 +85,7 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
           campaignName={campaign.name}
           userDisplayName={user.displayName}
           userAvatarUrl={user.avatarUrl ?? undefined}
+          userId={user.id}
           isMaster={isMaster}
         />
         <main className="flex-1 overflow-y-auto min-h-0">

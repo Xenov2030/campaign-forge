@@ -3,6 +3,7 @@ import { getUser } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Crown, Shield } from "lucide-react";
 import { UserMenu } from "@/components/layout/user-menu";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { APP_VERSION } from "@/lib/version";
 
 export default async function DashboardLayout({
@@ -42,10 +43,19 @@ export default async function DashboardLayout({
             </Link>
           )}
 
-          {/* Display name — hidden on small screens */}
-          <span className="hidden md:block text-sm font-medium text-[var(--text-primary)] truncate max-w-[160px]">
-            {user.displayName}
+          {/* Display name + flag de rol — hidden on small screens */}
+          <span className="hidden md:flex items-center gap-2 min-w-0">
+            <span className="text-sm font-medium text-[var(--text-primary)] truncate max-w-[160px]">
+              {user.displayName}
+            </span>
+            {user.role === "MASTER" && (
+              <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 font-semibold uppercase tracking-wide">
+                Master
+              </span>
+            )}
           </span>
+
+          <NotificationBell userId={user.id} />
 
           <div className="h-4 w-px bg-[var(--border-subtle)] hidden md:block" aria-hidden="true" />
 

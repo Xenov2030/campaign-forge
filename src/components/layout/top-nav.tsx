@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   Sparkles,
-  Bell,
   ChevronRight,
   Home,
   Menu,
@@ -11,12 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCampaignStore } from "@/store/campaign-store";
 import { UserMenu } from "@/components/layout/user-menu";
+import { NotificationBell } from "@/components/layout/notification-bell";
 
 interface TopNavProps {
   campaignName: string;
   currentSection?: string;
   userDisplayName: string;
   userAvatarUrl?: string;
+  userId: string;
   isMaster?: boolean;
 }
 
@@ -25,6 +26,7 @@ export function TopNav({
   currentSection,
   userDisplayName,
   userAvatarUrl,
+  userId,
   isMaster,
 }: TopNavProps) {
   const { setAIAssistantOpen, toggleSidebar } = useCampaignStore();
@@ -84,14 +86,7 @@ export function TopNav({
           </Button>
         )}
 
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Notificaciones"
-          className="h-9 w-9"
-        >
-          <Bell className="h-4 w-4" aria-hidden="true" />
-        </Button>
+        <NotificationBell userId={userId} />
 
         <div className="h-6 w-px bg-[var(--border-subtle)] mx-0.5 md:mx-1" aria-hidden="true" />
 

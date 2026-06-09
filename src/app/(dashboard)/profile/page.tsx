@@ -1,18 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, Lock, Save, Loader2, ChevronLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [aliasForm, setAliasForm] = useState({ displayName: "" });
   const [passwordForm, setPasswordForm] = useState({ current: "", next: "", confirm: "" });
   const [aliasSaving, setAliasSaving] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [aliasMsg, setAliasMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [passwordMsg, setPasswordMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Prefill con el nombre actual.
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((u) => {
+        if (u?.displayName) setAliasForm({ displayName: u.displayName });
+      })
+      .catch(() => {});
+  }, []);
 
   const handleAlias = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +39,8 @@ export default function ProfilePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setAliasMsg({ ok: true, text: `Nombre visible actualizado a "${data.displayName}"` });
-      setAliasForm({ displayName: "" });
+      setAliasForm({ displayName: data.displayName });
+      router.refresh();
     } catch (err) {
       setAliasMsg({ ok: false, text: err instanceof Error ? err.message : "Error al guardar" });
     } finally {

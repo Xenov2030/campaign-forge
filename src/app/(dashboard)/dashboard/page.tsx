@@ -126,9 +126,14 @@ export default async function DashboardPage() {
                       >
                         {systemLabels[campaign.system]}
                       </span>
-                      <div
-                        className={`h-2 w-2 rounded-full ${campaign.status === "ACTIVE" ? "bg-green-400" : "bg-gray-500"}`}
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 font-semibold uppercase tracking-wide">
+                          Propia
+                        </span>
+                        <div
+                          className={`h-2 w-2 rounded-full ${campaign.status === "ACTIVE" ? "bg-green-400" : "bg-gray-500"}`}
+                        />
+                      </div>
                     </div>
                   </div>
 
