@@ -513,7 +513,7 @@
       <p>Historial completo de versiones, funcionalidades y correcciones.</p>
       <div class="current-badge">
         <span class="dot"></span>
-        Versión actual: 2.3
+        Versión actual: 2.4
       </div>
     </header>
 
@@ -543,6 +543,67 @@
 
     <!-- Versions -->
     <div class="versions">
+
+      <!-- v2.4 -->
+      <div class="version-entry major" id="v2.4">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v2.4</div>
+              <div class="version-title">Roles globales · Panel admin · Wizard multi-select</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-09</span>
+              <span class="type-badge badge-major">MAJOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Roles globales de cuenta</strong> — <code>UserRole</code> (PLAYER / MASTER / ADMIN). La capacidad de cuenta es distinta del rol por campaña: un MASTER es máster en sus campañas y jugador en las ajenas.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag new">nuevo</span> <strong>Panel /admin</strong> (solo ADMIN) — tabla de usuarios con switch PLAYER↔MASTER, badge de rol y fecha de registro. Endpoints <code>GET</code>/<code>PATCH /api/admin/users</code>.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">auth</span> <strong>Bootstrap por allowlist</strong> — la env <code>ADMIN_EMAILS</code> promueve a ADMIN en registro y login (nunca degrada).</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">campaigns</span> <strong>Solo MASTER/ADMIN crean campañas</strong> — enforcement en 3 capas: API (<code>403</code>), CTA oculto y guard de ruta.</span>
+                </li>
+                <li class="change-item">
+                  <span><span class="tag mod">wizard</span> <strong>Temas y tonos múltiples + sistemas combinables</strong>, switch público ON/OFF, <code>maxLength</code> + contador, validación por paso y layout sin scroll.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot fix"></span>
+                <span class="section-name fix">fix</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item">
+                  <span><span class="tag mod">nav</span> <strong>Logout</strong> redirige a la home con el origen real del request (sin <code>NEXT_PUBLIC_APP_URL</code>); usuario logueado en <code>/</code> va directo al dashboard.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              develop
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- v2.3 -->
       <div class="version-entry minor" id="v2.3">

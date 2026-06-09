@@ -1,6 +1,6 @@
 # CampaignForge — Guía de Implementación
 
-**Versión:** 2.3 | **Última actualización:** 2026-06-08
+**Versión:** 2.4 | **Última actualización:** 2026-06-09
 
 ---
 
@@ -89,6 +89,9 @@ MOCK_MODE=false
 DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 JWT_SECRET=genera-uno-con-node-e-require-crypto-randomBytes-32-toString-hex
 
+# Admin (allowlist de emails promovidos a rol global ADMIN, coma-separados)
+ADMIN_EMAILS=tu-email@dominio.com
+
 # Realtime (chat)
 PUSHER_APP_ID=tu-app-id
 PUSHER_SECRET=tu-secret
@@ -149,6 +152,7 @@ npm run dev
 MOCK_MODE=false
 DATABASE_URL=postgresql://...
 JWT_SECRET=secreto-largo-minimo-32-chars
+ADMIN_EMAILS=tu-email@dominio.com
 GEMINI_API_KEY=...
 PUSHER_APP_ID=...
 PUSHER_SECRET=...
@@ -320,3 +324,12 @@ Si borraste `data/mock-db.json` o es la primera vez, se recreará desde el seed 
 ### Cookie de sesión no setea
 
 Verificar que `JWT_SECRET` esté configurado.
+
+### No aparece el panel `/admin` (ni el link "Admin")
+
+El rol ADMIN se otorga por la env `ADMIN_EMAILS` (coma-separada). Verificar que:
+1. El email del usuario coincide **exacto** con uno de `ADMIN_EMAILS`.
+2. Se **reinició** el server tras agregar la variable (se lee al cargar el módulo).
+3. Se **cerró sesión y volvió a entrar** (la promoción a ADMIN corre en `loginUser`; cuentas nuevas con ese email ya nacen ADMIN).
+
+> El rol ADMIN nunca se asigna desde la UI; solo por `ADMIN_EMAILS`. Quitar un email de la lista no degrada al usuario (la allowlist solo promueve).

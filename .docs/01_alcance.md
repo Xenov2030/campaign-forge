@@ -1,6 +1,6 @@
 # CampaignForge — Alcance Funcional
 
-**Versión:** 2.3 | **Última actualización:** 2026-06-08
+**Versión:** 2.4 | **Última actualización:** 2026-06-09
 
 ---
 
@@ -14,9 +14,12 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 
 | Actor | Descripción |
 |-------|-------------|
-| **Máster** | Creador y administrador de la campaña. Acceso total a todos los módulos, incluidos NPCs ocultos, IA Forge, asistente de IA y configuración. |
-| **Jugador** | Miembro de una campaña por invitación. Acceso a personajes propios, lore pública, chat, dados, sesiones y canales de voz. |
+| **Administrador** | Rol global de cuenta (`User.role = ADMIN`). Accede al panel `/admin` y habilita/inhabilita a otros usuarios como másters. Se otorga por la allowlist de entorno `ADMIN_EMAILS`. |
+| **Máster** | Rol global `MASTER`: puede crear y mastear sus propias campañas. Dentro de una campaña que crea, tiene acceso total (NPCs ocultos, IA Forge, asistente, configuración). En campañas ajenas entra como jugador. |
+| **Jugador** | Rol global `PLAYER` (default de toda cuenta nueva): solo se une a campañas ajenas por invitación. Acceso a personajes propios, lore pública, chat, dados, sesiones y voz. No puede crear campañas. |
 | **Visitante** | Usuario no autenticado. Solo accede a la landing page y formularios de auth. |
+
+> **Dos niveles de rol (no confundir):** el **rol global** (`User.role`) es la *capacidad de cuenta* — quién puede crear campañas y quién administra. El **rol por campaña** (`CampaignMember.role`: MASTER/PLAYER/SPECTATOR) define qué es el usuario *dentro* de cada campaña. Un mismo usuario con rol global MASTER es `CampaignMember.MASTER` en sus campañas y `CampaignMember.PLAYER` en las ajenas.
 
 ---
 
@@ -25,9 +28,10 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 ### 1. Autenticación
 - Registro con email, nombre real y alias (displayName)
 - Login con email/contraseña (JWT + cookie httpOnly)
-- Cierre de sesión
+- Cierre de sesión (redirige a la home)
 - Cambio de contraseña y nombre visible desde perfil
-- Redirección automática si no autenticado
+- Redirección automática si no autenticado; usuario logueado en `/` va al dashboard
+- Toda cuenta nueva nace con rol global `PLAYER`; la allowlist `ADMIN_EMAILS` promueve a `ADMIN` en registro/login
 
 ### 2. Dashboard
 - Vista de campañas donde el usuario es máster (aparece primero)
@@ -36,11 +40,21 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 - Acciones rápidas: nueva campaña, unirse con código
 
 ### 3. Gestión de campañas
-- Creación wizard 3 pasos: nombre+descripción → tema → sistema de juego
-- Temas: Fantasy, Horror, SciFi, Grimdark, Steampunk, Western, Modern, PostApocalyptic, Custom
-- Sistemas: D&D 5e, Pathfinder 2e, Call of Cthulhu, Vampire: La Mascarada, Shadowrun, Starfinder, Custom
+- **Solo usuarios con rol global MASTER o ADMIN** pueden crear campañas (gate en UI, API y ruta)
+- Creación wizard 3 pasos: nombre+descripción+visibilidad → temas+tonos → sistemas
+- Paso 1: nombre obligatorio (con contador `maxLength`), descripción opcional, switch ON/OFF de campaña pública; "Siguiente" deshabilitado si faltan obligatorios
+- Paso 2 (multi-select): **temas visuales** (Fantasy, Horror, SciFi, Grimdark, Steampunk, Modern, PostApocalyptic, Custom) + **tonos narrativos** (Épico, Oscuro, Heroico, Cómico, Político, Misterio, Supervivencia, Romántico)
+- Paso 3 (multi-select): **sistemas combinables** (D&D 5e, Pathfinder 2e, Call of Cthulhu, Vampire: La Mascarada, Shadowrun, Starfinder, Custom)
+- Persistencia: valor principal en `theme`/`system` (enum) + selección completa en `settings` (Json)
 - Código de invitación único por campaña
-- Tema visual dinámico (modifica CSS variables según el tema elegido)
+- Tema visual dinámico (modifica CSS variables según el tema principal elegido)
+- *Pendiente (documentado):* al seleccionar un sistema, traer su manual desde Google Drive a la Wiki
+
+### 3b. Panel de administración (`/admin`, solo ADMIN)
+- Tabla de usuarios: identidad (avatar, displayName, username, email), badge de rol y fecha de registro
+- Switch por usuario para habilitar/inhabilitar como máster (PLAYER ↔ MASTER)
+- El rol ADMIN no se asigna desde la UI (solo por `ADMIN_EMAILS`); las filas de admins y la propia quedan bloqueadas
+- Degradar un máster es no destructivo: solo bloquea crear nuevas campañas, las existentes siguen
 
 ### 4. Workspace de campaña
 - Layout con sidebar colapsable (240px ↔ 64px en desktop, overlay en mobile)
@@ -141,6 +155,9 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 
 1. Solo el máster puede acceder a IA Forge, ver NPCs ocultos y configurar la campaña.
 2. Un usuario puede ser máster de múltiples campañas y jugador en múltiples campañas.
+2b. El rol global de cuenta (`PLAYER`/`MASTER`/`ADMIN`) define la capacidad: solo `MASTER`/`ADMIN` pueden crear campañas; `ADMIN` accede al panel `/admin`.
+2c. El rol global por defecto es `PLAYER`. Se promueve a `ADMIN` únicamente vía `ADMIN_EMAILS`. Un `ADMIN` promueve/degrada `MASTER` desde el panel; no puede degradarse a sí mismo ni tocar a otros admins.
+2d. Degradar `MASTER → PLAYER` no destruye campañas existentes; solo impide crear nuevas.
 3. Los jugadores se unen exclusivamente por código de invitación.
 4. Los personajes pertenecen a una campaña, no a un usuario globalmente.
 5. Los dados pueden usarlos todos los miembros; el máster puede ocultar sus tiradas.

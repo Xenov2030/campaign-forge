@@ -4,7 +4,7 @@
 
 ---
 
-## Versión actual: `2.3`
+## Versión actual: `2.4`
 
 Historial de versiones en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 
@@ -22,7 +22,7 @@ Plataforma web para la gestión completa de campañas de rol (D&D, Pathfinder, C
 src/
 ├── app/
 │   ├── (auth)/              → Login, Registro
-│   ├── (dashboard)/         → Dashboard, nueva campaña, perfil
+│   ├── (dashboard)/         → Dashboard, nueva campaña, perfil, panel /admin (solo ADMIN)
 │   ├── (campaign)/[slug]/   → Workspace de campaña
 │   │   ├── characters/      → Fichas de personaje
 │   │   ├── npcs/            → NPCs (visibilidad máster/jugador)
@@ -68,7 +68,7 @@ src/
 **Archivos de configuración clave:**
 - `prisma/schema.prisma` — Esquema de base de datos
 - `src/app/globals.css` — Design system (CSS variables, tokens, animaciones)
-- `.env.local` — Variables de entorno (`DATABASE_URL`, `JWT_SECRET`, `GEMINI_API_KEY`, `PUSHER_*`, `LIVEKIT_*`, etc.)
+- `.env.local` — Variables de entorno (`DATABASE_URL`, `JWT_SECRET`, `ADMIN_EMAILS`, `GEMINI_API_KEY`, `PUSHER_*`, `LIVEKIT_*`, etc.)
 - `.env.local.example` — Plantilla documentada de variables
 - `next.config.ts` — Config Next.js
 
@@ -238,3 +238,4 @@ channel.bind("new-message", handler);
 7. **Prisma**: Usar siempre el singleton de `lib/prisma.ts`. No importar `PrismaClient` directamente.
 8. **Realtime**: El layout de campaña monta `<CampaignRealtime>` que suscribe al canal `campaign-{id}` (Pusher). Llama `router.refresh()` ante `member-joined` y `character-created`. La bandeja de dados usa `chatSendMessage` del store para enviar tiradas al chat cuando el usuario está en esa página.
 9. **Scroll**: El layout de campaña usa `<main className="flex-1 overflow-y-auto min-h-0">` — el `min-h-0` es crítico para que flex items scrolleen correctamente.
+10. **Roles globales** (`User.role`: `PLAYER` | `MASTER` | `ADMIN`): es la **capacidad de cuenta**, distinta del rol por campaña (`CampaignMember.role`). Solo `MASTER`/`ADMIN` pueden crear campañas; `ADMIN` accede a `/admin`. Se asigna por defecto `PLAYER` y se promueve a `ADMIN` por la allowlist de entorno `ADMIN_EMAILS` (en `registerUser` y `loginUser`, ver `lib/auth.ts`). Enforcement en 3 capas: API (`403`), UI (CTA oculto) y guard de ruta. La promoción nunca degrada.

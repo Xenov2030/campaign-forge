@@ -5,6 +5,54 @@
 
 ---
 
+## [2.4] — 2026-06-09
+
+### feat(int) — Roles globales de cuenta (PLAYER/MASTER/ADMIN) + panel de administración
+
+**Archivos nuevos:**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `(dashboard)/admin/layout.tsx` | Guard del panel: solo `role === ADMIN`, redirige al resto. |
+| `(dashboard)/admin/page.tsx` | Página del panel: lista usuarios y monta `UsersTable`. |
+| `components/admin/users-table.tsx` | Tabla client con switch PLAYER↔MASTER (optimistic + toast Sonner), badge de rol y fecha de registro. |
+| `api/admin/users/route.ts` | `GET` lista de usuarios. Solo ADMIN. |
+| `api/admin/users/[id]/route.ts` | `PATCH` cambia rol (solo PLAYER/MASTER; no toca admins ni a uno mismo). Solo ADMIN. |
+| `(dashboard)/dashboard/new-campaign/layout.tsx` | Guard de ruta: un PLAYER que entre por URL directa es redirigido al dashboard. |
+| `components/ui/switch.tsx` | Switch ON/OFF (Radix) reutilizable. |
+| `docs/plans/2026-06-08-roles-globales-panel-admin-design.md` | Documento de diseño de la feature. |
+
+**Archivos modificados:**
+
+| Archivo | Cambios |
+|---------|---------|
+| `prisma/schema.prisma` | `enum UserRole {PLAYER,MASTER,ADMIN}` + `User.role @default(PLAYER)`. Aplicado con `db push`. |
+| `lib/auth.ts` | `resolveRoleForEmail()` + allowlist `ADMIN_EMAILS`; aplicada en `registerUser` y `loginUser` (promueve a ADMIN, nunca degrada). |
+| `api/campaigns/route.ts` | `POST` devuelve `403` si `role === PLAYER`. |
+| `(dashboard)/dashboard/page.tsx` | CTAs "Crear/Nueva campaña" ocultos para PLAYER. |
+| `(dashboard)/layout.tsx` | Link "Admin" en la top-nav solo para ADMIN. |
+| `lib/supabase/middleware.ts` | Usuario logueado que entra a `/` se redirige al dashboard. |
+| `api/auth/signout/route.ts` | Logout redirige a la home usando el origen real del request (sin depender de `NEXT_PUBLIC_APP_URL`). |
+| `lib/mock/seed.ts` | Usuarios demo con `role` (master→MASTER, player→PLAYER). |
+| `components/ui/input.tsx`, `textarea.tsx` | Asterisco rojo de campo requerido (global, vía prop `required`). |
+
+**Reglas clave:**
+- Rol global (capacidad de cuenta) **≠** rol por campaña (`CampaignMember.role`). Un MASTER global es máster en sus campañas y jugador en las ajenas.
+- Enforcement en 3 capas: API (`403`), UI (CTA oculto), guard de ruta.
+- Bootstrap del primer admin por env `ADMIN_EMAILS` (promueve en registro y login).
+- Degradar MASTER→PLAYER es **no destructivo**: solo bloquea crear nuevas campañas; las existentes quedan intactas.
+
+**Wizard de campañas (incluido en esta versión):**
+- Paso 2: selección múltiple de **temas visuales** + **tonos narrativos** (lista nueva).
+- Paso 3: **sistemas de mecánicas combinables** (multi-select).
+- Switch ON/OFF para campaña pública; `maxLength` + contador en nombre/descripción; validación por paso (Siguiente deshabilitado si faltan obligatorios); layout sin scroll.
+- Persistencia: valor principal en `theme`/`system` (enum) + selección completa en `settings` (Json).
+- Pendiente documentado: traer el manual del sistema desde Google Drive a la Wiki al seleccionarlo (ver `docs/plans`).
+
+**Rama:** `develop`
+
+---
+
 ## [2.3] — 2026-06-08
 
 ### fix + feat(ui) — Scroll fix, Toaster, landing CTA actualizada, dashboard UI

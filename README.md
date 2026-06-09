@@ -1,4 +1,4 @@
-# CampaignForge `v1.6`
+# CampaignForge `v2.4`
 
 Plataforma web completa para campañas de rol multijugador con IA integrada.
 
@@ -109,7 +109,15 @@ src/app/
 - Soporte `prefers-reduced-motion`
 - Accesibilidad: ARIA labels, focus visible, contraste WCAG AA
 
-### Próximas fases (v2.x)
+### Destacado v2.x
+- Chat de texto en tiempo real (Pusher) y canales de voz (LiveKit)
+- Migración de IA a Google Gemini 2.0 Flash
+- **Roles globales de cuenta (PLAYER/MASTER/ADMIN) + panel de administración `/admin`** (v2.4)
+- Wizard de campañas con temas/tonos múltiples y sistemas combinables (v2.4)
+
+> El detalle de funcionalidades por versión vive en [`.docs/05_changelog.md`](.docs/05_changelog.md). Algunas secciones de este README (stack/proveedores) tienen drift pendiente de reconciliar — ver `.docs/06_mejoras.md`.
+
+### Próximas fases (v3.x)
 - Chat en tiempo real (Supabase Realtime)
 - Mapas interactivos con fog of war
 - Generación de imágenes con DALL-E 3

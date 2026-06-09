@@ -1,6 +1,6 @@
 # CampaignForge — Documento de Mejoras Pendientes
 
-**Versión:** 2.3 | **Última actualización:** 2026-06-08
+**Versión:** 2.4 | **Última actualización:** 2026-06-09
 
 > Las mejoras están ordenadas por prioridad. Al implementar una, marcarla con `[x]` y moverla al changelog.
 
@@ -25,6 +25,16 @@
 **Impacto:** Usuarios no saben de nuevas sesiones, cambios de campaña, etc. fuera del workspace.
 **Approach:** Tabla `Notification` en DB. Filled por triggers de API. Dropdown al hacer click en la campana. Marcar como leídas.
 **Versión estimada:** v2.4
+
+### [ ] Reset de contraseña
+**Estado:** No existe flujo de recuperación. Si un usuario olvida su contraseña hay que editar `passwordHash` a mano (Prisma Studio).
+**Approach:** Endpoint de solicitud + token temporal por email (o pregunta de seguridad). Útil sobre todo para la cuenta ADMIN.
+**Versión estimada:** v2.x
+
+### [ ] Manual del sistema desde Google Drive → Wiki
+**Estado:** Documentado en `docs/plans/2026-06-08-...`. Al seleccionar un sistema (no CUSTOM) en el wizard, traer su manual desde una cuenta de Google Drive y vincularlo a la Wiki. La cuenta Drive aún no existe.
+**Approach:** Mapeo `system → fileId/carpeta`, fetch del manual y volcado a `LoreEntry`.
+**Versión estimada:** v3.0
 
 ---
 
@@ -63,17 +73,20 @@
 
 ## Prioridad MEDIA — Mejoras de código y calidad
 
-### [ ] Indicadores de campo requerido en formularios
-Agregar asterisco rojo o badge "requerido" en labels de campos con `required`.
+### [x] Indicadores de campo requerido en formularios ✅ v2.4
+Asterisco rojo global en `Input`/`Textarea` vía prop `required`.
 
-### [ ] Contador de caracteres en textareas
-Agregar `maxLength` + contador visual en textareas principales.
+### [x] Contador de caracteres en textareas ✅ v2.4
+`maxLength` + contador visual en nombre y descripción del wizard de campañas.
 
 ### [ ] `aria-invalid` y `aria-describedby` en inputs
 Actualizar `src/components/ui/input.tsx` para aceptar y propagar `error` como `aria-invalid` + mensaje vinculado.
 
 ### [ ] `alt` text descriptivo en imágenes de NPCs y personajes
 Archivos afectados: `npcs/page.tsx`, `characters/[characterId]/page.tsx`.
+
+### [ ] Reconciliar `README.md` con el estado real
+El README quedó desfasado (dice v1.6, OpenAI GPT-4o, Supabase) mientras el stack real es Gemini 2.0, auth JWT propio sobre Neon y Pusher/LiveKit. Actualizarlo a fondo en una pasada de documentación dedicada.
 
 ---
 
@@ -130,3 +143,11 @@ La app está en español. Soporte para inglés y portugués.
 | v2.3 | Mensajes de error amigables para usuario final |
 | v2.3 | Dashboard: campañas primero, stats compactos |
 | v2.3 | Detalle campaña: contadores compactos en chips |
+| v2.4 | **Roles globales de cuenta (PLAYER/MASTER/ADMIN)** |
+| v2.4 | **Panel de administración `/admin` (tabla + switch de máster)** |
+| v2.4 | Gate de creación de campañas (API 403 + UI + ruta) |
+| v2.4 | Bootstrap de admin por allowlist `ADMIN_EMAILS` |
+| v2.4 | Wizard de campañas: temas/tonos múltiples + sistemas combinables |
+| v2.4 | Switch público ON/OFF, validación por paso, layout sin scroll |
+| v2.4 | Asterisco de requerido + contador de caracteres |
+| v2.4 | Fix navegación: logout → home, `/` logueado → dashboard |

@@ -1,6 +1,6 @@
 # CampaignForge — Documentación Técnica
 
-**Versión:** 2.3 | **Última actualización:** 2026-06-08
+**Versión:** 2.4 | **Última actualización:** 2026-06-09
 
 ---
 
@@ -119,6 +119,25 @@ sequenceDiagram
 
 ---
 
+## Roles y autorización
+
+**Dos niveles independientes:**
+- **Rol global** `User.role` (`PLAYER` | `MASTER` | `ADMIN`): capacidad de cuenta. `getUser()` ya lo devuelve en cada request.
+- **Rol por campaña** `CampaignMember.role` (`MASTER` | `PLAYER` | `SPECTATOR`): qué es el usuario dentro de cada campaña.
+
+**Resolución del rol global** (`lib/auth.ts` → `resolveRoleForEmail(email, current?)`):
+- Si `email ∈ ADMIN_EMAILS` (normalizado) → `ADMIN`.
+- Si no, conserva el rol actual (`current`) — la allowlist **promueve, nunca degrada**.
+- Sin rol previo (registro) → `PLAYER`.
+- Se aplica en `registerUser` (al crear) y en `loginUser` (promueve cuentas pre-existentes, con `update` solo si cambió).
+
+**Enforcement en 3 capas** (no confiar solo en ocultar UI):
+1. **API**: `POST /api/campaigns` → `403` si `PLAYER`; `/api/admin/*` → `403` si no `ADMIN`.
+2. **UI**: CTAs de crear campaña ocultos para PLAYER; link `/admin` solo para ADMIN.
+3. **Ruta**: `layout.tsx` server-side en `/dashboard/new-campaign` (redirige PLAYER) y `/admin` (redirige no-ADMIN).
+
+---
+
 ## Chat en tiempo real — Flujo Pusher
 
 ```mermaid
@@ -158,6 +177,7 @@ classDiagram
         +displayName: String
         +passwordHash: String?
         +avatarUrl: String?
+        +role: UserRole (PLAYER/MASTER/ADMIN)
         +createdAt: DateTime
     }
 
@@ -267,9 +287,17 @@ classDiagram
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
 | GET | `/api/campaigns` | Lista campañas del usuario | Sí |
-| POST | `/api/campaigns` | Crear nueva campaña | Sí |
+| POST | `/api/campaigns` | Crear nueva campaña (`403` si `role === PLAYER`) | Sí (MASTER/ADMIN) |
 | GET | `/api/campaigns/by-slug/[slug]` | Datos básicos de campaña por slug | Sí |
+| PATCH | `/api/campaigns/by-slug/[slug]` | Editar campaña (solo máster) | Sí (master) |
 | POST | `/api/campaigns/join` | Unirse con código + trigger Pusher `member-joined` | Sí |
+
+### Administración (solo ADMIN)
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| GET | `/api/admin/users` | Lista de usuarios (id, displayName, username, email, avatarUrl, role, createdAt) | Sí (ADMIN) |
+| PATCH | `/api/admin/users/[id]` | Cambia el rol global (solo PLAYER/MASTER; no toca admins ni a uno mismo) | Sí (ADMIN) |
 
 ### Personajes y NPCs
 
@@ -345,6 +373,7 @@ sequenceDiagram
 | `MOCK_MODE` | `"true"` activa el mock layer | **Requerida** | No |
 | `DATABASE_URL` | URL de conexión PostgreSQL | No | **Requerida** |
 | `JWT_SECRET` | Secreto JWT (mín. 32 chars en prod) | Opcional | **Requerida** |
+| `ADMIN_EMAILS` | Emails (coma-separados) que se promueven a rol global ADMIN | Opcional | Recomendada |
 | `GEMINI_API_KEY` | API key de Google Gemini | Opcional | Opcional |
 | `PUSHER_APP_ID` | ID de la app Pusher | No | Recomendada |
 | `PUSHER_SECRET` | Secret de la app Pusher | No | Recomendada |
