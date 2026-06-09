@@ -55,7 +55,9 @@ export async function PATCH(
     if ("alignment" in body) data.alignment = str(body.alignment);
     if ("appearance" in body) data.appearance = str(body.appearance);
     if ("backstory" in body) data.backstory = str(body.backstory);
+    if ("ideals" in body) data.ideals = str(body.ideals);
     if ("portraitUrl" in body) data.portraitUrl = typeof body.portraitUrl === "string" && body.portraitUrl ? body.portraitUrl : null;
+    if ("bannerUrl" in body) data.bannerUrl = typeof body.bannerUrl === "string" && body.bannerUrl ? body.bannerUrl : null;
     if (typeof body.maxHitPoints === "number") data.maxHitPoints = body.maxHitPoints;
     if (typeof body.armorClass === "number") data.armorClass = body.armorClass;
     if (typeof body.speed === "number") data.speed = body.speed;
@@ -85,7 +87,9 @@ export async function PATCH(
     }
 
     return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (error) {
+    console.error("Character PATCH error:", error);
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

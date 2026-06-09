@@ -1,6 +1,6 @@
 # CampaignForge — Documento de Mejoras Pendientes
 
-**Versión:** 2.4 | **Última actualización:** 2026-06-09
+**Versión:** 2.5 | **Última actualización:** 2026-06-09
 
 > Las mejoras están ordenadas por prioridad. Al implementar una, marcarla con `[x]` y moverla al changelog.
 
@@ -8,11 +8,11 @@
 
 ## Prioridad ALTA — Funcionalidad faltante crítica
 
-### [ ] Upload real de imágenes (Cloudinary integrado en UI)
-**Estado:** Dependencias instaladas (`cloudinary`), env vars documentadas, pero el flujo de upload no está conectado a la UI.
-**Impacto:** NPCs, personajes y galería no pueden subir imágenes reales desde la app.
-**Approach:** Crear API route `/api/upload` que use el SDK de Cloudinary. Integrar en formularios de NPC, personaje (retrato) y galería.
-**Versión estimada:** v2.4
+### [ ] Upload real de imágenes (Cloudinary integrado en toda la app)
+**Estado:** El flujo ya quedó operativo en personajes (`/api/upload` + recorte de retrato/banner). Siguen faltando la galería y una pasada final de unificación en el resto de módulos visuales.
+**Impacto:** La experiencia de imágenes está resuelta en personajes, pero todavía no es homogénea en toda la plataforma.
+**Approach:** Reutilizar `ImageCropUpload` y `/api/upload` en galería y formularios restantes.
+**Versión estimada:** v2.5
 
 ### [ ] Historial de tiradas de dados por campaña/sesión
 **Estado:** Modelo `DiceRoll` existe en DB. La página `/dice` muestra datos mock hardcodeados.
@@ -138,6 +138,7 @@ La app está en español. Soporte para inglés y portugués.
 | v2.2 | Switch "ocultar tiradas" rediseñado (máster) |
 | v2.2 | Botón de dados eliminado del TopNav |
 | v2.3 | Scroll fix en todas las páginas del workspace |
+| v2.5 | Edición completa de personajes con retrato/banner recortables |
 | v2.3 | Toaster (Sonner) para notificaciones de campaña |
 | v2.3 | Landing CTA: "Crear cuenta" + "Iniciar sesión" |
 | v2.3 | Mensajes de error amigables para usuario final |

@@ -1,6 +1,6 @@
 # CampaignForge — Guía de Implementación
 
-**Versión:** 2.4 | **Última actualización:** 2026-06-09
+**Versión:** 2.5 | **Última actualización:** 2026-06-09
 
 ---
 
@@ -111,6 +111,8 @@ CLOUDINARY_CLOUD_NAME=tu-cloud-name
 CLOUDINARY_API_KEY=tu-api-key
 CLOUDINARY_API_SECRET=tu-api-secret
 ```
+
+> Si querés usar retratos y banners editables en la sección de personajes, Cloudinary deja de ser opcional en la práctica: el formulario usa `/api/upload` para recortar y persistir ambas imágenes.
 
 #### 4. Inicializar base de datos
 

@@ -92,9 +92,11 @@ model Character {
   background       String?
   alignment        String?
   backstory        String?
+  ideals           String?
   appearance       String?
   avatarUrl        String?
   portraitUrl      String?
+  bannerUrl        String?
   isAlive          Boolean                 @default(true)
   isNPC            Boolean                 @default(false)
   stats            Json                    @default("{}")

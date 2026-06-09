@@ -5,6 +5,37 @@
 
 ---
 
+## [2.5] — 2026-06-09
+
+### feat(characters) — Edición visual de personajes con retrato/banner y layout refinado
+
+**Archivos nuevos:**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `src/components/ui/image-crop-upload.tsx` | Componente client-side para seleccionar, recortar y subir imágenes a Cloudinary antes de guardarlas en la ficha. |
+
+**Archivos modificados:**
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/components/campaign/character-form.tsx` | Formulario de personaje reorganizado: stats más compactos, orden narrativo refinado, edición completa y uso de `ImageCropUpload` para retrato y banner. |
+| `src/app/(campaign)/[campaignSlug]/characters/[characterId]/edit/page.tsx` | Nueva carga de `portraitUrl` y `bannerUrl` en la edición, manteniendo permisos para dueño y máster. |
+| `src/app/(campaign)/[campaignSlug]/characters/[characterId]/page.tsx` | Detalle de personaje más compacto, con banner de cabecera, retrato real y CTA visible de edición. |
+| `src/app/api/characters/[id]/route.ts` | Soporte para `PATCH` de ficha completa: clase, trasfondo, ideales, stats, HP máximos, velocidad y URLs de imágenes. |
+| `src/app/api/characters/route.ts` | Persistencia de `portraitUrl` y `bannerUrl` al crear personajes. |
+| `src/app/api/upload/route.ts` | Upload autenticado a Cloudinary para imágenes JPEG/PNG/WebP/GIF hasta 8 MB. |
+| `prisma/schema.prisma` | `Character.bannerUrl` e `ideals` alineados con la base actual y el flujo de edición. |
+| `package.json` / `package-lock.json` | Dependencias de `cloudinary` y `react-easy-crop` para soportar el flujo visual de imágenes. |
+
+**Verificación realizada:**
+- `npm run build`
+- Actualización Prisma directa con el mismo payload que había fallado en `PATCH /api/characters/[id]`, confirmando que la escritura ya funciona con `portraitUrl` y `bannerUrl`.
+
+**Rama:** `develop`
+
+---
+
 ## [2.4] — 2026-06-09
 
 ### feat(int) — Roles globales de cuenta (PLAYER/MASTER/ADMIN) + panel de administración

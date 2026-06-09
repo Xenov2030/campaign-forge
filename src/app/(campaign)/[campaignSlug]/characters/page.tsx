@@ -71,7 +71,6 @@ export default async function CharactersPage({ params }: PageProps) {
             <Sword className="h-5 w-5 text-[#60a5fa]" />
             <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Personajes</h1>
           </div>
-          <p className="text-sm text-[var(--text-muted)]">{characters.length} aventureros en la campaña</p>
         </div>
         {canCreateCharacter && (
           <Link
@@ -105,29 +104,30 @@ export default async function CharactersPage({ params }: PageProps) {
         </div>
       ) : (
         <div className="space-y-8">
-          {myCharacters.length > 0 && (
+          {!isMaster ? (
+            <div className={grid}>
+              {myCharacters.map((c: CharType) => (
+                <CharacterCard key={c.id} character={toCardData(c)} campaignSlug={campaignSlug} canEdit isOwn />
+              ))}
+              {otherCharacters.map((c: CharType) => (
+                <CharacterCard key={c.id} character={toCardData(c)} campaignSlug={campaignSlug} canEdit={false} />
+              ))}
+            </div>
+          ) : characters.length > 0 ? (
             <div>
-              <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">Mi personaje</h2>
               <div className={grid}>
-                {myCharacters.map((c: CharType) => (
-                  <CharacterCard key={c.id} character={toCardData(c)} campaignSlug={campaignSlug} canEdit isOwn />
+                {characters.map((c: CharType) => (
+                  <CharacterCard
+                    key={c.id}
+                    character={toCardData(c)}
+                    campaignSlug={campaignSlug}
+                    canEdit
+                    isOwn={c.userId === user.id}
+                  />
                 ))}
               </div>
             </div>
-          )}
-
-          {otherCharacters.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-                {isMaster ? "Todos los personajes" : "Compañeros de aventura"}
-              </h2>
-              <div className={grid}>
-                {otherCharacters.map((c: CharType) => (
-                  <CharacterCard key={c.id} character={toCardData(c)} campaignSlug={campaignSlug} canEdit={isMaster} />
-                ))}
-              </div>
-            </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>

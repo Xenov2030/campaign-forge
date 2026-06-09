@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: result.secure_url });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json({ error: "Error al subir el archivo" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Error al subir el archivo";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

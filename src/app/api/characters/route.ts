@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       campaignId, name, race, className, subclass, level, background,
-      alignment, appearance, backstory, portraitUrl,
+      alignment, appearance, backstory, ideals, portraitUrl, bannerUrl,
       str, dex, con, int: intel, wis, cha,
       hitPoints, maxHitPoints, armorClass, speed,
     } = body;
@@ -56,7 +56,9 @@ export async function POST(request: NextRequest) {
         alignment: alignment?.trim() || null,
         appearance: appearance?.trim() || null,
         backstory: backstory?.trim() || null,
+        ideals: ideals?.trim() || null,
         portraitUrl: portraitUrl || null,
+        bannerUrl: bannerUrl || null,
         stats,
         hitPoints: hitPoints ?? 10,
         maxHitPoints: maxHitPoints ?? hitPoints ?? 10,

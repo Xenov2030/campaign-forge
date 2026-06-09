@@ -12,10 +12,10 @@ interface PageProps {
 function StatBlock({ label, value }: { label: string; value: number }) {
   const mod = Math.floor((value - 10) / 2);
   return (
-    <div className="flex flex-col items-center gap-1 bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] p-4 border border-[var(--border-subtle)]">
-      <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">{label}</p>
-      <p className="font-display text-3xl font-black text-[var(--text-primary)]">{value}</p>
-      <p className={`text-sm font-bold px-2 py-0.5 rounded ${mod >= 0 ? "text-green-400 bg-green-400/10" : "text-red-400 bg-red-400/10"}`}>
+    <div className="flex flex-col items-center gap-0.5 bg-[var(--bg-elevated)] rounded-[var(--radius-md)] p-2.5 border border-[var(--border-subtle)]">
+      <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wide">{label}</p>
+      <p className="font-display text-2xl font-black text-[var(--text-primary)]">{value}</p>
+      <p className={`text-xs font-bold px-1.5 py-0.5 rounded ${mod >= 0 ? "text-green-400 bg-green-400/10" : "text-red-400 bg-red-400/10"}`}>
         {formatModifier(mod)}
       </p>
     </div>
@@ -61,13 +61,16 @@ export default async function CharacterDetailPage({ params }: PageProps) {
 
       {/* Header */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] overflow-hidden mb-6">
-        <div className="h-24 bg-gradient-to-r from-[#60a5fa]/20 to-[#a855f7]/20" />
+        <div
+          className="h-32 bg-gradient-to-r from-[#60a5fa]/20 to-[#a855f7]/20 bg-cover bg-center"
+          style={character.bannerUrl ? { backgroundImage: `url(${character.bannerUrl})` } : undefined}
+        />
         <div className="px-6 pb-6">
-          <div className="flex items-end gap-5 -mt-12 mb-4">
-            <div className="h-24 w-24 rounded-[var(--radius-xl)] border-4 border-[var(--bg-surface)] overflow-hidden bg-[var(--bg-elevated)] shrink-0">
+          <div className="flex items-end gap-5 -mt-14 mb-4">
+            <div className="h-28 w-24 rounded-[var(--radius-xl)] border-4 border-[var(--bg-surface)] overflow-hidden bg-[var(--bg-elevated)] shrink-0">
               {character.portraitUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={character.portraitUrl} alt={character.name} className="w-full h-full object-cover" />
+                <img src={character.portraitUrl} alt={character.name} className="w-full h-full object-cover object-top" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <User className="h-10 w-10 text-[var(--text-muted)]" />
@@ -132,19 +135,25 @@ export default async function CharacterDetailPage({ params }: PageProps) {
       </div>
 
       {/* Descripción */}
-      {(character.appearance || character.backstory) && (
+      {(character.backstory || character.ideals || character.appearance) && (
         <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 mb-6">
           <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-4">Historia</h2>
-          {character.appearance && (
-            <div className="mb-4">
-              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Apariencia</p>
-              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{character.appearance}</p>
-            </div>
-          )}
           {character.backstory && (
-            <div>
+            <div className="mb-4">
               <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Trasfondo</p>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{character.backstory}</p>
+            </div>
+          )}
+          {character.ideals && (
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Ideales</p>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{character.ideals}</p>
+            </div>
+          )}
+          {character.appearance && (
+            <div>
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Apariencia</p>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{character.appearance}</p>
             </div>
           )}
         </div>

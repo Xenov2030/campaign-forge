@@ -1,4 +1,4 @@
-# CampaignForge `v2.4`
+# CampaignForge `v2.5`
 
 Plataforma web completa para campañas de rol multijugador con IA integrada.
 
@@ -12,9 +12,9 @@ Plataforma web completa para campañas de rol multijugador con IA integrada.
 |------|-----------|
 | Framework | Next.js 16 (App Router) + React 19 + TypeScript |
 | Estilos | Tailwind CSS v4 — design system dark fantasy propio |
-| Base de datos | PostgreSQL (Supabase) + Prisma v7 ORM |
+| Base de datos | PostgreSQL (Neon) + Prisma v7 ORM |
 | Auth | JWT (jose) + bcryptjs + cookies httpOnly |
-| IA | OpenAI GPT-4o |
+| IA | Google Gemini 2.0 Flash |
 | Estado | Zustand |
 | UI | Radix UI + shadcn/ui + Lucide React + Framer Motion |
 
@@ -114,6 +114,7 @@ src/app/
 - Migración de IA a Google Gemini 2.0 Flash
 - **Roles globales de cuenta (PLAYER/MASTER/ADMIN) + panel de administración `/admin`** (v2.4)
 - Wizard de campañas con temas/tonos múltiples y sistemas combinables (v2.4)
+- **Sección de personajes refinada**: cards más compactas, detalle más denso y edición completa con retrato/banner recortables y subida a Cloudinary (v2.5)
 
 > El detalle de funcionalidades por versión vive en [`.docs/05_changelog.md`](.docs/05_changelog.md). Algunas secciones de este README (stack/proveedores) tienen drift pendiente de reconciliar — ver `.docs/06_mejoras.md`.
 

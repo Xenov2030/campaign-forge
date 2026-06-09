@@ -66,7 +66,9 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 - Fichas de personaje completas adaptables a cualquier sistema
 - Estadísticas (STR, DEX, CON, INT, WIS, CHA), HP, CA, velocidad
 - Skills, saving throws, inventario, hechizos, relaciones
-- Retrato/avatar del personaje
+- Retrato/avatar del personaje + banner opcional de ficha
+- Edición completa de la ficha con recorte previo de imágenes
+- Creación y edición disponibles tanto para jugador dueño como para el máster de la campaña
 - Notificación realtime al máster cuando se crea un personaje
 
 ### 6. NPCs

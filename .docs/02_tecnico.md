@@ -304,7 +304,9 @@ classDiagram
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
 | POST | `/api/characters` | Crear personaje + trigger Pusher `character-created` | Sí (miembro) |
+| PATCH | `/api/characters/[id]` | Editar ficha completa o actualización rápida del personaje | Sí (dueño o máster) |
 | POST | `/api/npcs` | Crear NPC | Sí (master) |
+| POST | `/api/upload` | Subir imagen a Cloudinary para retratos/banners | Sí |
 
 ### Chat
 

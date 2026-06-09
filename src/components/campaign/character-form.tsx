@@ -7,7 +7,7 @@ import { Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ImageUpload } from "@/components/ui/image-upload";
+import { ImageCropUpload } from "@/components/ui/image-crop-upload";
 
 const CLASSES = ["Bárbaro","Bardo","Clérigo","Druida","Explorador","Guerrero","Hechicero","Mago","Monje","Nigromante","Paladín","Pícaro","Warlock","Personalizado"];
 const ALIGNMENTS = ["Legal Bueno","Neutral Bueno","Caótico Bueno","Legal Neutral","Neutral Verdadero","Caótico Neutral","Legal Malvado","Neutral Malvado","Caótico Malvado"];
@@ -22,6 +22,7 @@ export interface CharacterFormState {
   alignment: string;
   appearance: string;
   backstory: string;
+  ideals: string;
   str: number;
   dex: number;
   con: number;
@@ -35,7 +36,7 @@ export interface CharacterFormState {
 
 const DEFAULT_FORM: CharacterFormState = {
   name: "", race: "", className: "", subclass: "", level: 1,
-  background: "", alignment: "", appearance: "", backstory: "",
+  background: "", alignment: "", appearance: "", backstory: "", ideals: "",
   str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10,
   hitPoints: 10, armorClass: 10, speed: 30,
 };
@@ -49,8 +50,8 @@ interface StatInputProps {
 function StatInput({ label, value, onChange }: StatInputProps) {
   const mod = Math.floor((value - 10) / 2);
   return (
-    <div className="flex flex-col items-center gap-0.5 bg-[var(--bg-elevated)] rounded-[var(--radius-md)] p-2 border border-[var(--border-subtle)]">
-      <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wide">{label}</p>
+    <div className="flex flex-col items-center gap-1 bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] p-3 border border-[var(--border-subtle)]">
+      <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide">{label}</p>
       <input
         type="number"
         min={1}
@@ -58,9 +59,9 @@ function StatInput({ label, value, onChange }: StatInputProps) {
         value={value}
         onChange={(e) => onChange(Math.max(1, Math.min(30, parseInt(e.target.value) || 10)))}
         onWheel={(e) => e.currentTarget.blur()}
-        className="w-11 text-center font-display text-xl font-black text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--accent-gold)]/40 focus:border-[var(--accent-gold)] focus:outline-none transition-colors"
+        className="w-12 text-center font-display text-2xl font-black text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--accent-gold)]/40 focus:border-[var(--accent-gold)] focus:outline-none transition-colors"
       />
-      <p className={`text-xs font-bold ${mod >= 0 ? "text-green-400" : "text-red-400"}`}>
+      <p className={`text-sm font-bold ${mod >= 0 ? "text-green-400" : "text-red-400"}`}>
         {mod >= 0 ? "+" : ""}{mod}
       </p>
     </div>
@@ -72,7 +73,7 @@ interface CharacterFormProps {
   mode: "create" | "edit";
   campaignId?: string;
   characterId?: string;
-  initial?: Partial<CharacterFormState> & { portraitUrl?: string };
+  initial?: Partial<CharacterFormState> & { portraitUrl?: string; bannerUrl?: string };
 }
 
 export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characterId, initial }: CharacterFormProps) {
@@ -82,11 +83,13 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [portraitUrl, setPortraitUrl] = useState(initial?.portraitUrl ?? "");
+  const [bannerUrl, setBannerUrl] = useState(initial?.bannerUrl ?? "");
 
   const [form, setForm] = useState<CharacterFormState>(() => {
     if (mode === "edit" && initial) {
-      const { portraitUrl, ...rest } = initial;
+      const { portraitUrl, bannerUrl, ...rest } = initial;
       void portraitUrl;
+      void bannerUrl;
       return { ...DEFAULT_FORM, ...rest };
     }
     return { ...DEFAULT_FORM };
@@ -116,7 +119,7 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
         const res = await fetch(`/api/characters/${characterId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...restForm, maxHitPoints: hitPoints, portraitUrl }),
+          body: JSON.stringify({ ...restForm, maxHitPoints: hitPoints, portraitUrl, bannerUrl }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -127,7 +130,7 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
         const res = await fetch("/api/characters", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...form, campaignId, portraitUrl }),
+          body: JSON.stringify({ ...form, campaignId, portraitUrl, bannerUrl }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -148,12 +151,12 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-5">Información básica</h2>
         <div className="flex gap-6">
-          <ImageUpload
+          <ImageCropUpload
             value={portraitUrl}
             onChange={setPortraitUrl}
             folder="portraits"
             label="Retrato del personaje"
-            aspectRatio="portrait"
+            aspect="portrait"
             className="w-36 shrink-0"
           />
           <div className="flex-1 grid grid-cols-2 gap-4">
@@ -233,9 +236,24 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-5">Descripción e historia</h2>
         <div className="space-y-4">
-          <Textarea label="Apariencia física" value={form.appearance} onChange={set("appearance")} rows={3} placeholder="Describe el aspecto de tu personaje..." />
           <Textarea label="Historia / Trasfondo" value={form.backstory} onChange={set("backstory")} rows={5} placeholder="¿De dónde viene? ¿Qué le llevó a la aventura? ¿Qué motivaciones tiene?..." />
+          <Textarea label="Ideales" value={form.ideals} onChange={set("ideals")} rows={3} placeholder="¿Qué principios guían a tu personaje? ¿En qué cree?..." />
+          <Textarea label="Apariencia física" value={form.appearance} onChange={set("appearance")} rows={3} placeholder="Describe el aspecto de tu personaje..." />
         </div>
+      </div>
+
+      {/* Banner — opcional, al final y a todo el ancho */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
+        <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-1">Banner</h2>
+        <p className="text-xs text-[var(--text-muted)] mb-4">Imagen de cabecera de la ficha (opcional)</p>
+        <ImageCropUpload
+          value={bannerUrl}
+          onChange={setBannerUrl}
+          folder="banners"
+          label="Subir banner"
+          aspect="banner"
+          className="w-full"
+        />
       </div>
 
       {error && (

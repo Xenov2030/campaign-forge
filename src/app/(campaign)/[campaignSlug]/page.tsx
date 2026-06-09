@@ -65,12 +65,15 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
   // Condiciones de cada jugador, para mostrarlas (animadas) en la lista de aventureros.
   const partyChars = await prisma.character.findMany({
     where: { campaignId: campaign.id, isNPC: false },
-    select: { userId: true, conditions: true },
+    select: { userId: true, conditions: true, portraitUrl: true },
   });
-  const conditionsByUser = new Map<string, string[]>(
-    partyChars.map((c: { userId: string; conditions: unknown }) => [
+  const partyDataByUser = new Map<string, { conditions: string[]; portraitUrl: string | null }>(
+    partyChars.map((c: { userId: string; conditions: unknown; portraitUrl: string | null }) => [
       c.userId,
-      Array.isArray(c.conditions) ? (c.conditions as string[]) : [],
+      {
+        conditions: Array.isArray(c.conditions) ? (c.conditions as string[]) : [],
+        portraitUrl: c.portraitUrl,
+      },
     ]),
   );
 
@@ -114,12 +117,22 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
         {campaign.members
           .filter((m: { role: string }) => m.role !== "MASTER")
           .map((member: { id: string; userId: string; user: { displayName: string } }) => {
-            const memberConditions = conditionsByUser.get(member.userId) ?? [];
+            const memberData = partyDataByUser.get(member.userId);
+            const memberConditions = memberData?.conditions ?? [];
             return (
               <div key={member.id} className="flex items-center gap-3 p-2 rounded-[var(--radius-md)]">
-                <div className="h-8 w-8 rounded-full bg-[var(--bg-overlay)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-muted)] shrink-0">
-                  {member.user.displayName.slice(0, 2).toUpperCase()}
-                </div>
+                {memberData?.portraitUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={memberData.portraitUrl}
+                    alt={member.user.displayName}
+                    className="h-8 w-8 rounded-full border border-[var(--border-subtle)] object-cover object-top shrink-0"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-[var(--bg-overlay)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-muted)] shrink-0">
+                    {member.user.displayName.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-[var(--text-primary)] truncate">{member.user.displayName}</p>
                   {memberConditions.length > 0 ? (
@@ -350,9 +363,18 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
                 <ChevronRight className="h-4 w-4 text-[var(--text-muted)] group-hover:text-[#60a5fa] transition-colors" />
               </div>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-[#60a5fa]/10 border-2 border-[#60a5fa]/30 flex items-center justify-center shrink-0 font-display text-sm font-bold text-[#60a5fa]/70">
-                  {String(myCharacter.name).slice(0, 2).toUpperCase()}
-                </div>
+                {myCharacter.portraitUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={myCharacter.portraitUrl}
+                    alt={myCharacter.name}
+                    className="h-10 w-10 rounded-full border-2 border-[#60a5fa]/30 object-cover object-top shrink-0"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-[#60a5fa]/10 border-2 border-[#60a5fa]/30 flex items-center justify-center shrink-0 font-display text-sm font-bold text-[#60a5fa]/70">
+                    {String(myCharacter.name).slice(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-[var(--text-primary)] truncate">{myCharacter.name}</p>
                   <p className="text-xs text-[var(--text-muted)] truncate">
