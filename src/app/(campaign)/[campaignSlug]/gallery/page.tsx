@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 import { ImageIcon, Plus, X, Loader2, Trash2, ZoomIn, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useConfirmStore } from "@/store/confirm-store";
 
 interface VisualAid {
   id: string;
@@ -48,6 +50,7 @@ function ImageModal({ aid, onClose }: ModalProps) {
 export default function GalleryPage() {
   const params = useParams();
   const slug = params.campaignSlug as string;
+  const confirm = useConfirmStore((s) => s.confirm);
 
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [aids, setAids] = useState<VisualAid[]>([]);
@@ -117,14 +120,20 @@ export default function GalleryPage() {
       setPreview(null);
       setForm({ name: "", description: "", isPublic: true });
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error al subir");
+      toast.error(err instanceof Error ? err.message : "Error al subir");
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar esta ayuda visual?")) return;
+    const ok = await confirm({
+      title: "Eliminar ayuda visual",
+      description: "¿Seguro que querés eliminar esta imagen? No se puede deshacer.",
+      confirmLabel: "Eliminar",
+      danger: true,
+    });
+    if (!ok) return;
     await fetch(`/api/gallery?id=${id}`, { method: "DELETE" });
     setAids((p) => p.filter((a) => a.id !== id));
   };

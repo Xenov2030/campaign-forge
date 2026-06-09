@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 import { X, Loader2, ImageIcon } from "lucide-react";
 
 interface ImageUploadProps {
@@ -41,7 +42,7 @@ export function ImageUpload({
       if (!res.ok) throw new Error(data.error);
       onChange(data.url);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error al subir imagen");
+      toast.error(err instanceof Error ? err.message : "Error al subir imagen");
     } finally {
       setUploading(false);
     }

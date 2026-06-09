@@ -66,10 +66,22 @@ export function useChatMessages(roomId: string | null) {
       });
     };
 
+    const onEdited = (msg: ChatMessageWithUser) => {
+      setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+    };
+
+    const onDeleted = (data: { id: string }) => {
+      setMessages((prev) => prev.filter((m) => m.id !== data.id));
+    };
+
     channel.bind("new-message", handler);
+    channel.bind("message-edited", onEdited);
+    channel.bind("message-deleted", onDeleted);
 
     return () => {
       channel.unbind("new-message", handler);
+      channel.unbind("message-edited", onEdited);
+      channel.unbind("message-deleted", onDeleted);
       pusher.unsubscribe(`chat-${roomId}`);
       channelRef.current = null;
     };
@@ -114,5 +126,49 @@ export function useChatMessages(roomId: string | null) {
     }
   }, [roomId]);
 
-  return { messages, loading, sending, error, sendMessage, addMessageLocal };
+  const editMessage = useCallback(
+    async (id: string, content: string): Promise<boolean> => {
+      if (!roomId || !content.trim()) return false;
+      try {
+        const res = await fetch(`/api/chat/${roomId}/messages/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: content.trim() }),
+        });
+        if (!res.ok) throw new Error("Error editando mensaje");
+        const updated: ChatMessageWithUser = await res.json();
+        setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error editando mensaje");
+        return false;
+      }
+    },
+    [roomId]
+  );
+
+  const deleteMessage = useCallback(
+    async (id: string): Promise<void> => {
+      if (!roomId) return;
+      // Optimista: lo quitamos ya; el broadcast confirma a los demás.
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+      try {
+        await fetch(`/api/chat/${roomId}/messages/${id}`, { method: "DELETE" });
+      } catch {
+        // si falla, el próximo fetchHistory lo restaura
+      }
+    },
+    [roomId]
+  );
+
+  return {
+    messages,
+    loading,
+    sending,
+    error,
+    sendMessage,
+    addMessageLocal,
+    editMessage,
+    deleteMessage,
+  };
 }

@@ -6,7 +6,6 @@ import { TopNav } from "@/components/layout/top-nav";
 import { DiceTray } from "@/components/dice/dice-tray";
 import { MasterAssistant } from "@/components/ai/master-assistant";
 import { CampaignRealtime } from "@/components/realtime/campaign-realtime";
-import { Toaster } from "sonner";
 
 interface CampaignLayoutProps {
   children: React.ReactNode;
@@ -97,7 +96,6 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
         isMaster={isMaster}
         userId={user.id}
       />
-      <Toaster position="top-right" richColors />
       <DiceTray isMaster={isMaster} />
       {isMaster && (
         <MasterAssistant

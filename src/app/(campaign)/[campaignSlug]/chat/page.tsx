@@ -2,19 +2,51 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { Send, Loader2, MessageSquare, Sword, Dices } from "lucide-react";
+import { motion } from "framer-motion";
+import * as Popover from "@radix-ui/react-popover";
+import { Send, Loader2, MessageSquare, Sword, Dices, Smile, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatMessages, type ChatMessageWithUser } from "@/hooks/useChatMessages";
 import { useCampaignStore } from "@/store/campaign-store";
+import { useConfirmStore } from "@/store/confirm-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isToday, isYesterday } from "date-fns";
 import { es } from "date-fns/locale";
+
+const EMOJIS = [
+  "😀", "😂", "😅", "😊", "😍", "😎", "🤔", "😏",
+  "😢", "😭", "😡", "😱", "😴", "🤣", "😈", "🥳",
+  "👍", "👎", "👏", "🙌", "🙏", "💪", "👋", "👀",
+  "❤️", "🔥", "✨", "⭐", "💀", "☠️", "👹", "👻",
+  "🎲", "⚔️", "🛡️", "🏹", "🗡️", "🪄", "🧙", "🐉",
+  "🍺", "🗺️", "🏰", "💰", "💎", "📜", "🔮", "⚡",
+  "✅", "❌", "❓", "❗", "💬", "🎉", "🌙", "🤝",
+];
 
 function formatTime(dateStr: string) {
   const d = new Date(dateStr);
   if (isToday(d)) return format(d, "HH:mm");
   if (isYesterday(d)) return `Ayer ${format(d, "HH:mm")}`;
   return format(d, "d MMM, HH:mm", { locale: es });
+}
+
+function formatDateLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  if (isToday(d)) return "Hoy";
+  if (isYesterday(d)) return "Ayer";
+  return format(d, "d 'de' MMMM, yyyy", { locale: es });
+}
+
+function DateDivider({ date }: { date: string }) {
+  return (
+    <div className="flex items-center gap-3 my-4 px-2 select-none" aria-hidden="true">
+      <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+      <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider shrink-0">
+        {formatDateLabel(date)}
+      </span>
+      <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+    </div>
+  );
 }
 
 function formatDiceRoll(msg: ChatMessageWithUser) {
@@ -44,7 +76,7 @@ export default function ChatPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { setActiveTextRoomId, setChatSendMessage } = useCampaignStore();
-  const { messages, loading: loadingMsgs, sending, sendMessage } = useChatMessages(textRoomId);
+  const { messages, loading: loadingMsgs, sending, sendMessage, editMessage, deleteMessage } = useChatMessages(textRoomId);
 
   useEffect(() => {
     async function load() {
@@ -94,10 +126,35 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Auto-grow del textarea según el contenido (hasta max-h-32 = 128px).
+  const adjustHeight = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  };
+
+  const insertEmoji = (emoji: string) => {
+    const el = inputRef.current;
+    const start = el?.selectionStart ?? input.length;
+    const end = el?.selectionEnd ?? input.length;
+    const next = input.slice(0, start) + emoji + input.slice(end);
+    setInput(next);
+    requestAnimationFrame(() => {
+      const node = inputRef.current;
+      if (!node) return;
+      node.focus();
+      const pos = start + emoji.length;
+      node.setSelectionRange(pos, pos);
+      adjustHeight();
+    });
+  };
+
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed || sending) return;
     setInput("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
     const result = await sendMessage(trimmed);
     if (result !== null) inputRef.current?.focus();
   };
@@ -111,13 +168,18 @@ export default function ChatPage() {
 
   const grouped = messages.map((msg, i) => {
     const prev = messages[i - 1];
+    const sameDay =
+      !!prev &&
+      new Date(prev.createdAt).toDateString() === new Date(msg.createdAt).toDateString();
+    const showDateDivider = !sameDay;
     const isContinuation =
       !!prev &&
+      sameDay &&
       prev.user.id === msg.user.id &&
       prev.type === msg.type &&
       msg.type !== "DICE_ROLL" &&
       new Date(msg.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60_000;
-    return { msg, isContinuation };
+    return { msg, isContinuation, showDateDivider };
   });
 
   return (
@@ -158,37 +220,85 @@ export default function ChatPage() {
                 <p className="text-xs opacity-60">¡Aventureros, la historia comienza aquí!</p>
               </div>
             ) : (
-              grouped.map(({ msg, isContinuation }) => {
-                if (msg.type === "DICE_ROLL") {
-                  return <DiceRollMessage key={msg.id} msg={msg} currentUserId={currentUser?.id} />;
-                }
-                return (
-                  <TextMessage
-                    key={msg.id}
-                    msg={msg}
-                    isContinuation={isContinuation}
-                    currentUserId={currentUser?.id}
-                  />
-                );
-              })
+              grouped.map(({ msg, isContinuation, showDateDivider }) => (
+                <div key={msg.id}>
+                  {showDateDivider && <DateDivider date={msg.createdAt} />}
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                  >
+                    {msg.type === "DICE_ROLL" ? (
+                      <DiceRollMessage msg={msg} currentUserId={currentUser?.id} />
+                    ) : (
+                      <TextMessage
+                        msg={msg}
+                        isContinuation={isContinuation}
+                        currentUserId={currentUser?.id}
+                        onEdit={editMessage}
+                        onDelete={deleteMessage}
+                      />
+                    )}
+                  </motion.div>
+                </div>
+              ))
             )}
             <div ref={messagesEndRef} />
           </div>
 
           {/* Input bar */}
           <div className="shrink-0 px-4 pb-4 pt-2 bg-[var(--bg-surface)]/50 backdrop-blur-sm border-t border-[var(--border-subtle)]">
-            <div className="flex items-end gap-2 bg-[var(--bg-elevated)]/90 rounded-[var(--radius-md)] border border-[var(--border-default)] px-3 py-2 backdrop-blur-sm">
+            <div className="flex items-end gap-2 bg-[var(--bg-elevated)]/90 rounded-[var(--radius-md)] border border-[var(--border-default)] focus-within:border-[var(--border-strong)] px-3 py-2 backdrop-blur-sm transition-colors">
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  adjustHeight();
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="Escribe un mensaje..."
                 rows={1}
                 disabled={!textRoomId}
-                className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none outline-none max-h-32 leading-relaxed disabled:opacity-40"
-                style={{ scrollbarWidth: "none" }}
+                className="flex-1 bg-transparent text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none border-0 max-h-32 leading-relaxed disabled:opacity-40"
+                style={{ scrollbarWidth: "none", outline: "none", boxShadow: "none" }}
               />
+
+              <Popover.Root>
+                <Popover.Trigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Insertar emoji"
+                    disabled={!textRoomId}
+                    className="shrink-0 h-7 w-7 rounded flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-overlay)] transition-colors disabled:opacity-40"
+                  >
+                    <Smile className="h-4 w-4" />
+                  </button>
+                </Popover.Trigger>
+                <Popover.Portal>
+                  <Popover.Content
+                    side="top"
+                    align="end"
+                    sideOffset={8}
+                    className="z-50 w-64 max-h-56 overflow-y-auto bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] p-2 shadow-[var(--shadow-lg)]"
+                  >
+                    <div className="grid grid-cols-8 gap-0.5">
+                      {EMOJIS.map((e) => (
+                        <button
+                          key={e}
+                          type="button"
+                          onClick={() => insertEmoji(e)}
+                          aria-label={`Emoji ${e}`}
+                          className="h-7 w-7 flex items-center justify-center rounded hover:bg-[var(--bg-elevated)] text-lg leading-none transition-colors"
+                        >
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
+
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || sending || !textRoomId}
@@ -214,13 +324,38 @@ export default function ChatPage() {
 
 // ── Sub-components ──────────────────────────────────────────────────────────
 
-function TextMessage({ msg, isContinuation, currentUserId }: {
+function TextMessage({ msg, isContinuation, currentUserId, onEdit, onDelete }: {
   msg: ChatMessageWithUser;
   isContinuation: boolean;
   currentUserId?: string;
+  onEdit: (id: string, content: string) => Promise<boolean>;
+  onDelete: (id: string) => void;
 }) {
+  const isOwn = msg.user.id === currentUserId;
+  const confirm = useConfirmStore((s) => s.confirm);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(msg.content);
+
+  const startEdit = () => {
+    setDraft(msg.content);
+    setEditing(true);
+  };
+  const cancelEdit = () => {
+    setEditing(false);
+    setDraft(msg.content);
+  };
+  const saveEdit = async () => {
+    const trimmed = draft.trim();
+    if (!trimmed || trimmed === msg.content) {
+      cancelEdit();
+      return;
+    }
+    const ok = await onEdit(msg.id, trimmed);
+    if (ok) setEditing(false);
+  };
+
   return (
-    <div className={cn("flex gap-3 group", isContinuation ? "mt-0.5" : "mt-4")}>
+    <div className={cn("flex gap-3 group relative", isContinuation ? "mt-0.5" : "mt-4")}>
       <div className="w-8 shrink-0">
         {!isContinuation && (
           <Avatar className="h-8 w-8">
@@ -236,17 +371,77 @@ function TextMessage({ msg, isContinuation, currentUserId }: {
           <div className="flex items-baseline gap-2 mb-0.5">
             <span className={cn(
               "text-sm font-semibold",
-              msg.user.id === currentUserId ? "text-[var(--accent-gold)]" : "text-[var(--text-primary)]"
+              isOwn ? "text-[var(--accent-gold)]" : "text-[var(--text-primary)]"
             )}>
               {msg.user.displayName}
             </span>
             <span className="text-[10px] text-[var(--text-muted)]">{formatTime(msg.createdAt)}</span>
           </div>
         )}
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap">
-          {msg.content}
-        </p>
+
+        {editing ? (
+          <div>
+            <textarea
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  saveEdit();
+                }
+                if (e.key === "Escape") cancelEdit();
+              }}
+              rows={Math.min(Math.max(draft.split("\n").length, 1), 6)}
+              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-base text-[var(--text-primary)] px-2 py-1 outline-none focus:border-[var(--accent-gold)]/50 resize-none leading-relaxed"
+            />
+            <div className="flex items-center gap-3 mt-1 text-xs">
+              <button onClick={saveEdit} className="text-[var(--accent-gold)] hover:brightness-110 font-medium">
+                Guardar
+              </button>
+              <button onClick={cancelEdit} className="text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
+                Cancelar
+              </button>
+              <span className="text-[10px] text-[var(--text-muted)]/60">Enter para guardar · Esc para cancelar</span>
+            </div>
+          </div>
+        ) : (
+          <p className="text-base text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap">
+            {msg.content}
+            {msg.editedAt && (
+              <span className="text-[10px] text-[var(--text-muted)] ml-1.5 align-baseline">(editado)</span>
+            )}
+          </p>
+        )}
       </div>
+
+      {/* Acciones (solo mensajes propios, al hover) */}
+      {isOwn && !editing && (
+        <div className="absolute right-0 -top-2 hidden group-hover:flex items-center gap-0.5 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-sm)] p-0.5 shadow-[var(--shadow-md)]">
+          <button
+            onClick={startEdit}
+            aria-label="Editar mensaje"
+            className="h-6 w-6 rounded flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+          >
+            <Pencil className="h-3 w-3" />
+          </button>
+          <button
+            onClick={async () => {
+              const ok = await confirm({
+                title: "Borrar mensaje",
+                description: "¿Seguro que querés borrar este mensaje? No se puede deshacer.",
+                confirmLabel: "Borrar",
+                danger: true,
+              });
+              if (ok) onDelete(msg.id);
+            }}
+            aria-label="Borrar mensaje"
+            className="h-6 w-6 rounded flex items-center justify-center text-[var(--text-muted)] hover:text-red-400 hover:bg-[var(--bg-elevated)] transition-colors"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Toaster } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -41,6 +43,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col antialiased bg-[var(--bg-base)] text-[var(--text-primary)]">
         {children}
+        <Toaster position="top-right" richColors />
+        <ConfirmDialog />
       </body>
     </html>
   );
