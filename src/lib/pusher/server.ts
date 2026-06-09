@@ -23,3 +23,7 @@ export function chatChannel(roomId: string) {
 export function campaignChannel(campaignId: string) {
   return `campaign-${campaignId}`;
 }
+
+export function userChannel(userId: string) {
+  return `user-${userId}`;
+}

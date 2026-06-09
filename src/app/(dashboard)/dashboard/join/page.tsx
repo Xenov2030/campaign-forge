@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Users, Sparkles } from "lucide-react";
+import { ChevronLeft, Users, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function JoinCampaignPage() {
-  const router = useRouter();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const [campaignName, setCampaignName] = useState("");
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +30,11 @@ export default function JoinCampaignPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Código inválido");
 
-      router.push(`/${data.slug}`);
+      setCampaignName(data.campaignName ?? "");
+      setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al unirse");
+    } finally {
       setLoading(false);
     }
   };
@@ -56,6 +58,24 @@ export default function JoinCampaignPage() {
         </p>
       </div>
 
+      {sent ? (
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 shadow-[var(--shadow-lg)] text-center">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent-nature)]/10 border border-[var(--accent-nature)]/30 mb-3">
+            <Check className="h-6 w-6 text-[var(--accent-nature)]" />
+          </div>
+          <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-1">Solicitud enviada</h2>
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
+            Tu solicitud para unirte a {campaignName ? `"${campaignName}"` : "la campaña"} fue enviada al máster.
+            Te avisaremos cuando responda.
+          </p>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center h-10 px-5 rounded-[var(--radius-md)] text-sm font-semibold bg-[var(--accent-gold)] text-[var(--bg-base)] hover:brightness-110 transition-all"
+          >
+            Volver al dashboard
+          </Link>
+        </div>
+      ) : (
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 shadow-[var(--shadow-lg)]">
         <form onSubmit={handleJoin} className="space-y-4">
           <div>
@@ -81,10 +101,11 @@ export default function JoinCampaignPage() {
 
           <Button type="submit" loading={loading} className="w-full" size="lg">
             <Sparkles className="h-4 w-4" />
-            Unirse a la aventura
+            Solicitar unirse
           </Button>
         </form>
       </div>
+      )}
     </div>
   );
 }

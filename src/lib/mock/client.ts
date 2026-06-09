@@ -193,6 +193,8 @@ export function createMockClient() {
     gameMap: makeModel("gameMaps"),
     visualAid: makeModel("visualAids"),
     generatedContent: makeModel("generatedContent"),
+    joinRequest: makeModel("joinRequests"),
+    notification: makeModel("notifications"),
     $transaction: async (
       ops: Promise<unknown>[] | ((tx: MockClientModels) => Promise<unknown>)
     ) => {

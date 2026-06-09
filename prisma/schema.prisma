@@ -26,6 +26,8 @@ model User {
   notes             Note[]
   sessions          Session[]
   visualAids        VisualAid[]
+  joinRequests      JoinRequest[]
+  notifications     Notification[]
 
   @@map("users")
 }
@@ -63,6 +65,7 @@ model Campaign {
   sessions         Session[]
   events           TimelineEvent[]
   visualAids       VisualAid[]
+  joinRequests     JoinRequest[]
 
   @@map("campaigns")
 }
@@ -496,6 +499,48 @@ model GeneratedContent {
   user       User        @relation(fields: [userId], references: [id])
 
   @@map("generated_content")
+}
+
+model JoinRequest {
+  id         String            @id @default(cuid())
+  campaignId String
+  userId     String
+  status     JoinRequestStatus @default(PENDING)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  campaign   Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
+  @@map("join_requests")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  link      String?
+  data      Json             @default("{}")
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+enum JoinRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  JOIN_REQUEST
+  JOIN_ACCEPTED
+  JOIN_REJECTED
 }
 
 enum CampaignTheme {

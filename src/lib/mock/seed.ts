@@ -32,6 +32,8 @@ export interface MockDB {
   gameMaps: MockRecord[];
   visualAids: MockRecord[];
   generatedContent: MockRecord[];
+  joinRequests: MockRecord[];
+  notifications: MockRecord[];
 }
 
 export const seedData: MockDB = {
@@ -526,4 +528,6 @@ export const seedData: MockDB = {
   gameMaps: [],
   visualAids: [],
   generatedContent: [],
+  joinRequests: [],
+  notifications: [],
 };
