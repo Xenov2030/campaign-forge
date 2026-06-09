@@ -7,6 +7,7 @@ import {
   Crown, Sparkles, Heart, ChevronRight, Skull, Package, Music,
 } from "lucide-react";
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
+import { InviteCode } from "@/components/campaign/invite-code";
 
 interface CampaignPageProps {
   params: Promise<{ campaignSlug: string }>;
@@ -351,15 +352,7 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
 
           {membersCard}
 
-          {isMaster && (
-            <div className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-4">
-              <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-2">Código de invitación</p>
-              <p className="font-mono text-lg font-bold text-[var(--accent-gold)] tracking-widest">
-                {campaign.inviteCode.slice(0, 6).toUpperCase()}
-              </p>
-              <p className="text-xs text-[var(--text-muted)] mt-1">Comparte este código con tus jugadores</p>
-            </div>
-          )}
+          {isMaster && <InviteCode code={campaign.inviteCode} />}
 
           {isMaster && ambienceCard}
         </div>
