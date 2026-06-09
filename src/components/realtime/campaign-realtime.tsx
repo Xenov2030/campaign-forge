@@ -41,12 +41,19 @@ export function CampaignRealtime({ campaignId, isMaster, userId }: Props) {
       router.refresh();
     };
 
+    // HP / condiciones cambiaron en otro cliente (combate en vivo).
+    const onCharacterUpdated = () => {
+      router.refresh();
+    };
+
     channel.bind("member-joined", onMemberJoined);
     channel.bind("character-created", onCharacterCreated);
+    channel.bind("character-updated", onCharacterUpdated);
 
     return () => {
       channel.unbind("member-joined", onMemberJoined);
       channel.unbind("character-created", onCharacterCreated);
+      channel.unbind("character-updated", onCharacterUpdated);
       pusher.unsubscribe(`campaign-${campaignId}`);
     };
   }, [campaignId, isMaster, router]);

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
 import { InviteCode } from "@/components/campaign/invite-code";
+import { ConditionBadges } from "@/components/campaign/condition-badges";
 
 interface CampaignPageProps {
   params: Promise<{ campaignSlug: string }>;
@@ -61,6 +62,18 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
     ? campaign._count.npcs
     : await prisma.nPC.count({ where: { campaignId: campaign.id, isKnownToParty: true } });
 
+  // Condiciones de cada jugador, para mostrarlas (animadas) en la lista de aventureros.
+  const partyChars = await prisma.character.findMany({
+    where: { campaignId: campaign.id, isNPC: false },
+    select: { userId: true, conditions: true },
+  });
+  const conditionsByUser = new Map<string, string[]>(
+    partyChars.map((c: { userId: string; conditions: unknown }) => [
+      c.userId,
+      Array.isArray(c.conditions) ? (c.conditions as string[]) : [],
+    ]),
+  );
+
   const stats = [
     { label: "Personajes", count: campaign._count.characters, href: `/${campaignSlug}/characters`, icon: <Sword className="h-5 w-5" />, color: "#60a5fa" },
     { label: "NPCs", count: npcCount, href: `/${campaignSlug}/npcs`, icon: <Users className="h-5 w-5" />, color: "#34d399" },
@@ -100,17 +113,24 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
         </div>
         {campaign.members
           .filter((m: { role: string }) => m.role !== "MASTER")
-          .map((member: { id: string; user: { displayName: string } }) => (
-            <div key={member.id} className="flex items-center gap-3 p-2 rounded-[var(--radius-md)]">
-              <div className="h-8 w-8 rounded-full bg-[var(--bg-overlay)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-muted)]">
-                {member.user.displayName.slice(0, 2).toUpperCase()}
+          .map((member: { id: string; userId: string; user: { displayName: string } }) => {
+            const memberConditions = conditionsByUser.get(member.userId) ?? [];
+            return (
+              <div key={member.id} className="flex items-center gap-3 p-2 rounded-[var(--radius-md)]">
+                <div className="h-8 w-8 rounded-full bg-[var(--bg-overlay)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-muted)] shrink-0">
+                  {member.user.displayName.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-[var(--text-primary)] truncate">{member.user.displayName}</p>
+                  {memberConditions.length > 0 ? (
+                    <ConditionBadges conditions={memberConditions} size="xs" />
+                  ) : (
+                    <p className="text-xs text-[var(--text-muted)]">Jugador</p>
+                  )}
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm text-[var(--text-primary)] truncate">{member.user.displayName}</p>
-                <p className="text-xs text-[var(--text-muted)]">Jugador</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
     </div>
   );
@@ -347,6 +367,11 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
                 </div>
                 <span className="text-xs text-[var(--text-muted)] shrink-0">{myCharacter.hitPoints}/{myCharacter.maxHitPoints}</span>
               </div>
+              {Array.isArray(myCharacter.conditions) && myCharacter.conditions.length > 0 && (
+                <div className="mt-2">
+                  <ConditionBadges conditions={myCharacter.conditions as string[]} size="xs" />
+                </div>
+              )}
             </Link>
           )}
 

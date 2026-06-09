@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, Heart, Shield, Zap, Star, User } from "lucide-react";
+import { ChevronLeft, Heart, Shield, Zap, Star, User, Pencil } from "lucide-react";
 import { formatModifier } from "@/lib/utils";
 
 interface PageProps {
@@ -45,10 +45,19 @@ export default async function CharacterDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <Link href={`/${campaignSlug}/characters`} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6">
-        <ChevronLeft className="h-4 w-4" />
-        Volver a personajes
-      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <Link href={`/${campaignSlug}/characters`} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+          <ChevronLeft className="h-4 w-4" />
+          Volver a personajes
+        </Link>
+        <Link
+          href={`/${campaignSlug}/characters/${characterId}/edit`}
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm font-medium bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors"
+        >
+          <Pencil className="h-4 w-4" />
+          Editar
+        </Link>
+      </div>
 
       {/* Header */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] overflow-hidden mb-6">
