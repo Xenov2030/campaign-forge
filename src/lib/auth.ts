@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import type { UserRole } from "@prisma/client";
 import prisma from "./prisma";
 
 const SECRET = new TextEncoder().encode(
@@ -70,6 +71,29 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
+// ── Roles globales (allowlist de ADMIN por entorno) ──────────
+// Formato esperado: ADMIN_EMAILS="uno@mail.com,dos@mail.com"
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+/**
+ * Resuelve el rol GLOBAL que le corresponde a un email.
+ * Se llama en dos momentos:
+ *   - Al registrar:  resolveRoleForEmail(email)            → current = undefined
+ *   - Al hacer login: resolveRoleForEmail(email, user.role) → current = rol actual
+ *
+ * Disponible: la constante ADMIN_EMAILS (emails en minúsculas, ya normalizados).
+ */
+export function resolveRoleForEmail(email: string, current?: UserRole): UserRole {
+  // 1. La allowlist promueve a ADMIN (independientemente del rol actual).
+  if (ADMIN_EMAILS.includes(email.trim().toLowerCase())) return "ADMIN";
+  // 2. No está en la lista: nunca degradar. Conservar el rol actual si existe.
+  // 3. Registro nuevo sin rol previo → PLAYER por defecto.
+  return current ?? "PLAYER";
+}
+
 // ── Register ─────────────────────────────────────────────────
 async function generateUniqueUsername(base: string): Promise<string> {
   const slug = base
@@ -110,6 +134,7 @@ export async function registerUser(data: {
       username,
       displayName: data.displayName.trim() || data.fullName.trim(),
       passwordHash,
+      role: resolveRoleForEmail(data.email),
     },
   });
 
@@ -128,6 +153,12 @@ export async function loginUser(email: string, password: string) {
   if (process.env.MOCK_MODE !== "true") {
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) throw new Error("Email o contraseña incorrectos");
+  }
+
+  // Promueve a ADMIN a cuentas pre-existentes cuyo email esté en la allowlist.
+  const resolvedRole = resolveRoleForEmail(user.email, user.role);
+  if (resolvedRole !== user.role) {
+    return prisma.user.update({ where: { id: user.id }, data: { role: resolvedRole } });
   }
 
   return user;

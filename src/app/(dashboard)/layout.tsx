@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Crown, LogOut } from "lucide-react";
+import { Crown, LogOut, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { APP_VERSION } from "@/lib/version";
 
@@ -31,6 +31,17 @@ export default async function DashboardLayout({
         </Link>
 
         <nav aria-label="Acciones de usuario" className="flex items-center gap-2 md:gap-3">
+          {user.role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 text-sm text-[var(--accent-gold)] hover:brightness-110 transition-colors px-3 py-2 rounded hover:bg-[var(--accent-gold)]/10 min-h-[36px]"
+              aria-label="Panel de administración"
+            >
+              <Shield className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Admin</span>
+            </Link>
+          )}
+
           {/* Display name — hidden on small screens */}
           <span className="hidden md:block text-sm font-medium text-[var(--text-primary)] truncate max-w-[160px]">
             {user.displayName}

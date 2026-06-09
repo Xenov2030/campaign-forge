@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { clearSession } from "@/lib/auth";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   await clearSession();
-  return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"));
+  // Redirige a la home usando el origen real del request (sirve en local y en prod,
+  // sin depender de NEXT_PUBLIC_APP_URL).
+  return NextResponse.redirect(new URL("/", request.url));
 }

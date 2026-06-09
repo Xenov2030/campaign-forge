@@ -16,44 +16,55 @@ const features = [
   {
     icon: <Crown className="h-6 w-6" />,
     title: "Gestión de Campañas",
-    description: "Crea y administra múltiples campañas. Dashboard completo para el máster con control total.",
+    description:
+      "Crea y administra múltiples campañas. Dashboard completo para el máster con control total.",
     color: "var(--accent-gold)",
   },
   {
     icon: <Sword className="h-6 w-6" />,
     title: "Fichas de Personaje",
-    description: "Fichas adaptables a cualquier sistema de juego. D&D 5e, CoC, Pathfinder y más.",
+    description:
+      "Fichas adaptables a cualquier sistema de juego. D&D 5e, CoC, Pathfinder y más.",
     color: "#60a5fa",
   },
   {
     icon: <Sparkles className="h-6 w-6" />,
     title: "IA Generativa",
-    description: "Genera NPCs, monstruos, objetos, quests, ciudades y resúmenes de sesión con IA.",
+    description:
+      "Genera NPCs, monstruos, objetos, quests, ciudades y resúmenes de sesión con IA.",
     color: "#a855f7",
   },
   {
     icon: <Users className="h-6 w-6" />,
     title: "Multijugador",
-    description: "Invita jugadores, gestiona roles y mantén campañas completamente aisladas.",
+    description:
+      "Invita jugadores, gestiona roles y mantén campañas completamente aisladas.",
     color: "#34d399",
   },
   {
     icon: <Map className="h-6 w-6" />,
     title: "Mapas Interactivos",
-    description: "Sube mapas, añade marcadores, fog of war y posiciones de personajes en tiempo real.",
+    description:
+      "Sube mapas, añade marcadores, fog of war y posiciones de personajes en tiempo real.",
     color: "#f59e0b",
   },
   {
     icon: <BookOpen className="h-6 w-6" />,
     title: "Wiki & Lore",
-    description: "Wiki interna con timeline, facciones, relaciones y toda la lore de tu mundo.",
+    description:
+      "Wiki interna con timeline, facciones, relaciones y toda la lore de tu mundo.",
     color: "#f87171",
   },
 ];
 
 const systems = [
-  "D&D 5e", "Pathfinder 2e", "Call of Cthulhu",
-  "Vampire: La Mascarada", "Shadowrun", "Starfinder", "Personalizado"
+  "D&D 5e",
+  "Pathfinder 2e",
+  "Call of Cthulhu",
+  "Vampire: La Mascarada",
+  "Shadowrun",
+  "Starfinder",
+  "Personalizado",
 ];
 
 export default function LandingPage() {
@@ -64,9 +75,16 @@ export default function LandingPage() {
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 h-16 border-b border-[var(--border-subtle)] bg-[var(--bg-base)]/80 backdrop-blur-md"
         aria-label="Navegación principal"
       >
-        <Link href="/" className="flex items-center gap-2" aria-label="CampaignForge - Inicio">
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          aria-label="CampaignForge - Inicio"
+        >
           <div className="h-8 w-8 rounded bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/40 flex items-center justify-center">
-            <Crown className="h-4 w-4 text-[var(--accent-gold)]" aria-hidden="true" />
+            <Crown
+              className="h-4 w-4 text-[var(--accent-gold)]"
+              aria-hidden="true"
+            />
           </div>
           <span className="font-display text-lg font-bold text-[var(--text-primary)] tracking-wider">
             CampaignForge
@@ -92,7 +110,10 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
         {/* Background effects */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          aria-hidden="true"
+        >
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[var(--accent-gold)]/5 blur-[120px]" />
           <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-[var(--accent-arcane)]/8 blur-[100px]" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-[600px] bg-gradient-to-b from-transparent via-[var(--accent-gold)]/20 to-transparent" />
@@ -111,18 +132,17 @@ export default function LandingPage() {
         <div className="relative text-center px-4 sm:px-6 max-w-5xl mx-auto stagger-children">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--accent-gold)]/30 bg-[var(--accent-gold)]/5 text-xs text-[var(--accent-gold)] mb-8">
             <Sparkles className="h-3 w-3" aria-hidden="true" />
-            Generación de contenido con GPT-4o
+            Generación de contenido con Gemini AI
             <Star className="h-3 w-3" aria-hidden="true" />
           </div>
 
           <h1 className="font-display text-5xl sm:text-6xl md:text-8xl font-black text-[var(--text-primary)] tracking-tight leading-[0.9] mb-6">
-            Forja Tu{" "}
-            <span className="gold-text">Leyenda</span>
+            Forja Tu <span className="gold-text">Leyenda</span>
           </h1>
 
           <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 font-body leading-relaxed">
-            La plataforma definitiva para campañas de rol. Gestiona personajes, mundos y narrativas
-            con el poder de la inteligencia artificial.
+            La plataforma definitiva para campañas de rol. Gestiona personajes,
+            mundos y narrativas con el poder de la inteligencia artificial.
           </p>
 
           {/* Systems */}
@@ -151,7 +171,8 @@ export default function LandingPage() {
             Todo lo que necesitas
           </h2>
           <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto">
-            Una plataforma completa diseñada específicamente para narradores y jugadores de rol
+            Una plataforma completa diseñada específicamente para narradores y
+            jugadores de rol
           </p>
         </div>
 
@@ -185,7 +206,10 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section className="py-20 md:py-32 px-4 sm:px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          aria-hidden="true"
+        >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-[var(--accent-gold)]/5 blur-[80px]" />
         </div>
 
@@ -196,7 +220,8 @@ export default function LandingPage() {
             <span className="gold-text">comienza aquí</span>
           </h2>
           <p className="text-[var(--text-secondary)] text-lg mb-10">
-            Únete a narradores que ya usan CampaignForge para crear aventuras inolvidables.
+            Únete a narradores que ya usan CampaignForge para crear aventuras
+            inolvidables.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link

@@ -59,6 +59,9 @@ export default async function DashboardPage() {
   const user = await getUser();
   if (!user) redirect("/login");
 
+  // Solo MASTER/ADMIN pueden crear campañas (gatea los CTA de "crear").
+  const canMaster = user.role !== "PLAYER";
+
   const { masteredCampaigns, playerCampaigns } = await getUserCampaigns(user.id);
 
   return (
@@ -83,13 +86,15 @@ export default async function DashboardPage() {
                 Mis campañas
               </h2>
             </div>
-            <Link
-              href="/dashboard/new-campaign"
-              className="inline-flex items-center gap-1.5 h-8 px-3 bg-[var(--accent-gold)] text-[var(--bg-base)] font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] text-xs"
-            >
-              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-              Nueva campaña
-            </Link>
+            {canMaster && (
+              <Link
+                href="/dashboard/new-campaign"
+                className="inline-flex items-center gap-1.5 h-8 px-3 bg-[var(--accent-gold)] text-[var(--bg-base)] font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)] text-xs"
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                Nueva campaña
+              </Link>
+            )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {masteredCampaigns.map((campaign: (typeof masteredCampaigns)[number]) => {
@@ -214,16 +219,20 @@ export default async function DashboardPage() {
             Tu primera aventura espera
           </h3>
           <p className="text-[var(--text-secondary)] max-w-md mx-auto mb-8">
-            Crea tu primera campaña como máster o únete a una existente con un código de invitación.
+            {canMaster
+              ? "Crea tu primera campaña como máster o únete a una existente con un código de invitación."
+              : "Únete a una campaña existente con un código de invitación para empezar a jugar."}
           </p>
           <div className="flex gap-4 justify-center">
-            <Link
-              href="/dashboard/new-campaign"
-              className="inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent-gold)] text-[var(--bg-base)] font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)]"
-            >
-              <Plus className="h-4 w-4" />
-              Crear campaña
-            </Link>
+            {canMaster && (
+              <Link
+                href="/dashboard/new-campaign"
+                className="inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent-gold)] text-[var(--bg-base)] font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all shadow-[var(--glow-gold)]"
+              >
+                <Plus className="h-4 w-4" />
+                Crear campaña
+              </Link>
+            )}
             <Link
               href="/dashboard/join"
               className="inline-flex items-center gap-2 h-11 px-6 border border-[var(--border-default)] text-[var(--text-primary)] rounded-[var(--radius-md)] hover:border-[var(--accent-gold)] transition-all"

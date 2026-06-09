@@ -8,6 +8,14 @@ export async function POST(request: NextRequest) {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    // Solo MASTER/ADMIN pueden crear campañas. Un PLAYER no está habilitado.
+    if (user.role === "PLAYER") {
+      return NextResponse.json(
+        { error: "No tenés permiso para crear campañas. Pedile a un administrador que te habilite como máster." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { name, description, themes, tones, systems, isPublic } = body;
 
