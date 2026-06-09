@@ -64,7 +64,7 @@ export default function NewLorePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
       <Link href={`/${slug}/lore`} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6">
         <ChevronLeft className="h-4 w-4" />
         Volver al lore

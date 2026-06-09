@@ -50,7 +50,7 @@ export function CampaignSettingsForm({ slug, initial }: Props) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
       <Link
         href={`/${slug}`}
         className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors mb-6"

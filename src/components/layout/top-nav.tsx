@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCampaignStore } from "@/store/campaign-store";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserMenu } from "@/components/layout/user-menu";
 
 interface TopNavProps {
   campaignName: string;
@@ -95,18 +95,7 @@ export function TopNav({
 
         <div className="h-6 w-px bg-[var(--border-subtle)] mx-0.5 md:mx-1" aria-hidden="true" />
 
-        <Link
-          href="/profile"
-          aria-label={`Editar perfil de ${userDisplayName}`}
-          className="rounded-full focus-visible:outline-2 focus-visible:outline-[var(--accent-gold)] focus-visible:outline-offset-2 min-h-[36px] min-w-[36px] flex items-center justify-center"
-        >
-          <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-[var(--accent-gold)] transition-all">
-            <AvatarImage src={userAvatarUrl} alt={`Avatar de ${userDisplayName}`} />
-            <AvatarFallback className="text-xs">
-              {userDisplayName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
+        <UserMenu displayName={userDisplayName} avatarUrl={userAvatarUrl} />
       </div>
     </header>
   );
