@@ -40,6 +40,7 @@ export default async function NPCsPage({ params }: PageProps) {
   const cards: NpcCardData[] = visible.map((n: NpcRow) => ({
     id: n.id,
     name: n.name,
+    nickname: n.nickname,
     portraitUrl: n.portraitUrl,
     race: n.race,
     occupation: n.occupation,

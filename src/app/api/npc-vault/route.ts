@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 function vaultDataFromNpc(npc: Record<string, unknown>) {
   return {
     name: npc.name as string,
+    nickname: (npc.nickname as string | null) ?? null,
     race: (npc.race as string | null) ?? null,
     occupation: (npc.occupation as string | null) ?? null,
     age: (npc.age as string | null) ?? null,
@@ -62,14 +63,11 @@ export async function POST(request: NextRequest) {
     if (npc.campaign.masterId !== user.id) {
       return NextResponse.json({ error: "Solo el máster puede guardar NPCs en el baúl" }, { status: 403 });
     }
-    if (npc.vaultNpcId) {
-      return NextResponse.json({ error: "Este NPC ya está en el baúl" }, { status: 400 });
-    }
 
+    // Snapshot independiente: cada guardado crea una copia nueva del estado actual.
     const entry = await prisma.vaultNpc.create({
       data: { userId: user.id, ...vaultDataFromNpc(npc as unknown as Record<string, unknown>) },
     });
-    await prisma.nPC.update({ where: { id: npcId }, data: { vaultNpcId: entry.id } });
 
     return NextResponse.json({ vaultNpc: entry }, { status: 201 });
   } catch (error) {

@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 
 // Campos de texto editables: si vienen en el body, se recortan (vacío => null).
 const TEXT_FIELDS = [
-  "race", "occupation", "age", "gender",
+  "nickname", "race", "occupation", "age", "gender",
   "appearance", "personality", "backstory",
   "motivations", "secrets", "quirks", "voiceNotes",
   "location", "faction",

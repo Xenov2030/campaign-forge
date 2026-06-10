@@ -25,6 +25,7 @@ export default async function EditNPCPage({ params }: PageProps) {
 
   const initial: NpcFormValues = {
     name: npc.name,
+    nickname: npc.nickname ?? "",
     race: npc.race ?? "",
     occupation: npc.occupation ?? "",
     age: npc.age ?? "",

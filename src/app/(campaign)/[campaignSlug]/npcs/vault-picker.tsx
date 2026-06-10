@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, X, Check, Loader2, Download } from "lucide-react";
+import { Archive, X, Check, Loader2, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface VaultEntry {
   id: string;
   name: string;
+  nickname: string | null;
   race: string | null;
   occupation: string | null;
   portraitUrl: string | null;
@@ -22,6 +23,29 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
   const [entries, setEntries] = useState<VaultEntry[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const removeEntry = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (deletingId) return;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/npc-vault/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setEntries((prev) => prev.filter((x) => x.id !== id));
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      toast.success("Quitado del baúl");
+    } catch {
+      toast.error("No se pudo quitar del baúl");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const openModal = async () => {
     setOpen(true);
@@ -111,20 +135,13 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
                   {entries.map((e) => {
                     const isSel = selected.has(e.id);
                     return (
-                      <button
+                      <div
                         key={e.id}
-                        type="button"
-                        onClick={() => toggle(e.id)}
-                        className={`relative flex flex-col text-left bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] overflow-hidden border-2 transition-colors ${
+                        className={`relative rounded-[var(--radius-lg)] overflow-hidden border-2 transition-colors bg-[var(--bg-elevated)] ${
                           isSel ? "border-[var(--accent-gold)]" : "border-transparent hover:border-[var(--border-default)]"
                         }`}
                       >
-                        {isSel && (
-                          <span className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-[var(--accent-gold)] text-black flex items-center justify-center">
-                            <Check className="h-4 w-4" />
-                          </span>
-                        )}
-                        <div className="flex items-center gap-3 p-3">
+                        <button type="button" onClick={() => toggle(e.id)} className="w-full flex items-center gap-3 p-3 pr-9 text-left">
                           {e.portraitUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={e.portraitUrl} alt={e.name} className="h-12 w-12 rounded-full object-cover border-2 border-[#34d399]/30 shrink-0" />
@@ -135,12 +152,29 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
                           )}
                           <div className="min-w-0">
                             <p className="font-medium text-sm text-[var(--text-primary)] truncate">{e.name}</p>
+                            {e.nickname && <p className="text-xs italic text-[var(--text-muted)] truncate">«{e.nickname}»</p>}
                             {(e.race || e.occupation) && (
                               <p className="text-xs text-[var(--text-muted)] truncate">{[e.race, e.occupation].filter(Boolean).join(" · ")}</p>
                             )}
                           </div>
-                        </div>
-                      </button>
+                        </button>
+
+                        {isSel && (
+                          <span className="absolute top-2 right-2 h-6 w-6 rounded-full bg-[var(--accent-gold)] text-black flex items-center justify-center pointer-events-none">
+                            <Check className="h-4 w-4" />
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(ev) => removeEntry(ev, e.id)}
+                          disabled={deletingId === e.id}
+                          aria-label="Quitar del baúl"
+                          title="Quitar del baúl"
+                          className="absolute bottom-2 right-2 h-7 w-7 rounded-full flex items-center justify-center bg-black/40 text-[var(--text-muted)] hover:text-[var(--accent-crimson)] hover:bg-black/60 transition-colors disabled:opacity-50"
+                        >
+                          {deletingId === e.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
                     );
                   })}
                 </div>

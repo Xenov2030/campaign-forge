@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      campaignId, name, race, occupation, age, gender,
+      campaignId, name, nickname, race, occupation, age, gender,
       appearance, personality, backstory, motivations,
       secrets, quirks, voiceNotes, portraitUrl,
       isKnownToParty, isAlive, location, faction, tags,
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       data: {
         campaignId,
         name: name.trim(),
+        nickname: nickname?.trim() || null,
         race: race?.trim() || null,
         occupation: occupation?.trim() || null,
         age: age?.trim() || null,

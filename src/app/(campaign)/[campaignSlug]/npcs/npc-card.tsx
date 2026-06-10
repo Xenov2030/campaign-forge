@@ -9,6 +9,7 @@ import { toast } from "sonner";
 export interface NpcCardData {
   id: string;
   name: string;
+  nickname: string | null;
   portraitUrl: string | null;
   race: string | null;
   occupation: string | null;
@@ -107,6 +108,9 @@ export function NpcCard({
             <h3 className="font-display text-lg font-bold text-[var(--text-primary)] group-hover:text-[#34d399] transition-colors truncate">
               {npc.name}
             </h3>
+            {npc.nickname && (
+              <p className="text-xs italic text-[var(--text-muted)] truncate">«{npc.nickname}»</p>
+            )}
             {(npc.race || npc.occupation) && (
               <p className="text-sm text-[var(--text-muted)] truncate">
                 {[npc.race, npc.occupation].filter(Boolean).join(" · ")}

@@ -70,6 +70,9 @@ export default async function NPCDetailPage({ params }: PageProps) {
                   {npc.isAlive ? "Vivo" : "Muerto"}
                 </span>
               </div>
+              {npc.nickname && (
+                <p className="text-sm italic text-[var(--text-muted)] mb-0.5">«{npc.nickname}»</p>
+              )}
               <p className="text-[var(--text-secondary)] text-sm">
                 {[npc.race, npc.occupation].filter(Boolean).join(" · ")}
                 {npc.age ? ` · ${npc.age}` : ""}
@@ -148,7 +151,7 @@ export default async function NPCDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {isMaster && <NpcDangerZone slug={campaignSlug} npcId={npcId} npcName={npc.name} vaultNpcId={npc.vaultNpcId} />}
+      {isMaster && <NpcDangerZone slug={campaignSlug} npcId={npcId} npcName={npc.name} />}
     </div>
   );
 }

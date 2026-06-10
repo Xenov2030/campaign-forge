@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       campaignId,
       vaultNpcId: e.id,
       name: e.name,
+      nickname: e.nickname,
       race: e.race,
       occupation: e.occupation,
       age: e.age,

@@ -186,6 +186,7 @@ model NPC {
   id             String   @id @default(cuid())
   campaignId     String
   name           String
+  nickname       String?
   race           String?
   occupation     String?
   age            String?
@@ -222,6 +223,7 @@ model VaultNpc {
   id           String   @id @default(cuid())
   userId       String
   name         String
+  nickname     String?
   race         String?
   occupation   String?
   age          String?

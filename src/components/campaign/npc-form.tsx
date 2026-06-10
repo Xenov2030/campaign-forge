@@ -12,6 +12,7 @@ import { ImageCropUpload } from "@/components/ui/image-crop-upload";
 
 export interface NpcFormValues {
   name: string;
+  nickname: string;
   race: string;
   occupation: string;
   age: string;
@@ -34,7 +35,7 @@ export interface NpcFormValues {
 }
 
 export const EMPTY_NPC: NpcFormValues = {
-  name: "", race: "", occupation: "", age: "", gender: "",
+  name: "", nickname: "", race: "", occupation: "", age: "", gender: "",
   appearance: "", personality: "", backstory: "",
   motivations: "", secrets: "", quirks: "", voiceNotes: "",
   location: "", faction: "",
@@ -114,7 +115,8 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
             className="w-36 shrink-0"
           />
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Nombre *" value={form.name} onChange={set("name")} placeholder="Nombre del NPC" required className="sm:col-span-2" />
+            <Input label="Nombre *" value={form.name} onChange={set("name")} placeholder="Nombre del NPC" required />
+            <Input label="Apodo" value={form.nickname} onChange={set("nickname")} placeholder="El Tuerto, La Sombra..." />
             <Input label="Raza" value={form.race} onChange={set("race")} placeholder="Humano, Elfo..." />
             <Input label="Ocupación / Rol" value={form.occupation} onChange={set("occupation")} placeholder="Tabernero, Guardia real..." />
             <Input label="Edad" value={form.age} onChange={set("age")} placeholder="35 años, anciano..." />
