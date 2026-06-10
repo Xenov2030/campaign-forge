@@ -12,7 +12,7 @@ import {
   sanitizeRewards,
 } from "@/lib/quests";
 import { QuestObjectives } from "@/components/campaign/quest-objectives";
-import { QuestStatusControl } from "@/components/campaign/quest-status-control";
+import { QuestStatusSelect } from "@/components/campaign/quest-status-select";
 import { QuestDangerZone } from "@/components/campaign/quest-danger-zone";
 
 interface PageProps {
@@ -54,17 +54,19 @@ export default async function QuestDetailPage({ params }: PageProps) {
 
       {/* Header */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] overflow-hidden mb-6">
-        <div className="h-20 bg-gradient-to-r from-[#f59e0b]/20 to-[#f87171]/10" />
-        <div className="px-6 pb-6 -mt-8">
+        <div className="h-12 bg-gradient-to-r from-[#f59e0b]/20 to-[#f87171]/10" />
+        <div className="px-6 pb-6 -mt-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
                 <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
                   {QUEST_TYPE_LABELS[quest.type as QuestType]}
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/30">
-                  {QUEST_STATUS_LABELS[quest.status as QuestStatus]}
-                </span>
+                {!isMaster && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/30">
+                    {QUEST_STATUS_LABELS[quest.status as QuestStatus]}
+                  </span>
+                )}
                 {isMaster && (
                   quest.isKnownToParty ? (
                     <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-900/20 text-green-400 border border-green-800/30">
@@ -80,23 +82,27 @@ export default async function QuestDetailPage({ params }: PageProps) {
               <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">{quest.name}</h1>
             </div>
             {isMaster && (
-              <Link
-                href={`/${campaignSlug}/quests/${questId}/edit`}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[#f59e0b] hover:text-[#f59e0b] transition-colors shrink-0"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Editar
-              </Link>
+              <div className="flex items-center gap-2 shrink-0">
+                <QuestStatusSelect questId={quest.id} initial={quest.status} />
+                <Link
+                  href={`/${campaignSlug}/quests/${questId}/edit`}
+                  className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[#f59e0b] hover:text-[#f59e0b] transition-colors"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Editar
+                </Link>
+              </div>
             )}
           </div>
         </div>
       </div>
 
       <div className="space-y-5">
-        {/* Estado (solo máster) */}
-        {isMaster && (
-          <div className="max-w-md">
-            <QuestStatusControl questId={quest.id} initial={quest.status} />
+        {/* Descripción */}
+        {quest.description && (
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-5">
+            <h2 className="font-display text-base font-bold text-[var(--text-primary)] mb-3">Descripción</h2>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{quest.description}</p>
           </div>
         )}
 
@@ -105,14 +111,6 @@ export default async function QuestDetailPage({ params }: PageProps) {
           <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/20 rounded-[var(--radius-xl)] p-5">
             <p className="text-xs text-[#f59e0b] uppercase tracking-wider mb-2 font-semibold">El gancho</p>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap italic">{quest.hook}</p>
-          </div>
-        )}
-
-        {/* Descripción */}
-        {quest.description && (
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-5">
-            <h2 className="font-display text-base font-bold text-[var(--text-primary)] mb-3">Descripción</h2>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{quest.description}</p>
           </div>
         )}
 

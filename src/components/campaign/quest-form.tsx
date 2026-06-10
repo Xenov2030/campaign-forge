@@ -37,7 +37,7 @@ export const EMPTY_QUEST: QuestFormValues = {
   description: "", hook: "", notes: "",
   isKnownToParty: true,
   objectives: [],
-  rewards: { experience: null, gold: "", other: "" },
+  rewards: { experience: null, gold: "", other: "", itemId: null },
   tags: [],
 };
 
@@ -176,6 +176,20 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
           <Input label="Experiencia" type="number" min={0} value={form.rewards.experience ?? ""} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, experience: e.target.value === "" ? null : Math.max(0, Number(e.target.value)) } }))} placeholder="500" />
           <Input label="Oro / monedas" value={form.rewards.gold} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, gold: e.target.value } }))} placeholder="100 monedas de oro" />
           <Input label="Otras recompensas" value={form.rewards.other} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, other: e.target.value } }))} placeholder="Favor del gremio" />
+        </div>
+        <div className="mt-4 flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Objeto de recompensa</label>
+          <select
+            className={selectClass}
+            value={form.rewards.itemId ?? ""}
+            onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, itemId: e.target.value || null } }))}
+          >
+            <option value="">Ninguno</option>
+            {/* Se llenará con los objetos que tengan el tag "Objeto de misión" (sección Objetos). */}
+          </select>
+          <p className="text-xs text-[var(--text-muted)]">
+            Aún no hay objetos disponibles. Cuando crees objetos con el tag &quot;Objeto de misión&quot; aparecerán acá.
+          </p>
         </div>
       </div>
 

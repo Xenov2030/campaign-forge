@@ -35,6 +35,7 @@ export interface QuestRewards {
   experience: number | null;
   gold: string;
   other: string;
+  itemId: string | null;
 }
 
 // Genera un id estable para un objetivo nuevo (cliente o servidor).
@@ -65,5 +66,6 @@ export function sanitizeRewards(raw: unknown): QuestRewards {
     experience: typeof xp === "number" ? xp : typeof xp === "string" && xp.trim() ? Number(xp) || null : null,
     gold: typeof obj.gold === "string" ? obj.gold.trim() : "",
     other: typeof obj.other === "string" ? obj.other.trim() : "",
+    itemId: typeof obj.itemId === "string" && obj.itemId ? obj.itemId : null,
   };
 }

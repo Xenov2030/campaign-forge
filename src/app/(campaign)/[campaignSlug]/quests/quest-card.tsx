@@ -7,6 +7,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { QuestType, QuestStatus } from "@prisma/client";
 import { QUEST_TYPE_LABELS, QUEST_STATUS_LABELS, type QuestObjective } from "@/lib/quests";
+import { QuestStatusSelect } from "@/components/campaign/quest-status-select";
 
 export interface QuestCardData {
   id: string;
@@ -68,44 +69,34 @@ export function QuestCard({
   };
 
   return (
-    <Link
-      href={`/${campaignSlug}/quests/${quest.id}`}
-      className={`group relative flex flex-col bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-5 hover:border-[var(--border-default)] transition-all campaign-card ${isMaster && !known ? "opacity-70" : ""}`}
+    <div
+      className={`flex flex-col sm:flex-row sm:items-center gap-4 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-5 hover:border-[var(--border-default)] transition-all campaign-card ${
+        isMaster && !known ? "opacity-70" : ""
+      }`}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+      {/* Info (clickeable → detalle) */}
+      <Link href={`/${campaignSlug}/quests/${quest.id}`} className="group flex-1 min-w-0 block">
+        <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
           <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
             {QUEST_TYPE_LABELS[quest.type]}
           </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_STYLE[quest.status]}`}>
-            {QUEST_STATUS_LABELS[quest.status]}
-          </span>
+          {!isMaster && (
+            <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_STYLE[quest.status]}`}>
+              {QUEST_STATUS_LABELS[quest.status]}
+            </span>
+          )}
         </div>
-        {isMaster && (
-          <button
-            type="button"
-            onClick={toggleVisibility}
-            disabled={busy}
-            aria-label={known ? "Ocultar a los jugadores" : "Mostrar al grupo"}
-            title={known ? "Visible — clic para ocultar" : "Oculta — clic para mostrar"}
-            className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center border transition-colors disabled:opacity-50 ${
-              known ? "bg-green-900/30 border-green-700/40 text-green-300 hover:bg-green-900/50" : "bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-            }`}
-          >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : known ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          </button>
+        <h3 className="font-display text-lg font-semibold text-[var(--text-primary)] group-hover:text-[#f59e0b] transition-colors">
+          {quest.name}
+        </h3>
+        {quest.description && (
+          <p className="text-sm text-[var(--text-secondary)] line-clamp-1 leading-relaxed mt-0.5">{quest.description}</p>
         )}
-      </div>
+      </Link>
 
-      <h3 className="font-display text-base font-semibold text-[var(--text-primary)] group-hover:text-[#f59e0b] transition-colors mb-1">
-        {quest.name}
-      </h3>
-      {quest.description && (
-        <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed mb-3">{quest.description}</p>
-      )}
-
+      {/* Progreso de objetivos */}
       {total > 0 && (
-        <div className="mt-auto pt-2">
+        <div className="sm:w-44 shrink-0">
           <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] mb-1">
             <span>Objetivos</span>
             <span>{done}/{total}</span>
@@ -115,6 +106,27 @@ export function QuestCard({
           </div>
         </div>
       )}
-    </Link>
+
+      {/* Controles (solo máster) */}
+      {isMaster && (
+        <div className="flex items-center gap-2 shrink-0">
+          <QuestStatusSelect questId={quest.id} initial={quest.status} />
+          <button
+            type="button"
+            onClick={toggleVisibility}
+            disabled={busy}
+            aria-label={known ? "Ocultar a los jugadores" : "Mostrar al grupo"}
+            title={known ? "Visible — clic para ocultar" : "Oculta — clic para mostrar"}
+            className={`h-9 w-9 shrink-0 rounded-full flex items-center justify-center border transition-colors disabled:opacity-50 ${
+              known
+                ? "bg-green-900/30 border-green-700/40 text-green-300 hover:bg-green-900/50"
+                : "bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+            }`}
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : known ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
