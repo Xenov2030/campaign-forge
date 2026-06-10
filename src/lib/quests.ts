@@ -17,6 +17,18 @@ export const QUEST_TYPE_LABELS: Record<QuestType, string> = {
   BOUNTY: "Recompensa",
 };
 
+// Tipos ofrecidos en formularios y filtros (BOUNTY queda fuera; todas dan recompensa).
+export const QUEST_TYPE_OPTIONS: QuestType[] = ["MAIN", "SIDE", "PERSONAL", "FACTION"];
+
+// Color distintivo por tipo (clases para el badge).
+export const QUEST_TYPE_COLOR: Record<QuestType, string> = {
+  MAIN: "bg-[#f59e0b]/15 text-[#f59e0b] border-[#f59e0b]/30",
+  SIDE: "bg-[#60a5fa]/15 text-[#60a5fa] border-[#60a5fa]/30",
+  PERSONAL: "bg-[#a855f7]/15 text-[#a855f7] border-[#a855f7]/30",
+  FACTION: "bg-[#34d399]/15 text-[#34d399] border-[#34d399]/30",
+  BOUNTY: "bg-gray-700/30 text-gray-300 border-gray-600/40",
+};
+
 export const QUEST_STATUS_LABELS: Record<QuestStatus, string> = {
   ACTIVE: "Activa",
   COMPLETED: "Completada",
@@ -57,6 +69,16 @@ export function sanitizeObjectives(raw: unknown): QuestObjective[] {
       };
     })
     .filter((o) => o.description !== "");
+}
+
+// Deriva el estado a partir de los objetivos: todos completos => COMPLETED;
+// si se destilda alguno y estaba COMPLETED, vuelve a ACTIVE. Otros estados se respetan.
+export function autoStatusFromObjectives(objectives: QuestObjective[], current: QuestStatus): QuestStatus {
+  if (objectives.length === 0) return current;
+  const allDone = objectives.every((o) => o.completed);
+  if (allDone) return "COMPLETED";
+  if (current === "COMPLETED") return "ACTIVE";
+  return current;
 }
 
 export function sanitizeRewards(raw: unknown): QuestRewards {

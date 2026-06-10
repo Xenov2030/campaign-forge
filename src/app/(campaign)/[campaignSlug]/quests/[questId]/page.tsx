@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   QUEST_TYPE_LABELS,
   QUEST_STATUS_LABELS,
+  QUEST_TYPE_COLOR,
   sanitizeObjectives,
   sanitizeRewards,
 } from "@/lib/quests";
@@ -59,7 +60,7 @@ export default async function QuestDetailPage({ params }: PageProps) {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
+                <span className={`text-xs px-2 py-0.5 rounded-full border ${QUEST_TYPE_COLOR[quest.type as QuestType]}`}>
                   {QUEST_TYPE_LABELS[quest.type as QuestType]}
                 </span>
                 {!isMaster && (

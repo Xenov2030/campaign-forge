@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
-import { isQuestType, isQuestStatus, sanitizeObjectives, sanitizeRewards } from "@/lib/quests";
+import { isQuestType, isQuestStatus, sanitizeObjectives, sanitizeRewards, autoStatusFromObjectives } from "@/lib/quests";
 
 // PATCH /api/quests/[id]
 //  - Máster: edita cualquier campo.
@@ -36,13 +36,17 @@ export async function PATCH(
       if (typeof body.name === "string" && body.name.trim()) data.name = body.name.trim();
       if ("description" in body) data.description = body.description?.trim() || null;
       if (isQuestType(body.type)) data.type = body.type;
-      if (isQuestStatus(body.status)) data.status = body.status;
       if ("hook" in body) data.hook = body.hook?.trim() || null;
       if ("notes" in body) data.notes = body.notes?.trim() || null;
-      if ("objectives" in body) data.objectives = sanitizeObjectives(body.objectives);
       if ("rewards" in body) data.rewards = sanitizeRewards(body.rewards);
       if (typeof body.isKnownToParty === "boolean") data.isKnownToParty = body.isKnownToParty;
       if (Array.isArray(body.tags)) data.tags = body.tags;
+
+      const objs = "objectives" in body ? sanitizeObjectives(body.objectives) : null;
+      if (objs) data.objectives = objs;
+      // El estado explícito del máster gana; si no se envía, se deriva de los objetivos.
+      if (isQuestStatus(body.status)) data.status = body.status;
+      else if (objs) data.status = autoStatusFromObjectives(objs, quest.status);
     } else {
       // Jugador: solo objetivos, y la misión debe estar visible para el grupo.
       if (!quest.isKnownToParty) {
@@ -51,7 +55,9 @@ export async function PATCH(
       if (!("objectives" in body)) {
         return NextResponse.json({ error: "Solo podés actualizar los objetivos" }, { status: 403 });
       }
-      data.objectives = sanitizeObjectives(body.objectives);
+      const objs = sanitizeObjectives(body.objectives);
+      data.objectives = objs;
+      data.status = autoStatusFromObjectives(objs, quest.status);
     }
 
     if (Object.keys(data).length === 0) {

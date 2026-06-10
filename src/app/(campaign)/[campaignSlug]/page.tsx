@@ -9,6 +9,8 @@ import {
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
 import { InviteCode } from "@/components/campaign/invite-code";
 import { ConditionBadges } from "@/components/campaign/condition-badges";
+import { HomeQuests } from "./home-quests";
+import { sanitizeObjectives } from "@/lib/quests";
 
 interface CampaignPageProps {
   params: Promise<{ campaignSlug: string }>;
@@ -45,7 +47,6 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
       status: "ACTIVE",
       ...(isMaster ? {} : { isKnownToParty: true }),
     },
-    take: 5,
     orderBy: { createdAt: "desc" },
   });
 
@@ -164,45 +165,17 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
   );
 
   const questsCard = (
-    <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Target className="h-4 w-4 text-[#f59e0b]" />
-        <h2 className="font-display text-base font-semibold text-[var(--text-primary)]">
-          {isMaster ? "Misiones activas" : "Tus misiones"}
-        </h2>
-      </div>
-      {activeQuests.length > 0 ? (
-        <div className="space-y-3">
-          {activeQuests.map((quest: (typeof activeQuests)[number]) => {
-            const objectives: unknown[] = Array.isArray(quest.objectives) ? quest.objectives : [];
-            const done = objectives.filter(
-              (o) => o && typeof o === "object" && "completed" in o && (o as { completed?: boolean }).completed,
-            ).length;
-            return (
-              <div key={quest.id} className="p-3 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{quest.name}</p>
-                  <span className="text-xs px-2 py-0.5 rounded bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/20 shrink-0">{quest.type}</span>
-                </div>
-                {quest.description && (
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5 line-clamp-1">{quest.description}</p>
-                )}
-                {objectives.length > 0 && (
-                  <p className="text-[11px] text-[var(--text-muted)] mt-1.5">Objetivos: {done}/{objectives.length}</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <Target className="h-8 w-8 text-[var(--text-muted)] mx-auto mb-2" />
-          <p className="text-sm text-[var(--text-muted)]">
-            {isMaster ? "No hay misiones activas" : "El máster aún no reveló misiones"}
-          </p>
-        </div>
-      )}
-    </div>
+    <HomeQuests
+      quests={activeQuests.map((quest: (typeof activeQuests)[number]) => ({
+        id: quest.id,
+        name: quest.name,
+        type: quest.type,
+        description: quest.description,
+        objectives: sanitizeObjectives(quest.objectives),
+      }))}
+      slug={campaignSlug}
+      isMaster={isMaster}
+    />
   );
 
   const lastSessionCard = latestSession ? (

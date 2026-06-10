@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { QuestObjective } from "@/lib/quests";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function QuestObjectives({ questId, initial, canEdit }: Props) {
+  const router = useRouter();
   const [objectives, setObjectives] = useState<QuestObjective[]>(initial);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -32,6 +34,8 @@ export function QuestObjectives({ questId, initial, canEdit }: Props) {
         body: JSON.stringify({ objectives: next }),
       });
       if (!res.ok) throw new Error();
+      // El estado puede haber cambiado (auto-completado): refrescamos para reflejarlo.
+      router.refresh();
     } catch {
       setObjectives(prev); // rollback
       toast.error("No se pudo actualizar el objetivo");

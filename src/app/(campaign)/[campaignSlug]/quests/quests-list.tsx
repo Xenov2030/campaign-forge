@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Plus, Target, Sparkles } from "lucide-react";
+import type { QuestType } from "@prisma/client";
+import { QUEST_TYPE_OPTIONS, QUEST_TYPE_LABELS, QUEST_TYPE_COLOR } from "@/lib/quests";
 import { QuestCard, type QuestCardData } from "./quest-card";
 
 type Filter = "all" | "ACTIVE" | "COMPLETED" | "FAILED";
@@ -14,6 +16,8 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "FAILED", label: "Falladas" },
 ];
 
+type TypeFilter = "all" | QuestType;
+
 export function QuestsList({
   quests,
   campaignSlug,
@@ -24,8 +28,13 @@ export function QuestsList({
   isMaster: boolean;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
 
-  const shown = filter === "all" ? quests : quests.filter((q) => q.status === filter);
+  const shown = quests.filter((q) => {
+    const statusOk = filter === "all" || q.status === filter;
+    const typeOk = typeFilter === "all" || q.type === typeFilter;
+    return statusOk && typeOk;
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
@@ -52,6 +61,33 @@ export function QuestsList({
                   }`}
                 >
                   {f.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Filtro por tipo */}
+          {quests.length > 0 && (
+            <div className="flex items-center gap-0.5 p-0.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+              <button
+                onClick={() => setTypeFilter("all")}
+                aria-pressed={typeFilter === "all"}
+                className={`h-8 px-3 rounded-[var(--radius-sm)] text-xs font-medium transition-colors ${
+                  typeFilter === "all" ? "bg-[var(--bg-overlay)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                }`}
+              >
+                Todos
+              </button>
+              {QUEST_TYPE_OPTIONS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTypeFilter(t)}
+                  aria-pressed={typeFilter === t}
+                  className={`h-8 px-3 rounded-[var(--radius-sm)] text-xs font-medium transition-colors border ${
+                    typeFilter === t ? QUEST_TYPE_COLOR[t] : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  }`}
+                >
+                  {QUEST_TYPE_LABELS[t]}
                 </button>
               ))}
             </div>

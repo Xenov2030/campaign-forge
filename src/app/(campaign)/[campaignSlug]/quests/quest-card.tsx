@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { QuestType, QuestStatus } from "@prisma/client";
-import { QUEST_TYPE_LABELS, QUEST_STATUS_LABELS, type QuestObjective } from "@/lib/quests";
+import { QUEST_TYPE_LABELS, QUEST_STATUS_LABELS, QUEST_TYPE_COLOR, type QuestObjective } from "@/lib/quests";
 import { QuestStatusSelect } from "@/components/campaign/quest-status-select";
 
 export interface QuestCardData {
@@ -77,7 +77,7 @@ export function QuestCard({
       {/* Info (clickeable → detalle) */}
       <Link href={`/${campaignSlug}/quests/${quest.id}`} className="group flex-1 min-w-0 block">
         <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-          <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
+          <span className={`text-xs px-2 py-0.5 rounded-full border ${QUEST_TYPE_COLOR[quest.type]}`}>
             {QUEST_TYPE_LABELS[quest.type]}
           </span>
           {!isMaster && (

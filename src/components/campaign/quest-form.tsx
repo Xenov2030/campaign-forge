@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  QUEST_TYPES,
+  QUEST_TYPE_OPTIONS,
   QUEST_STATUSES,
   QUEST_TYPE_LABELS,
   QUEST_STATUS_LABELS,
@@ -111,7 +111,7 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Tipo</label>
             <select className={selectClass} value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as QuestType }))}>
-              {QUEST_TYPES.map((t) => (
+              {QUEST_TYPE_OPTIONS.map((t) => (
                 <option key={t} value={t}>{QUEST_TYPE_LABELS[t]}</option>
               ))}
             </select>
