@@ -148,7 +148,7 @@ export default async function NPCDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {isMaster && <NpcDangerZone slug={campaignSlug} npcId={npcId} npcName={npc.name} />}
+      {isMaster && <NpcDangerZone slug={campaignSlug} npcId={npcId} npcName={npc.name} vaultNpcId={npc.vaultNpcId} />}
     </div>
   );
 }

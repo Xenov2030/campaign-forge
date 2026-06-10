@@ -28,6 +28,7 @@ model User {
   visualAids        VisualAid[]
   joinRequests      JoinRequest[]
   notifications     Notification[]
+  vaultNpcs         VaultNpc[]
 
   @@map("users")
 }
@@ -207,11 +208,45 @@ model NPC {
   relationships  Json     @default("[]")
   generatedBy    String?
   tags           String[] @default([])
+  vaultNpcId     String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  campaign       Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  vaultNpc       VaultNpc? @relation(fields: [vaultNpcId], references: [id], onDelete: SetNull)
 
   @@map("npcs")
+}
+
+// Baúl personal de NPCs del máster: plantillas reutilizables entre campañas.
+model VaultNpc {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  race         String?
+  occupation   String?
+  age          String?
+  gender       String?
+  appearance   String?
+  personality  String?
+  backstory    String?
+  motivations  String?
+  secrets      String?
+  quirks       String?
+  voiceNotes   String?
+  portraitUrl  String?
+  hitPoints    Int?
+  maxHitPoints Int?
+  location     String?
+  faction      String?
+  stats        Json     @default("{}")
+  tags         String[] @default([])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  npcs         NPC[]
+
+  @@index([userId])
+  @@map("vault_npcs")
 }
 
 model Monster {

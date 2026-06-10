@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Plus, Users, Sparkles, Eye, EyeOff, Layers } from "lucide-react";
 import { NpcCard, type NpcCardData } from "./npc-card";
+import { VaultPicker } from "./vault-picker";
 
 type Filter = "all" | "visible" | "hidden";
 
@@ -17,10 +18,12 @@ export function NpcsList({
   npcs,
   campaignSlug,
   isMaster,
+  campaignId,
 }: {
   npcs: NpcCardData[];
   campaignSlug: string;
   isMaster: boolean;
+  campaignId: string;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
 
@@ -65,7 +68,8 @@ export function NpcsList({
         </div>
 
         {isMaster && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <VaultPicker campaignId={campaignId} />
             <Link
               href={`/${campaignSlug}/ai-forge`}
               className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm border border-[var(--accent-arcane)]/30 bg-[var(--accent-arcane)]/10 text-[var(--accent-arcane)] hover:bg-[var(--accent-arcane)]/15 transition-colors"
@@ -98,7 +102,8 @@ export function NpcsList({
             </p>
           )}
           {isMaster && (
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-3 justify-center flex-wrap">
+              <VaultPicker campaignId={campaignId} />
               <Link
                 href={`/${campaignSlug}/ai-forge`}
                 className="inline-flex items-center gap-2 h-10 px-5 rounded-[var(--radius-md)] text-sm bg-[var(--accent-arcane)]/15 border border-[var(--accent-arcane)]/30 text-[var(--accent-arcane)]"

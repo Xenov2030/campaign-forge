@@ -51,5 +51,5 @@ export default async function NPCsPage({ params }: PageProps) {
     maxHitPoints: isMaster ? n.maxHitPoints : null,
   }));
 
-  return <NpcsList npcs={cards} campaignSlug={campaignSlug} isMaster={isMaster} />;
+  return <NpcsList npcs={cards} campaignSlug={campaignSlug} isMaster={isMaster} campaignId={campaign.id} />;
 }
