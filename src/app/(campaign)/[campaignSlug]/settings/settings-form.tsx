@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Save, ArrowLeft, Globe, Lock, Trash2, Settings } from "lucide-react";
+import { Save, ArrowLeft, Globe, Lock, Trash2, Settings, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ImageCropUpload } from "@/components/ui/image-crop-upload";
 import { getThemeColors } from "@/lib/utils";
+import { useConfirmStore } from "@/store/confirm-store";
 
 const THEMES = [
   { id: "FANTASY", label: "Fantasía Medieval", emoji: "⚔️" },
@@ -35,6 +36,43 @@ export function CampaignSettingsForm({ slug, initial }: Props) {
   const [bannerImage, setBannerImage] = useState(initial.bannerImage ?? "");
   const [theme, setTheme] = useState(initial.theme);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const confirm = useConfirmStore((s) => s.confirm);
+
+  const handleDelete = async () => {
+    const first = await confirm({
+      title: "Eliminar campaña",
+      description: "Se borrará la campaña con todos sus personajes, NPCs, misiones y datos. Tus NPCs guardados en el baúl se conservan.",
+      confirmLabel: "Continuar",
+      cancelLabel: "Cancelar",
+      danger: true,
+    });
+    if (!first) return;
+
+    const second = await confirm({
+      title: `¿Eliminar "${name}" definitivamente?`,
+      description: "Esta acción no se puede deshacer.",
+      confirmLabel: "Sí, eliminar",
+      cancelLabel: "Cancelar",
+      danger: true,
+    });
+    if (!second) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/campaigns/by-slug/${slug}`, { method: "DELETE" });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error ?? "No se pudo eliminar la campaña");
+      }
+      toast.success("Campaña eliminada");
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error");
+      setDeleting(false);
+    }
+  };
 
   const dirty =
     name !== initial.name ||
@@ -202,21 +240,27 @@ export function CampaignSettingsForm({ slug, initial }: Props) {
         <h2 className="text-sm font-semibold text-[var(--accent-crimson)] uppercase tracking-wider mb-3">
           Zona de peligro
         </h2>
-        <div className="flex items-center justify-between gap-4 p-4 rounded-[var(--radius-md)] border border-[var(--accent-crimson)]/20 bg-[var(--accent-crimson)]/5 opacity-60">
-          <span className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-4 p-4 rounded-[var(--radius-md)] border border-[var(--accent-crimson)]/20 bg-[var(--accent-crimson)]/5">
+          <span className="flex items-center gap-3 min-w-0">
             <Trash2 className="h-5 w-5 text-[var(--accent-crimson)] shrink-0" />
-            <span>
+            <span className="min-w-0">
               <span className="block text-sm font-medium text-[var(--text-primary)]">
                 Eliminar campaña
               </span>
               <span className="block text-xs text-[var(--text-muted)]">
-                Disponible próximamente (preservará tus NPCs en el baúl)
+                Se borra todo lo de la campaña. Tus NPCs guardados en el baúl se conservan.
               </span>
             </span>
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] shrink-0">
-            Pronto
-          </span>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--accent-crimson)]/30 bg-[var(--accent-crimson)]/10 text-[var(--accent-crimson)] hover:bg-[var(--accent-crimson)]/15 transition-colors disabled:opacity-50 shrink-0"
+          >
+            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            Eliminar
+          </button>
         </div>
       </div>
     </div>

@@ -76,3 +76,34 @@ export async function PATCH(
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+// DELETE /api/campaigns/by-slug/[slug] — eliminar campaña (solo el máster).
+// El borrado cascada elimina todo lo de la campaña; el baúl de NPCs (por usuario) se conserva.
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  try {
+    const user = await getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { slug } = await params;
+    const campaign = await prisma.campaign.findUnique({
+      where: { slug },
+      select: { id: true, masterId: true },
+    });
+    if (!campaign) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (campaign.masterId !== user.id) {
+      return NextResponse.json({ error: "Solo el máster puede eliminar la campaña" }, { status: 403 });
+    }
+
+    await prisma.campaign.delete({ where: { id: campaign.id } });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Delete campaign error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Server error" },
+      { status: 500 }
+    );
+  }
+}
