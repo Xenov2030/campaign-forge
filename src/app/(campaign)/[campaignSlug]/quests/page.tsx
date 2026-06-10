@@ -28,16 +28,19 @@ export default async function QuestsPage({ params }: PageProps) {
 
   const isMaster = campaign.masterId === user.id;
 
+  // Los jugadores solo ven las misiones visibles (filtro en la query); las notas del máster
+  // y otros campos no necesarios para la card no salen de la DB gracias al select.
   const quests = await prisma.quest.findMany({
-    where: { campaignId: campaign.id },
+    where: { campaignId: campaign.id, ...(isMaster ? {} : { isKnownToParty: true }) },
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true, name: true, type: true, status: true, description: true,
+      isKnownToParty: true, objectives: true, tags: true,
+    },
   });
 
   type QuestRow = (typeof quests)[number];
-  // Los jugadores solo ven las misiones visibles; las notas del máster nunca salen al cliente.
-  const visible = isMaster ? quests : quests.filter((q: QuestRow) => q.isKnownToParty);
-
-  const cards: QuestCardData[] = visible.map((q: QuestRow) => ({
+  const cards: QuestCardData[] = quests.map((q: QuestRow) => ({
     id: q.id,
     name: q.name,
     type: q.type,

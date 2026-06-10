@@ -41,33 +41,25 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
   const isMaster = campaign.masterId === user.id;
   const themeColor = getThemeColors(campaign.theme);
 
-  const activeQuests = await prisma.quest.findMany({
-    where: {
-      campaignId: campaign.id,
-      status: "ACTIVE",
-      ...(isMaster ? {} : { isKnownToParty: true }),
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const myCharacter = isMaster
-    ? null
-    : await prisma.character.findFirst({ where: { campaignId: campaign.id, userId: user.id } });
-
-  const latestSession = await prisma.session.findFirst({
-    where: { campaignId: campaign.id },
-    orderBy: { number: "desc" },
-  });
-
-  const npcCount = isMaster
-    ? campaign._count.npcs
-    : await prisma.nPC.count({ where: { campaignId: campaign.id, isKnownToParty: true } });
-
-  // Condiciones de cada jugador, para mostrarlas (animadas) en la lista de aventureros.
-  const partyChars = await prisma.character.findMany({
-    where: { campaignId: campaign.id, isNPC: false },
-    select: { userId: true, conditions: true, portraitUrl: true },
-  });
+  // Queries independientes en paralelo (un solo round-trip en lugar de cinco secuenciales).
+  const [activeQuests, myCharacter, latestSession, npcCount, partyChars] = await Promise.all([
+    prisma.quest.findMany({
+      where: { campaignId: campaign.id, status: "ACTIVE", ...(isMaster ? {} : { isKnownToParty: true }) },
+      orderBy: { createdAt: "desc" },
+    }),
+    isMaster
+      ? Promise.resolve(null)
+      : prisma.character.findFirst({ where: { campaignId: campaign.id, userId: user.id } }),
+    prisma.session.findFirst({ where: { campaignId: campaign.id }, orderBy: { number: "desc" } }),
+    isMaster
+      ? Promise.resolve(campaign._count.npcs)
+      : prisma.nPC.count({ where: { campaignId: campaign.id, isKnownToParty: true } }),
+    // Condiciones de cada jugador, para mostrarlas (animadas) en la lista de aventureros.
+    prisma.character.findMany({
+      where: { campaignId: campaign.id, isNPC: false },
+      select: { userId: true, conditions: true, portraitUrl: true },
+    }),
+  ]);
   const partyDataByUser = new Map<string, { conditions: string[]; portraitUrl: string | null }>(
     partyChars.map((c: { userId: string; conditions: unknown; portraitUrl: string | null }) => [
       c.userId,

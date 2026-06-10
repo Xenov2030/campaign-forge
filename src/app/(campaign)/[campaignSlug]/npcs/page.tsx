@@ -28,26 +28,20 @@ export default async function NPCsPage({ params }: PageProps) {
 
   const isMaster = campaign.masterId === user.id;
 
+  // Los jugadores solo reciben los NPCs conocidos (filtro en la query, no en memoria);
+  // notas del máster y campos sensibles ni siquiera salen de la DB gracias al select.
   const npcs = await prisma.nPC.findMany({
-    where: { campaignId: campaign.id },
+    where: { campaignId: campaign.id, ...(isMaster ? {} : { isKnownToParty: true }) },
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true, name: true, nickname: true, portraitUrl: true, race: true, occupation: true,
+      personality: true, tags: true, isAlive: true, isKnownToParty: true, hitPoints: true, maxHitPoints: true,
+    },
   });
 
   type NpcRow = (typeof npcs)[number];
-  // Los jugadores solo reciben los NPCs conocidos; la vida y notas del máster nunca salen al cliente.
-  const visible = isMaster ? npcs : npcs.filter((n: NpcRow) => n.isKnownToParty);
-
-  const cards: NpcCardData[] = visible.map((n: NpcRow) => ({
-    id: n.id,
-    name: n.name,
-    nickname: n.nickname,
-    portraitUrl: n.portraitUrl,
-    race: n.race,
-    occupation: n.occupation,
-    personality: n.personality,
-    tags: n.tags,
-    isAlive: n.isAlive,
-    isKnownToParty: n.isKnownToParty,
+  const cards: NpcCardData[] = npcs.map((n: NpcRow) => ({
+    ...n,
     hitPoints: isMaster ? n.hitPoints : null,
     maxHitPoints: isMaster ? n.maxHitPoints : null,
   }));

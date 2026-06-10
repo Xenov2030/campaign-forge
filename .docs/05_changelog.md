@@ -5,6 +5,97 @@
 
 ---
 
+## [2.8] — 2026-06-10
+
+### feat(quests) — Módulo de Misiones completo + borrado de campaña
+
+**Archivos nuevos:**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `src/lib/quests.ts` | Helper central: enums/labels, opciones de tipo (sin BOUNTY), colores por tipo, `sanitizeObjectives`/`sanitizeRewards` y `autoStatusFromObjectives`. |
+| `src/app/api/quests/route.ts` | `POST` crear misión (solo máster). |
+| `src/app/api/quests/[id]/route.ts` | `PATCH` (máster edita todo; jugador solo tilda objetivos de misiones visibles) + `DELETE` (máster). Auto-completado server-side. |
+| `src/app/(campaign)/[campaignSlug]/quests/{page,quests-list,quest-card}.tsx` | Lista a ancho completo con filtros por estado y por tipo, card con progreso y estado editable. |
+| `src/app/(campaign)/[campaignSlug]/quests/{new,[questId],[questId]/edit}/page.tsx` | Crear, detalle (objetivos tildables, recompensas, notas del máster) y editar. |
+| `src/app/(campaign)/[campaignSlug]/home-quests.tsx` | Misiones del inicio: clickeables, con tipo en color, progreso y filtro por tipo. |
+| `src/components/campaign/{quest-form,quest-objectives,quest-status-select,quest-danger-zone}.tsx` | Form reutilizable con editor de objetivos, checklist colaborativa, selector de estado y zona de peligro. |
+
+**Archivos modificados:**
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/app/api/campaigns/by-slug/[slug]/route.ts` | `DELETE` de campaña (solo máster, borrado en cascada; el baúl de NPCs se conserva). |
+| `src/app/(campaign)/[campaignSlug]/settings/settings-form.tsx` | Zona de peligro activada con doble confirmación. |
+| `src/components/layout/campaign-sidebar.tsx` | Entrada "Quests" habilitada. |
+
+**Reglas clave:**
+- **Auto-completado**: al tildar todos los objetivos, la misión pasa a `COMPLETED`; si se destilda alguno vuelve a `ACTIVE`. El estado explícito del máster gana sobre el derivado.
+- **Objetivos colaborativos**: el jugador miembro puede tildar objetivos de misiones visibles (no editar nada más).
+- **Tipos con color** (Principal/Secundaria/Personal/Facción); BOUNTY queda fuera de formularios y filtros.
+- Borrar campaña preserva el baúl de NPCs (cuelga de `userId`, no de la campaña).
+
+**Rama:** `develop`
+
+---
+
+## [2.7] — 2026-06-10
+
+### feat(npcs) — Sección NPCs completa + baúl de NPCs reutilizables
+
+**Archivos nuevos:**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `src/app/api/npcs/[id]/route.ts` | `PATCH` (edición parcial: form completo o toggle de un campo) + `DELETE`. |
+| `src/app/api/npc-vault/route.ts` + `[id]/route.ts` | Baúl: `GET` listar, `POST` guardar copia (snapshot), `DELETE` quitar entrada. |
+| `src/app/api/npcs/import/route.ts` | Importa entradas del baúl como NPCs nuevos en la campaña. |
+| `src/components/campaign/{npc-form,npc-danger-zone,npc-hp-control}.tsx` | Form reutilizable (crear/editar), zona de peligro con guardado al baúl, control de vida del máster. |
+| `src/app/(campaign)/[campaignSlug]/npcs/{npcs-list,npc-card,vault-picker}.tsx` + `[npcId]/edit/page.tsx` | Lista con filtro de visibilidad, card estilo personajes, modal multiselect del baúl, edición. |
+
+**Reglas clave:**
+- **Visibilidad** oculto/conocido con toggle rápido y filtro (Todos/Visibles/Ocultos), solo máster.
+- **Vida** (`hitPoints`/`maxHitPoints`) editable solo por el máster (card y detalle); nunca sale al cliente del jugador.
+- **Apodo** (`nickname`) en NPC y en el baúl.
+- **Baúl** (`VaultNpc`, por usuario): cada "Guardar" crea una **copia independiente** (snapshot); editar un NPC no afecta el baúl. Importar copia a la campaña actual.
+
+**Schema:** `NPC.nickname/hitPoints/maxHitPoints/vaultNpcId`, modelo `VaultNpc` (onDelete SetNull en el vínculo).
+
+**Rama:** `develop`
+
+---
+
+## [2.6] — 2026-06-10
+
+### feat(int) — Comunidad: jugadores, solicitudes de unión, notificaciones y perfil
+
+**Archivos nuevos:**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `src/app/api/campaigns/[id]/members/[userId]/route.ts` | `DELETE` para expulsar (máster) o abandonar (jugador): borra membresía + personajes. |
+| `src/app/api/join-requests/[id]/route.ts` | `POST` aceptar/rechazar solicitud (solo máster) con notificación al jugador. |
+| `src/app/api/notifications/route.ts` | `GET` lista + no leídas; `POST` marcar todas como leídas. |
+| `src/components/layout/notification-bell.tsx` | Campana con badge, popover y realtime (`user-{id}`), aceptar/rechazar inline. |
+| `src/components/campaign/character-danger-zone.tsx` | Eliminar personaje / expulsar jugador con doble confirmación. |
+| `src/components/ui/image-crop-upload.tsx` | Recorte + subida de imágenes (retrato/banner/avatar). |
+
+**Archivos modificados (destacados):**
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/app/api/campaigns/join/route.ts` | Pasa de unión directa a **solicitud** (JoinRequest PENDING + notificación al máster). |
+| `src/app/(dashboard)/profile/page.tsx` + `api/profile/route.ts` | Avatar, correo editable (validación de formato y unicidad) sin scroll. |
+| `src/app/(campaign)/[campaignSlug]/settings/` | Banner y **tema/ambientación** editables. |
+| `src/app/(dashboard)/dashboard/page.tsx` | Banner en las cards, flag de máster, botón "Unirse a campaña" persistente. |
+| Auth pages, dashboard, perfil, unirse | Anchos unificados al de las secciones; login/registro/unirse con layout de dos columnas. |
+
+**Schema:** `JoinRequest`, `Notification` + relaciones; `Campaign.bannerImage`, `User.avatarUrl`.
+
+**Rama:** `develop`
+
+---
+
 ## [2.5] — 2026-06-09
 
 ### feat(characters) — Edición visual de personajes con retrato/banner y layout refinado

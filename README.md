@@ -1,4 +1,4 @@
-# CampaignForge `v2.5`
+# CampaignForge `v2.8`
 
 Plataforma web completa para campañas de rol multijugador con IA integrada.
 
@@ -29,11 +29,13 @@ cp .env.example .env
 ```
 
 Completar `.env` con:
-- `DATABASE_URL` — PostgreSQL de Supabase
-- `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `DATABASE_URL` — PostgreSQL (Neon)
 - `JWT_SECRET` — mínimo 32 caracteres
-- `OPENAI_API_KEY` — para GPT-4o
+- `GEMINI_API_KEY` — generadores y asistente IA (opcional; la IA se desactiva si falta)
+- `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` — subida de imágenes (retratos, banners, avatares)
+- `PUSHER_*` y `NEXT_PUBLIC_PUSHER_*` — chat y notificaciones en tiempo real
+- `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` / `NEXT_PUBLIC_LIVEKIT_URL` — canales de voz
+- `ADMIN_EMAILS` — allowlist de administradores
 - `NEXT_PUBLIC_APP_URL` — URL del app
 
 ### 2. Instalar y sincronizar
@@ -103,7 +105,7 @@ src/app/
 - Chat por salas (pública, privada, solo máster)
 - Tiradas de dados d4-d100 con historial
 - IA Forge: NPC, Monstruo, Quest, Localización, Objeto, Resumen
-- Asistente del Máster (chat GPT-4o contextual)
+- Asistente del Máster (chat Gemini contextual)
 - Página 404 temática + error boundary global
 - Skeletons de carga en páginas principales
 - Soporte `prefers-reduced-motion`
@@ -115,17 +117,19 @@ src/app/
 - **Roles globales de cuenta (PLAYER/MASTER/ADMIN) + panel de administración `/admin`** (v2.4)
 - Wizard de campañas con temas/tonos múltiples y sistemas combinables (v2.4)
 - **Sección de personajes refinada**: cards más compactas, detalle más denso y edición completa con retrato/banner recortables y subida a Cloudinary (v2.5)
+- **Comunidad**: solicitudes de unión con aprobación del máster, notificaciones en tiempo real (campana), expulsar/abandonar campaña, perfil con avatar y correo editable, banner y tema de campaña editables (v2.6)
+- **Sección NPCs completa**: CRUD, visibilidad oculto/conocido con filtro, vida solo-máster, apodo, y **baúl de NPCs** reutilizables entre campañas (v2.7)
+- **Sección Misiones completa**: objetivos colaborativos con auto-completado, estados, tipos con color, filtros, recompensas, y borrado de campaña en cascada (v2.8)
 
-> El detalle de funcionalidades por versión vive en [`.docs/05_changelog.md`](.docs/05_changelog.md). Algunas secciones de este README (stack/proveedores) tienen drift pendiente de reconciliar — ver `.docs/06_mejoras.md`.
+> El detalle de funcionalidades por versión vive en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 
 ### Próximas fases (v3.x)
-- Chat en tiempo real (Supabase Realtime)
-- Mapas interactivos con fog of war
-- Generación de imágenes con DALL-E 3
-- Upload real de imágenes (UploadThing)
+- Sección **Objetos** (conecta con el selector de "Objeto de misión" en recompensas)
+- Bestiario de **Monstruos**, **Mundo** (locaciones/facciones) y **Mapas** interactivos
+- "Guardar como NPC/Misión" desde la IA Forge (persistir lo generado)
+- Relaciones vinculadas entre NPCs
 - Export PDF de fichas de personaje
 - Timeline interactiva de campaña
-- Sistema de notificaciones
 
 ---
 

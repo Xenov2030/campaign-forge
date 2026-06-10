@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { AI_ENABLED } from "@/lib/ai/gemini";
+import { friendlyAiError } from "@/lib/ai/errors";
 import { askMasterAssistant } from "@/lib/ai/generators";
 
 export async function POST(request: NextRequest) {
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ response });
   } catch (error) {
     console.error("Assistant error:", error);
-    return NextResponse.json({ error: "Assistant error" }, { status: 500 });
+    const { error: message, status } = friendlyAiError(error);
+    return NextResponse.json({ error: message }, { status });
   }
 }

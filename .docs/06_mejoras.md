@@ -1,6 +1,6 @@
 # CampaignForge — Documento de Mejoras Pendientes
 
-**Versión:** 2.5 | **Última actualización:** 2026-06-09
+**Versión:** 2.8 | **Última actualización:** 2026-06-10
 
 > Las mejoras están ordenadas por prioridad. Al implementar una, marcarla con `[x]` y moverla al changelog.
 
@@ -18,12 +18,6 @@
 **Estado:** Modelo `DiceRoll` existe en DB. La página `/dice` muestra datos mock hardcodeados.
 **Impacto:** No se persiste el historial real de tiradas.
 **Approach:** POST `/api/dice-rolls` al tirar en la bandeja. GET en `/dice/page.tsx` para listar por campaña, filtrable por sesión y jugador.
-**Versión estimada:** v2.4
-
-### [ ] Sistema de notificaciones (campana TopNav)
-**Estado:** Botón de campana en TopNav existe pero no hace nada.
-**Impacto:** Usuarios no saben de nuevas sesiones, cambios de campaña, etc. fuera del workspace.
-**Approach:** Tabla `Notification` en DB. Filled por triggers de API. Dropdown al hacer click en la campana. Marcar como leídas.
 **Versión estimada:** v2.4
 
 ### [ ] Reset de contraseña
@@ -85,8 +79,44 @@ Actualizar `src/components/ui/input.tsx` para aceptar y propagar `error` como `a
 ### [ ] `alt` text descriptivo en imágenes de NPCs y personajes
 Archivos afectados: `npcs/page.tsx`, `characters/[characterId]/page.tsx`.
 
-### [ ] Reconciliar `README.md` con el estado real
-El README quedó desfasado (dice v1.6, OpenAI GPT-4o, Supabase) mientras el stack real es Gemini 2.0, auth JWT propio sobre Neon y Pusher/LiveKit. Actualizarlo a fondo en una pasada de documentación dedicada.
+---
+
+## Deuda técnica identificada (auditoría v2.8)
+
+> Hallazgos de la auditoría de código que NO se aplicaron en v2.8 (refactores de mayor alcance o que requieren decisión). Ordenados por valor.
+
+### [ ] Helpers de auth/permisos centralizados
+El bloque `getUser()` → 401 → `campaign.findUnique` → `masterId !== user.id` → 403 se repite en ~10 rutas API. `npcs/[id]` ya extrajo `getOwnedNpc()` como ejemplo.
+**Approach:** `requireUser()`, `requireMaster(campaignId, userId)`, `requireMember(...)` en `lib/auth.ts`. Reduce superficie de error de seguridad.
+
+### [ ] Manejo de errores API unificado
+Conviven tres convenciones (`"Error interno"` con `error.message` filtrado, `"Error interno"` fijo, `"Server error"`). Algunas rutas exponen `error.message` crudo de Prisma.
+**Approach:** helper `apiError(error)` central; nunca exponer `error.message` al cliente. (En v2.8 ya se centralizó el de IA en `lib/ai/errors.ts` y se agregó try/catch a `profile`.)
+
+### [ ] Validación de entrada con zod
+Los bodies se desestructuran y castean a mano (`type as never` en `ai/route.ts`). Solo `profile` valida formato.
+**Approach:** esquemas zod por ruta, al menos en los POST de creación.
+
+### [ ] Deduplicar patrones de UI repetidos
+- `npc/quest/character-danger-zone.tsx`: misma estructura (doble confirm + DELETE + redirect). Extraer `<DangerZone>` o `useDeleteResource`.
+- `toggleVisibility` optimista duplicado en `npc-card`/`quest-card`. Extraer `useOptimisticToggle`.
+- `changeHp` duplicado en `npc-card`/`npc-hp-control`. Extraer helper.
+
+### [ ] `$transaction` en aceptar solicitud de unión
+`join-requests/[id]` (accept) hace 3 writes secuenciales sin transacción; si falla a mitad queda estado inconsistente.
+**Approach:** `prisma.$transaction([...])`.
+
+### [ ] Columnas de schema sin uso
+`NPC.relationships`, `NPC.generatedBy`/`Monster`/`Item`/`Quest.generatedBy` nunca se leen ni escriben; `NPC.vaultNpcId` se escribe pero no se lee. Evaluar eliminarlas o darles uso.
+
+### [ ] Renombrar `lib/supabase/` (legado)
+La auth es JWT propia; el módulo `lib/supabase/server.ts` solo re-exporta `getSessionUser`. El nombre confunde. Renombrar a `lib/session.ts`.
+
+### [ ] `generateUniqueUsername` puede hacer N queries
+`lib/auth.ts`: bucle con un `findUnique` por iteración. Resolver con una sola query `startsWith` + sufijo en memoria.
+
+### [ ] `next/image` para retratos/banners
+Hoy se usa `<img>` (con `eslint-disable`). Configurar dominios en `next.config` y migrar para lazy-loading + optimización.
 
 ---
 
@@ -152,3 +182,16 @@ La app está en español. Soporte para inglés y portugués.
 | v2.4 | Switch público ON/OFF, validación por paso, layout sin scroll |
 | v2.4 | Asterisco de requerido + contador de caracteres |
 | v2.4 | Fix navegación: logout → home, `/` logueado → dashboard |
+| v2.6 | **Solicitudes de unión con aprobación del máster** |
+| v2.6 | **Notificaciones realtime (campana TopNav)** |
+| v2.6 | Expulsar / abandonar campaña |
+| v2.6 | Perfil: avatar y correo editable; banner y tema de campaña editables |
+| v2.7 | **Sección NPCs completa (CRUD, visibilidad, vida, apodo)** |
+| v2.7 | **Baúl de NPCs reutilizables entre campañas** |
+| v2.8 | **Sección Misiones completa (objetivos colaborativos, auto-completado, tipos con color, filtros)** |
+| v2.8 | Borrado de campaña en cascada (baúl preservado) |
+| v2.8 | Auditoría: filtro de visibilidad en query (cierre de fuga + perf) |
+| v2.8 | Auditoría: queries de la home en paralelo (`Promise.all`) |
+| v2.8 | Auditoría: índices `@@index([campaignId])` en tablas activas |
+| v2.8 | Auditoría: errores de IA centralizados + `try/catch` en `profile` |
+| v2.8 | README reconciliado con el estado real (Gemini, Neon, JWT) |

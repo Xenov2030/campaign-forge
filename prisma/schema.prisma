@@ -129,6 +129,7 @@ model Character {
   inventory        InventoryItem[]
   notes            Note[]                  @relation("CharacterNotes")
 
+  @@index([campaignId, isNPC])
   @@map("characters")
 }
 
@@ -215,6 +216,7 @@ model NPC {
   campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   vaultNpc       VaultNpc? @relation(fields: [vaultNpcId], references: [id], onDelete: SetNull)
 
+  @@index([campaignId])
   @@map("npcs")
 }
 
@@ -364,6 +366,7 @@ model Quest {
   updatedAt      DateTime    @updatedAt
   campaign       Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
+  @@index([campaignId])
   @@map("quests")
 }
 
@@ -386,6 +389,7 @@ model Session {
   campaign   Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   master     User          @relation(fields: [masterId], references: [id])
 
+  @@index([campaignId])
   @@map("sessions")
 }
 
