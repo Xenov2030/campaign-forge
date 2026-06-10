@@ -2,8 +2,10 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, User, MapPin, Users, Eye, EyeOff, Lock } from "lucide-react";
+import { ChevronLeft, User, MapPin, Users, Eye, EyeOff, Lock, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { NpcDangerZone } from "@/components/campaign/npc-danger-zone";
+import { NpcHpControl } from "@/components/campaign/npc-hp-control";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; npcId: string }>;
@@ -22,6 +24,7 @@ export default async function NPCDetailPage({ params }: PageProps) {
   if (!npc || npc.campaign.slug !== campaignSlug) notFound();
 
   const isMaster = npc.campaign.masterId === user.id;
+  const hasHp = isMaster && npc.maxHitPoints != null && npc.maxHitPoints > 0;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -32,7 +35,13 @@ export default async function NPCDetailPage({ params }: PageProps) {
 
       {/* Header */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] overflow-hidden mb-6">
-        <div className="h-20 bg-gradient-to-r from-[#34d399]/20 to-[#60a5fa]/15" />
+        <div className="h-28 relative overflow-hidden">
+          {npc.portraitUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={npc.portraitUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-125 opacity-50" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#34d399]/25 to-[#60a5fa]/20" />
+        </div>
         <div className="px-6 pb-6">
           <div className="flex items-end gap-5 -mt-10 mb-4">
             <div className="h-20 w-20 rounded-[var(--radius-xl)] border-4 border-[var(--bg-surface)] overflow-hidden bg-[var(--bg-elevated)] shrink-0">
@@ -66,6 +75,15 @@ export default async function NPCDetailPage({ params }: PageProps) {
                 {npc.age ? ` · ${npc.age}` : ""}
               </p>
             </div>
+            {isMaster && (
+              <Link
+                href={`/${campaignSlug}/npcs/${npcId}/edit`}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[#34d399] hover:text-[#34d399] transition-colors shrink-0"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Editar
+              </Link>
+            )}
           </div>
 
           {(npc.location || npc.faction) && (
@@ -84,49 +102,53 @@ export default async function NPCDetailPage({ params }: PageProps) {
               )}
             </div>
           )}
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-5">
-          {npc.appearance && (
-            <Section title="Apariencia">{npc.appearance}</Section>
-          )}
-          {npc.personality && (
-            <Section title="Personalidad">{npc.personality}</Section>
-          )}
-          {npc.backstory && (
-            <Section title="Historia">{npc.backstory}</Section>
-          )}
-
-          {/* Master-only info */}
-          {isMaster && (npc.motivations || npc.secrets || npc.quirks || npc.voiceNotes) && (
-            <div className="bg-[var(--bg-surface)] border border-amber-700/30 rounded-[var(--radius-xl)] p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Lock className="h-4 w-4 text-amber-400" />
-                <h2 className="font-display text-base font-bold text-amber-400">Notas del máster</h2>
-              </div>
-              {npc.motivations && <InfoLine label="Motivaciones" value={npc.motivations} />}
-              {npc.secrets && <InfoLine label="Secretos" value={npc.secrets} />}
-              {npc.quirks && <InfoLine label="Peculiaridades" value={npc.quirks} />}
-              {npc.voiceNotes && <InfoLine label="Voz / Acento" value={npc.voiceNotes} />}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {npc.tags.length > 0 && (
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-4">
-              <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-3">Tags</p>
-              <div className="flex flex-wrap gap-1.5">
-                {npc.tags.map((tag: string) => (
-                  <Badge key={tag} variant="secondary">{tag}</Badge>
-                ))}
-              </div>
+          {hasHp && (
+            <div className="mt-4 max-w-sm">
+              <NpcHpControl npcId={npc.id} hitPoints={npc.hitPoints ?? 0} maxHitPoints={npc.maxHitPoints ?? 0} />
             </div>
           )}
         </div>
       </div>
+
+      <div className="space-y-5">
+        {npc.backstory && (
+          <Section title="Historia">{npc.backstory}</Section>
+        )}
+        {npc.personality && (
+          <Section title="Personalidad">{npc.personality}</Section>
+        )}
+        {npc.appearance && (
+          <Section title="Apariencia">{npc.appearance}</Section>
+        )}
+
+        {/* Master-only info */}
+        {isMaster && (npc.motivations || npc.secrets || npc.quirks || npc.voiceNotes) && (
+          <div className="bg-[var(--bg-surface)] border border-amber-700/30 rounded-[var(--radius-xl)] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Lock className="h-4 w-4 text-amber-400" />
+              <h2 className="font-display text-base font-bold text-amber-400">Notas del máster</h2>
+            </div>
+            {npc.motivations && <InfoLine label="Motivaciones" value={npc.motivations} />}
+            {npc.secrets && <InfoLine label="Secretos" value={npc.secrets} />}
+            {npc.quirks && <InfoLine label="Peculiaridades" value={npc.quirks} />}
+            {npc.voiceNotes && <InfoLine label="Voz / Acento" value={npc.voiceNotes} />}
+          </div>
+        )}
+
+        {npc.tags.length > 0 && (
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-xl)] p-5">
+            <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-3">Tags</p>
+            <div className="flex flex-wrap gap-1.5">
+              {npc.tags.map((tag: string) => (
+                <Badge key={tag} variant="secondary">{tag}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {isMaster && <NpcDangerZone slug={campaignSlug} npcId={npcId} npcName={npc.name} />}
     </div>
   );
 }

@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       appearance, personality, backstory, motivations,
       secrets, quirks, voiceNotes, portraitUrl,
       isKnownToParty, isAlive, location, faction, tags,
+      hitPoints, maxHitPoints,
     } = body;
 
     if (!campaignId || !name?.trim()) {
@@ -43,6 +44,8 @@ export async function POST(request: NextRequest) {
         portraitUrl: portraitUrl || null,
         isKnownToParty: isKnownToParty ?? false,
         isAlive: isAlive ?? true,
+        hitPoints: typeof hitPoints === "number" ? hitPoints : null,
+        maxHitPoints: typeof maxHitPoints === "number" ? maxHitPoints : null,
         location: location?.trim() || null,
         faction: faction?.trim() || null,
         tags: tags ?? [],

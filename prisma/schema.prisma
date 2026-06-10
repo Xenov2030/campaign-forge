@@ -199,6 +199,8 @@ model NPC {
   portraitUrl    String?
   isAlive        Boolean  @default(true)
   isKnownToParty Boolean  @default(false)
+  hitPoints      Int?
+  maxHitPoints   Int?
   location       String?
   faction        String?
   stats          Json     @default("{}")
