@@ -89,10 +89,14 @@ export function NpcsList({
           <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-[#34d399]/10 border border-[#34d399]/20 mb-6">
             <Users className="h-10 w-10 text-[#34d399]/50" />
           </div>
-          <h3 className="font-display text-xl font-bold text-[var(--text-primary)] mb-3">Sin NPCs todavía</h3>
-          <p className="text-[var(--text-secondary)] max-w-sm mx-auto mb-6">
-            Crea los personajes que poblarán tu mundo. Usa la IA para generarlos automáticamente.
-          </p>
+          <h3 className="font-display text-xl font-bold text-[var(--text-primary)] mb-3">
+            {isMaster ? "Sin NPCs todavía" : "Aún no conoces a ningún NPC clave"}
+          </h3>
+          {isMaster && (
+            <p className="text-[var(--text-secondary)] max-w-sm mx-auto mb-6">
+              Crea los personajes que poblarán tu mundo. Usa la IA para generarlos automáticamente.
+            </p>
+          )}
           {isMaster && (
             <div className="flex gap-3 justify-center">
               <Link

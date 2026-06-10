@@ -78,7 +78,7 @@ export default async function CharactersPage({ params }: PageProps) {
             className="inline-flex items-center gap-1.5 h-9 px-4 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)] hover:brightness-110 transition-all"
           >
             <Plus className="h-3.5 w-3.5" />
-            Crear personaje
+            {isMaster ? "Crear personaje" : "Crear mi personaje"}
           </Link>
         )}
       </div>

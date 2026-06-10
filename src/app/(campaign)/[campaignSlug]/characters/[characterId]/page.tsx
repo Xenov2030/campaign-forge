@@ -39,7 +39,14 @@ export default async function CharacterDetailPage({ params }: PageProps) {
 
   const isMaster = character.campaign.masterId === user.id;
   const isOwner = character.userId === user.id;
-  if (!isMaster && !isOwner) redirect(`/${campaignSlug}`);
+  const canEdit = isMaster || isOwner;
+  // Cualquier miembro de la campaña puede ver la ficha; editar solo el dueño o el máster.
+  if (!canEdit) {
+    const member = await prisma.campaignMember.findUnique({
+      where: { campaignId_userId: { campaignId: character.campaign.id, userId: user.id } },
+    });
+    if (!member) redirect(`/${campaignSlug}`);
+  }
 
   const stats = character.stats as Record<string, number>;
 
@@ -50,13 +57,15 @@ export default async function CharacterDetailPage({ params }: PageProps) {
           <ChevronLeft className="h-4 w-4" />
           Volver a personajes
         </Link>
-        <Link
-          href={`/${campaignSlug}/characters/${characterId}/edit`}
-          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm font-medium bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors"
-        >
-          <Pencil className="h-4 w-4" />
-          Editar
-        </Link>
+        {canEdit && (
+          <Link
+            href={`/${campaignSlug}/characters/${characterId}/edit`}
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm font-medium bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors"
+          >
+            <Pencil className="h-4 w-4" />
+            Editar
+          </Link>
+        )}
       </div>
 
       {/* Header */}

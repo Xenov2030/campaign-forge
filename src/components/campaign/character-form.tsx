@@ -41,6 +41,56 @@ const DEFAULT_FORM: CharacterFormState = {
   hitPoints: 10, armorClass: 10, speed: 30,
 };
 
+interface NumberFieldProps {
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  className?: string;
+  "aria-label"?: string;
+}
+
+// Input numérico totalmente editable: sin flechas/scroll, permite vaciar el campo
+// mientras se escribe y normaliza (clamp a min/max) al perder el foco.
+function NumberField({ value, onChange, min, max, className, "aria-label": ariaLabel }: NumberFieldProps) {
+  const [text, setText] = useState(String(value));
+  const [prevValue, setPrevValue] = useState(value);
+
+  // Sincroniza cuando el valor externo cambia (p. ej. reset del form), sin usar un effect.
+  if (value !== prevValue) {
+    setPrevValue(value);
+    if (Number(text) !== value) setText(String(value));
+  }
+
+  const handleChange = (raw: string) => {
+    setText(raw);
+    if (raw === "" || raw === "-") return; // permitir campo vacío mientras se edita
+    const n = Number(raw);
+    if (!Number.isNaN(n)) onChange(n);
+  };
+
+  const handleBlur = () => {
+    let n = Number(text);
+    if (text === "" || Number.isNaN(n)) n = min ?? 0;
+    if (min != null) n = Math.max(min, n);
+    if (max != null) n = Math.min(max, n);
+    setText(String(n));
+    onChange(n);
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={text}
+      onChange={(e) => handleChange(e.target.value)}
+      onBlur={handleBlur}
+      aria-label={ariaLabel}
+      className={className}
+    />
+  );
+}
+
 interface StatInputProps {
   label: string;
   value: number;
@@ -52,13 +102,12 @@ function StatInput({ label, value, onChange }: StatInputProps) {
   return (
     <div className="flex flex-col items-center gap-1 bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] p-3 border border-[var(--border-subtle)]">
       <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide">{label}</p>
-      <input
-        type="number"
+      <NumberField
+        value={value}
+        onChange={onChange}
         min={1}
         max={30}
-        value={value}
-        onChange={(e) => onChange(Math.max(1, Math.min(30, parseInt(e.target.value) || 10)))}
-        onWheel={(e) => e.currentTarget.blur()}
+        aria-label={label}
         className="w-12 text-center font-display text-2xl font-black text-[var(--text-primary)] bg-transparent border-b-2 border-[var(--accent-gold)]/40 focus:border-[var(--accent-gold)] focus:outline-none transition-colors"
       />
       <p className={`text-sm font-bold ${mod >= 0 ? "text-green-400" : "text-red-400"}`}>
@@ -98,8 +147,8 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
   const set = (field: keyof CharacterFormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((p) => ({ ...p, [field]: e.target.value }));
 
-  const setNum = (field: keyof CharacterFormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((p) => ({ ...p, [field]: parseInt(e.target.value) || 0 }));
+  const setNumField = (field: keyof CharacterFormState) => (v: number) =>
+    setForm((p) => ({ ...p, [field]: v }));
 
   useEffect(() => {
     if (mode !== "create" || campaignIdProp) return;
@@ -176,10 +225,8 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
             <Input label="Subclase" value={form.subclass} onChange={set("subclass")} placeholder="Camino del Berserker..." />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Nivel</label>
-              <input
-                type="number" min={1} max={20} value={form.level}
-                onChange={setNum("level")}
-                onWheel={(e) => e.currentTarget.blur()}
+              <NumberField
+                value={form.level} onChange={setNumField("level")} min={1} max={20} aria-label="Nivel"
                 className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
               />
             </div>
@@ -216,17 +263,17 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
         <div className="grid grid-cols-3 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Puntos de golpe</label>
-            <input type="number" min={1} value={form.hitPoints} onChange={setNum("hitPoints")} onWheel={(e) => e.currentTarget.blur()}
+            <NumberField value={form.hitPoints} onChange={setNumField("hitPoints")} min={1} aria-label="Puntos de golpe"
               className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors" />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Clase de armadura</label>
-            <input type="number" min={1} value={form.armorClass} onChange={setNum("armorClass")} onWheel={(e) => e.currentTarget.blur()}
+            <NumberField value={form.armorClass} onChange={setNumField("armorClass")} min={1} aria-label="Clase de armadura"
               className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors" />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Velocidad (pies)</label>
-            <input type="number" min={0} step={5} value={form.speed} onChange={setNum("speed")} onWheel={(e) => e.currentTarget.blur()}
+            <NumberField value={form.speed} onChange={setNumField("speed")} min={0} aria-label="Velocidad"
               className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors" />
           </div>
         </div>
