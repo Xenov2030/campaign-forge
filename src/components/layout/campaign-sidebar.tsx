@@ -183,7 +183,6 @@ export function CampaignSidebar({
       label: "Quests",
       href: `${base}/quests`,
       icon: <Target className="h-4 w-4" />,
-      disabled: true,
     },
     {
       label: "Objetos",
