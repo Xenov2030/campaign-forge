@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Save, Loader2, Plus, Trash2, Eye, EyeOff } from "lucide-react";
@@ -57,6 +57,16 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
   const [form, setForm] = useState<QuestFormValues>(initial ?? EMPTY_QUEST);
   const [tagsInput, setTagsInput] = useState((initial ?? EMPTY_QUEST).tags.join(", "));
   const [saving, setSaving] = useState(false);
+  const [rewardItems, setRewardItems] = useState<{ id: string; name: string }[]>([]);
+
+  // Objetos marcados como "Objeto de misión" para ofrecer como recompensa.
+  useEffect(() => {
+    if (!campaignId) return;
+    fetch(`/api/items?campaignId=${campaignId}&tag=${encodeURIComponent("Objeto de misión")}`)
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((d) => setRewardItems(d.items ?? []))
+      .catch(() => {});
+  }, [campaignId]);
 
   const addObjective = () =>
     setForm((p) => ({
@@ -185,10 +195,14 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
             onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, itemId: e.target.value || null } }))}
           >
             <option value="">Ninguno</option>
-            {/* Se llenará con los objetos que tengan el tag "Objeto de misión" (sección Objetos). */}
+            {rewardItems.map((it) => (
+              <option key={it.id} value={it.id}>{it.name}</option>
+            ))}
           </select>
           <p className="text-xs text-[var(--text-muted)]">
-            Aún no hay objetos disponibles. Cuando crees objetos con el tag &quot;Objeto de misión&quot; aparecerán acá.
+            {rewardItems.length === 0
+              ? "No hay objetos disponibles. Marcá un objeto como “recompensa de misión” en la sección Objetos."
+              : "Objetos marcados como recompensa de misión en la sección Objetos."}
           </p>
         </div>
       </div>

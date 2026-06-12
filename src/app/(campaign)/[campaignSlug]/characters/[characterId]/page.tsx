@@ -2,8 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, Heart, Shield, Zap, Star, User, Pencil } from "lucide-react";
+import { ChevronLeft, Heart, Shield, Zap, Star, User, Pencil, Package } from "lucide-react";
 import { formatModifier } from "@/lib/utils";
+import { InventoryList } from "@/components/campaign/inventory-list";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; characterId: string }>;
@@ -32,6 +33,10 @@ export default async function CharacterDetailPage({ params }: PageProps) {
     include: {
       campaign: { select: { id: true, name: true, masterId: true, slug: true } },
       user: { select: { displayName: true, avatarUrl: true } },
+      inventory: {
+        select: { id: true, itemId: true, name: true, quantity: true, isEquipped: true },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 
@@ -167,6 +172,19 @@ export default async function CharacterDetailPage({ params }: PageProps) {
           )}
         </div>
       )}
+
+      {/* Inventario */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Package className="h-4 w-4 text-[var(--accent-gold)]" />
+          <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">Inventario</h2>
+        </div>
+        <InventoryList
+          campaignSlug={campaignSlug}
+          canManage={canEdit}
+          items={character.inventory}
+        />
+      </div>
 
       {/* Info extra */}
       <div className="grid grid-cols-2 gap-3 text-sm">

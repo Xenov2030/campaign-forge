@@ -188,7 +188,6 @@ export function CampaignSidebar({
       label: "Objetos",
       href: `${base}/items`,
       icon: <Package className="h-4 w-4" />,
-      disabled: true,
     },
     {
       label: "Monstruos",

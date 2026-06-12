@@ -338,6 +338,7 @@ model Item {
   imageUrl           String?
   isArtifact         Boolean         @default(false)
   requiresAttunement Boolean         @default(false)
+  isKnownToParty     Boolean         @default(false)
   generatedBy        String?
   tags               String[]        @default([])
   createdAt          DateTime        @default(now())
@@ -345,6 +346,7 @@ model Item {
   inventoryItems     InventoryItem[]
   campaign           Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
+  @@index([campaignId])
   @@map("items")
 }
 

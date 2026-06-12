@@ -53,7 +53,7 @@ export default async function EditQuestPage({ params }: PageProps) {
         </div>
       </div>
 
-      <QuestForm slug={campaignSlug} mode="edit" questId={questId} initial={initial} />
+      <QuestForm slug={campaignSlug} mode="edit" questId={questId} campaignId={quest.campaignId} initial={initial} />
     </div>
   );
 }

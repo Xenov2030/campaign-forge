@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, Pencil, Lock, Award, Eye, EyeOff } from "lucide-react";
+import { ChevronLeft, Pencil, Lock, Award, Eye, EyeOff, Package } from "lucide-react";
 import type { QuestType, QuestStatus } from "@prisma/client";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,7 +44,11 @@ export default async function QuestDetailPage({ params }: PageProps) {
 
   const objectives = sanitizeObjectives(quest.objectives);
   const rewards = sanitizeRewards(quest.rewards);
-  const hasRewards = rewards.experience != null || rewards.gold !== "" || rewards.other !== "";
+  // Resolvemos el objeto-recompensa (si lo hay y sigue existiendo) para mostrar su nombre.
+  const rewardItem = rewards.itemId
+    ? await prisma.item.findUnique({ where: { id: rewards.itemId }, select: { id: true, name: true } })
+    : null;
+  const hasRewards = rewards.experience != null || rewards.gold !== "" || rewards.other !== "" || !!rewardItem;
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
@@ -129,6 +133,11 @@ export default async function QuestDetailPage({ params }: PageProps) {
               {rewards.experience != null && <span className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">{rewards.experience} XP</span>}
               {rewards.gold && <span className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">{rewards.gold}</span>}
               {rewards.other && <span className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">{rewards.other}</span>}
+              {rewardItem && (
+                <Link href={`/${campaignSlug}/items/${rewardItem.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/15 transition-colors">
+                  <Package className="h-3.5 w-3.5" /> {rewardItem.name}
+                </Link>
+              )}
             </div>
           </div>
         )}
