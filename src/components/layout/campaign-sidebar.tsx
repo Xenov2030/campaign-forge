@@ -193,7 +193,6 @@ export function CampaignSidebar({
       label: "Monstruos",
       href: `${base}/monsters`,
       icon: <Skull className="h-4 w-4" />,
-      disabled: true,
     },
     {
       label: "Mundo",
