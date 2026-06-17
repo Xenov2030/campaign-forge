@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         objectives: sanitizeObjectives(body.objectives),
         rewards: sanitizeRewards(body.rewards),
         isKnownToParty: body.isKnownToParty ?? true,
+        deadline: body.deadline ? new Date(body.deadline) : undefined,
         tags: Array.isArray(body.tags) ? body.tags : [],
       },
     });

@@ -362,6 +362,7 @@ model Quest {
   rewards        Json        @default("{}")
   notes          String?
   isKnownToParty Boolean     @default(true)
+  deadline       DateTime?
   generatedBy    String?
   tags           String[]    @default([])
   createdAt      DateTime    @default(now())

@@ -41,6 +41,7 @@ export async function PATCH(
       if ("rewards" in body) data.rewards = sanitizeRewards(body.rewards);
       if (typeof body.isKnownToParty === "boolean") data.isKnownToParty = body.isKnownToParty;
       if (Array.isArray(body.tags)) data.tags = body.tags;
+      if ("deadline" in body) data.deadline = body.deadline ? new Date(body.deadline) : null;
 
       const objs = "objectives" in body ? sanitizeObjectives(body.objectives) : null;
       if (objs) data.objectives = objs;

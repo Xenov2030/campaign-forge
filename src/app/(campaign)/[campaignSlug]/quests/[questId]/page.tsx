@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, Pencil, Lock, Award, Eye, EyeOff, Package } from "lucide-react";
+import { ChevronLeft, Pencil, Lock, Award, Eye, EyeOff, Package, Calendar } from "lucide-react";
 import type { QuestType, QuestStatus } from "@prisma/client";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -85,6 +85,12 @@ export default async function QuestDetailPage({ params }: PageProps) {
                 )}
               </div>
               <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">{quest.name}</h1>
+              {quest.deadline && (
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] mt-1.5">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(quest.deadline).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
+                </span>
+              )}
             </div>
             {isMaster && (
               <div className="flex items-center gap-2 shrink-0">

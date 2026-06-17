@@ -31,6 +31,7 @@ export default async function EditQuestPage({ params }: PageProps) {
     hook: quest.hook ?? "",
     notes: quest.notes ?? "",
     isKnownToParty: quest.isKnownToParty,
+    deadline: quest.deadline ? quest.deadline.toISOString().split("T")[0] : "",
     objectives: sanitizeObjectives(quest.objectives),
     rewards: sanitizeRewards(quest.rewards),
     tags: quest.tags,

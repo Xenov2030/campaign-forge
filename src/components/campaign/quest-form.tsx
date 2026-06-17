@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Save, Loader2, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Save, Loader2, Plus, Trash2, Eye, EyeOff, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import type { QuestType, QuestStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ export interface QuestFormValues {
   hook: string;
   notes: string;
   isKnownToParty: boolean;
+  deadline: string;
   objectives: QuestObjective[];
   rewards: QuestRewards;
   tags: string[];
@@ -36,6 +37,7 @@ export const EMPTY_QUEST: QuestFormValues = {
   name: "", type: "MAIN", status: "ACTIVE",
   description: "", hook: "", notes: "",
   isKnownToParty: true,
+  deadline: "",
   objectives: [],
   rewards: { experience: null, gold: "", other: "", itemId: null },
   tags: [],
@@ -93,7 +95,7 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
     try {
       const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
       const objectives = form.objectives.filter((o) => o.description.trim() !== "");
-      const payload = { ...form, objectives, tags, ...(mode === "create" ? { campaignId } : {}) };
+      const payload = { ...form, objectives, tags, deadline: form.deadline || null, ...(mode === "create" ? { campaignId } : {}) };
       const res = await fetch(mode === "create" ? "/api/quests" : `/api/quests/${questId}`, {
         method: mode === "create" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -134,6 +136,19 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5" />
+            Fecha límite (opcional)
+          </label>
+          <input
+            type="date"
+            value={form.deadline}
+            onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
+            className={selectClass}
+          />
         </div>
 
         <Textarea label="Descripción" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} placeholder="De qué trata la misión..." />
