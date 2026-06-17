@@ -13,9 +13,10 @@ type RollResult = ReturnType<typeof rollDice>;
 
 interface DiceTrayProps {
   isMaster?: boolean;
+  campaignId?: string;
 }
 
-export function DiceTray({ isMaster }: DiceTrayProps) {
+export function DiceTray({ isMaster, campaignId }: DiceTrayProps) {
   const {
     diceTrayOpen,
     setDiceTrayOpen,
@@ -28,6 +29,21 @@ export function DiceTray({ isMaster }: DiceTrayProps) {
 
   const handleRollComplete = useCallback(async (result: RollResult) => {
     addDiceRoll({ ...result, timestamp: new Date() });
+
+    if (campaignId) {
+      fetch("/api/dice-rolls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campaignId,
+          notation: result.notation,
+          results: result.rolls,
+          total: result.total,
+          modifier: result.modifier || 0,
+          isSecret: isMaster ? masterHidingRolls : false,
+        }),
+      }).catch(() => {});
+    }
 
     if (chatSendMessage) {
       const modStr =
@@ -42,7 +58,7 @@ export function DiceTray({ isMaster }: DiceTrayProps) {
         metadata: { ...result, masterOnly: isMaster ? masterHidingRolls : false },
       });
     }
-  }, [addDiceRoll, chatSendMessage, isMaster, masterHidingRolls]);
+  }, [addDiceRoll, campaignId, chatSendMessage, isMaster, masterHidingRolls]);
 
   return (
     <>
