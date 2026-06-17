@@ -137,7 +137,7 @@ export function SessionForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Título + estado */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
@@ -304,16 +304,18 @@ export function SessionForm({
 
       {/* Acciones */}
       <div className="flex items-center justify-between gap-3 pt-2">
-        <Button type="submit" disabled={saving}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {mode === "edit" ? "Guardar cambios" : "Crear sesión"}
-        </Button>
-        {mode === "edit" && (
+        {mode === "edit" ? (
           <Button type="button" variant="destructive" disabled={deleting} onClick={handleDelete}>
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
             Eliminar
           </Button>
+        ) : (
+          <span />
         )}
+        <Button type="submit" disabled={saving}>
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {mode === "edit" ? "Guardar cambios" : "Crear sesión"}
+        </Button>
       </div>
     </form>
   );

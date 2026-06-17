@@ -243,7 +243,7 @@ export function CampaignSidebar({
       label: "Baúl",
       href: `${base}/vault`,
       icon: <Archive className="h-4 w-4" />,
-      iconColor: "#a855f7",
+      iconColor: "#818cf8",
       isMasterOnly: true,
     },
     // Sesiones al final
@@ -251,6 +251,7 @@ export function CampaignSidebar({
       label: "Sesiones",
       href: `${base}/sessions`,
       icon: <Calendar className="h-4 w-4" />,
+      iconColor: "#a855f7",
     },
   ];
 

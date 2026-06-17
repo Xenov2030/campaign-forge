@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { Plus, Calendar, Home, Wifi, Search, Users, Clock } from "lucide-react";
+import { Plus, Calendar, Home, Wifi, Users, Clock, CheckCircle, Circle, Loader, XCircle, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SessionListItem {
@@ -31,29 +32,40 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: "bg-[var(--text-muted)]/10 text-[var(--text-muted)] border-[var(--border-subtle)]",
 };
 
+type StatusFilter = "all" | "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+type ModeFilter = "all" | "presential" | "online";
+
+const STATUS_FILTERS: { id: StatusFilter; label: string; icon: ReactNode; activeClass: string }[] = [
+  { id: "all",         label: "Todas",        icon: <Layers className="h-3.5 w-3.5" />,      activeClass: "bg-[var(--bg-overlay)] text-[var(--text-primary)] border-[var(--border-default)]" },
+  { id: "PLANNED",     label: "Planificada",  icon: <Circle className="h-3.5 w-3.5" />,      activeClass: "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/30" },
+  { id: "IN_PROGRESS", label: "En curso",     icon: <Loader className="h-3.5 w-3.5" />,      activeClass: "bg-[#60a5fa]/10 text-[#60a5fa] border-[#60a5fa]/30" },
+  { id: "COMPLETED",   label: "Completada",   icon: <CheckCircle className="h-3.5 w-3.5" />, activeClass: "bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30" },
+  { id: "CANCELLED",   label: "Cancelada",    icon: <XCircle className="h-3.5 w-3.5" />,     activeClass: "bg-[var(--text-muted)]/10 text-[var(--text-muted)] border-[var(--border-subtle)]" },
+];
+
+const MODE_FILTERS: { id: ModeFilter; label: string; icon: ReactNode; activeClass: string }[] = [
+  { id: "all",        label: "Todas",      icon: <Layers className="h-3.5 w-3.5" />,  activeClass: "bg-[var(--bg-overlay)] text-[var(--text-primary)] border-[var(--border-default)]" },
+  { id: "presential", label: "Presencial", icon: <Home className="h-3.5 w-3.5" />,    activeClass: "bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30" },
+  { id: "online",     label: "Online",     icon: <Wifi className="h-3.5 w-3.5" />,    activeClass: "bg-[#60a5fa]/10 text-[#60a5fa] border-[#60a5fa]/30" },
+];
+
 interface SessionsListProps {
   sessions: SessionListItem[];
   campaignSlug: string;
   isMaster: boolean;
 }
 
-type StatusFilter = "all" | "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
-type ModeFilter = "all" | "presential" | "online";
-
 export function SessionsList({ sessions, campaignSlug, isMaster }: SessionsListProps) {
-  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [modeFilter, setModeFilter] = useState<ModeFilter>("all");
 
   const shown = sessions.filter((s) => {
-    const q = search.trim().toLowerCase();
-    const nameOk = !q || s.title?.toLowerCase().includes(q) || `sesión ${s.number}`.includes(q);
     const statusOk = statusFilter === "all" || s.status === statusFilter;
     const modeOk =
       modeFilter === "all" ||
       (modeFilter === "presential" && s.isPresential) ||
       (modeFilter === "online" && !s.isPresential);
-    return nameOk && statusOk && modeOk;
+    return statusOk && modeOk;
   });
 
   const formatDate = (iso: string | null) => {
@@ -77,7 +89,7 @@ export function SessionsList({ sessions, campaignSlug, isMaster }: SessionsListP
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Calendar className="h-5 w-5 text-[var(--accent-gold)]" />
+            <Calendar className="h-5 w-5 text-[#a855f7]" />
             <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Sesiones</h1>
           </div>
           <p className="text-sm text-[var(--text-muted)]">{sessions.length} sesiones</p>
@@ -93,60 +105,45 @@ export function SessionsList({ sessions, campaignSlug, isMaster }: SessionsListP
         )}
       </div>
 
-      {/* Filtros — siempre visibles si hay sesiones */}
+      {/* Filtros — estilo chips, siempre visibles si hay sesiones */}
       {sessions.length > 0 && (
-        <div className="flex flex-col gap-2 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por título o número…"
-              className="w-full bg-[var(--bg-surface)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-[var(--radius-md)] h-10 pl-9 pr-3 text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors placeholder:text-[var(--text-muted)]"
-            />
-          </div>
-
-          {/* Filtro estado */}
+        <div className="flex flex-wrap gap-x-6 gap-y-2 mb-6">
+          {/* Estado */}
           <div className="flex flex-wrap gap-1">
-            {(["all", "PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"] as StatusFilter[]).map((s) => (
+            {STATUS_FILTERS.map((f) => (
               <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                aria-pressed={statusFilter === s}
+                key={f.id}
+                onClick={() => setStatusFilter(f.id)}
+                aria-pressed={statusFilter === f.id}
                 className={cn(
-                  "h-7 px-2.5 rounded-full text-[11px] font-medium transition-colors border",
-                  statusFilter === s
-                    ? s === "all"
-                      ? "bg-[var(--bg-overlay)] text-[var(--text-primary)] border-[var(--border-default)]"
-                      : STATUS_COLORS[s]
-                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
+                  "inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius-md)] text-xs font-semibold border transition-colors",
+                  statusFilter === f.id
+                    ? f.activeClass
+                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]",
                 )}
               >
-                {s === "all" ? "Todas" : STATUS_LABELS[s]}
+                {f.icon}
+                {f.label}
               </button>
             ))}
           </div>
 
-          {/* Filtro presencial/online */}
+          {/* Modalidad */}
           <div className="flex flex-wrap gap-1">
-            {(["all", "presential", "online"] as ModeFilter[]).map((m) => (
+            {MODE_FILTERS.map((f) => (
               <button
-                key={m}
-                onClick={() => setModeFilter(m)}
-                aria-pressed={modeFilter === m}
+                key={f.id}
+                onClick={() => setModeFilter(f.id)}
+                aria-pressed={modeFilter === f.id}
                 className={cn(
-                  "h-7 px-2.5 rounded-full text-[11px] font-medium transition-colors border flex items-center gap-1",
-                  modeFilter === m
-                    ? m === "presential"
-                      ? "bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30"
-                      : m === "online"
-                        ? "bg-[#60a5fa]/10 text-[#60a5fa] border-[#60a5fa]/30"
-                        : "bg-[var(--bg-overlay)] text-[var(--text-primary)] border-[var(--border-default)]"
-                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
+                  "inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius-md)] text-xs font-semibold border transition-colors",
+                  modeFilter === f.id
+                    ? f.activeClass
+                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]",
                 )}
               >
-                {m === "all" ? "Cualquier modalidad" : m === "presential" ? <><Home className="h-3 w-3" /> Presencial</> : <><Wifi className="h-3 w-3" /> Online</>}
+                {f.icon}
+                {f.label}
               </button>
             ))}
           </div>
@@ -163,17 +160,17 @@ export function SessionsList({ sessions, campaignSlug, isMaster }: SessionsListP
             {isMaster ? "Sin sesiones todavía" : "Aún no hay sesiones registradas"}
           </h3>
           {isMaster && (
-            <p className="text-[var(--text-secondary)] max-w-sm mx-auto mb-6">
-              Registrá la fecha, hora y asistentes de cada encuentro con tu grupo.
-            </p>
-          )}
-          {isMaster && (
-            <Link
-              href={`/${campaignSlug}/sessions/new`}
-              className="inline-flex items-center gap-2 h-10 px-5 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)]"
-            >
-              <Plus className="h-4 w-4" /> Crear primera sesión
-            </Link>
+            <>
+              <p className="text-[var(--text-secondary)] max-w-sm mx-auto mb-6">
+                Registrá la fecha, hora y asistentes de cada encuentro con tu grupo.
+              </p>
+              <Link
+                href={`/${campaignSlug}/sessions/new`}
+                className="inline-flex items-center gap-2 h-10 px-5 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)]"
+              >
+                <Plus className="h-4 w-4" /> Crear primera sesión
+              </Link>
+            </>
           )}
         </div>
       ) : shown.length === 0 ? (
@@ -202,7 +199,6 @@ export function SessionsList({ sessions, campaignSlug, isMaster }: SessionsListP
                   <span className={cn("text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wide", STATUS_COLORS[s.status])}>
                     {STATUS_LABELS[s.status]}
                   </span>
-                  {/* Modalidad */}
                   <span className={cn(
                     "flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-medium",
                     s.isPresential

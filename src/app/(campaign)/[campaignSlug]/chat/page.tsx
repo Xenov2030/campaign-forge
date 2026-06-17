@@ -513,15 +513,15 @@ function DiceRollMessage({ msg, currentUserId }: {
   const isOwn = msg.user.id === currentUserId;
 
   return (
-    <div className={cn("flex gap-3 mt-3 group", isOwn ? "flex-row-reverse" : "flex-row")}>
+    <div className="flex gap-3 mt-3 group flex-row">
       <Avatar className="h-7 w-7 shrink-0">
         <AvatarImage src={msg.user.avatarUrl ?? undefined} />
         <AvatarFallback className="text-[10px]">{msg.user.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
 
-      <div className={cn("max-w-[280px]", isOwn && "items-end flex flex-col")}>
+      <div className="max-w-[280px]">
         <div className="flex items-center gap-1.5 mb-0.5">
-          {!isOwn && <span className="text-xs font-medium text-[var(--text-muted)]">{msg.user.displayName}</span>}
+          <span className="text-xs font-medium text-[var(--text-muted)]">{msg.user.displayName}</span>
           <Dices className="h-3 w-3 text-[var(--accent-gold)]/60" />
           <span className="text-[10px] text-[var(--text-muted)]">{formatTime(msg.createdAt)}</span>
         </div>
