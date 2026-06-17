@@ -9,6 +9,7 @@ import type { QuestType, QuestStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TagPicker } from "@/components/ui/tag-picker";
 import {
   QUEST_TYPE_OPTIONS,
   QUEST_STATUSES,
@@ -54,10 +55,21 @@ interface Props {
   initial?: QuestFormValues;
 }
 
+const QUEST_TAGS = [
+  { value: "urgente",    label: "Urgente",    color: "#f87171" },
+  { value: "principal",  label: "Principal",  color: "#c9a84c" },
+  { value: "secundaria", label: "Secundaria", color: "#60a5fa" },
+  { value: "política",   label: "Política",   color: "#a855f7" },
+  { value: "mazmorra",   label: "Mazmorra",   color: "#f59e0b" },
+  { value: "misterio",   label: "Misterio",   color: "#22d3ee" },
+  { value: "rescate",    label: "Rescate",    color: "#34d399" },
+  { value: "escolta",    label: "Escolta",    color: "#2dd4bf" },
+  { value: "exploración",label: "Exploración",color: "#94a3b8" },
+];
+
 export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
   const router = useRouter();
   const [form, setForm] = useState<QuestFormValues>(initial ?? EMPTY_QUEST);
-  const [tagsInput, setTagsInput] = useState((initial ?? EMPTY_QUEST).tags.join(", "));
   const [saving, setSaving] = useState(false);
   const [rewardItems, setRewardItems] = useState<{ id: string; name: string }[]>([]);
 
@@ -93,9 +105,8 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
     }
     setSaving(true);
     try {
-      const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
       const objectives = form.objectives.filter((o) => o.description.trim() !== "");
-      const payload = { ...form, objectives, tags, deadline: form.deadline || null, ...(mode === "create" ? { campaignId } : {}) };
+      const payload = { ...form, objectives, deadline: form.deadline || null, ...(mode === "create" ? { campaignId } : {}) };
       const res = await fetch(mode === "create" ? "/api/quests" : `/api/quests/${questId}`, {
         method: mode === "create" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -153,7 +164,12 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
 
         <Textarea label="Descripción" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} placeholder="De qué trata la misión..." />
         <Textarea label="Gancho (cómo se presenta a los jugadores)" value={form.hook} onChange={(e) => setForm((p) => ({ ...p, hook: e.target.value }))} rows={2} placeholder="Un mensajero llega con un sello real..." />
-        <Input label="Tags (separados por coma)" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="urgente, política, mazmorra" />
+        <TagPicker
+          label="Categorías"
+          value={form.tags}
+          onChange={(tags) => setForm((p) => ({ ...p, tags }))}
+          options={QUEST_TAGS}
+        />
 
         <button
           type="button"

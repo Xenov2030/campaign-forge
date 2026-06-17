@@ -11,7 +11,6 @@ import {
   ArrowRight,
   BookOpen,
   UserPlus,
-  Archive,
 } from "lucide-react";
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
 
@@ -78,22 +77,13 @@ export default async function DashboardPage() {
             {user.displayName}
           </h1>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link
-            href="/vault"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] border border-[var(--border-default)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-colors"
-          >
-            <Archive className="h-4 w-4" aria-hidden="true" />
-            Baúl de NPCs
-          </Link>
-          <Link
-            href="/dashboard/join"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] border border-[var(--border-default)] text-sm font-medium text-[var(--text-primary)] hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors"
-          >
-            <UserPlus className="h-4 w-4" aria-hidden="true" />
-            Unirse a campaña
-          </Link>
-        </div>
+        <Link
+          href="/dashboard/join"
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] border border-[var(--border-default)] text-sm font-medium text-[var(--text-primary)] hover:border-[#60a5fa] hover:text-[#60a5fa] transition-colors shrink-0"
+        >
+          <UserPlus className="h-4 w-4" aria-hidden="true" />
+          Unirse a campaña
+        </Link>
       </div>
 
       {/* My Campaigns */}

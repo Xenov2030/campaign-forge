@@ -9,6 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageCropUpload } from "@/components/ui/image-crop-upload";
+import { TagPicker } from "@/components/ui/tag-picker";
+
+const NPC_TAGS = [
+  { value: "amigable",   label: "Amigable",   color: "#34d399" },
+  { value: "aliado",     label: "Aliado",     color: "#60a5fa" },
+  { value: "neutral",    label: "Neutral",    color: "#94a3b8" },
+  { value: "hostil",     label: "Hostil",     color: "#f59e0b" },
+  { value: "enemigo",    label: "Enemigo",    color: "#f87171" },
+  { value: "desconocido",label: "Desconocido",color: "#a855f7" },
+  { value: "comerciante",label: "Comerciante",color: "#c9a84c" },
+  { value: "informante", label: "Informante", color: "#22d3ee" },
+  { value: "guardián",   label: "Guardián",   color: "#2dd4bf" },
+];
 
 export interface NpcFormValues {
   name: string;
@@ -59,7 +72,6 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
   const base = initial ?? EMPTY_NPC;
 
   const [form, setForm] = useState<NpcFormValues>(base);
-  const [tagsInput, setTagsInput] = useState(base.tags.join(", "));
   const [saving, setSaving] = useState(false);
 
   const set = (field: keyof NpcFormValues) =>
@@ -78,11 +90,7 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
     }
     setSaving(true);
     try {
-      const tags = tagsInput
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
-      const payload = { ...form, tags, ...(mode === "create" ? { campaignId } : {}) };
+      const payload = { ...form, ...(mode === "create" ? { campaignId } : {}) };
       const res = await fetch(mode === "create" ? "/api/npcs" : `/api/npcs/${npcId}`, {
         method: mode === "create" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +131,13 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
             <Input label="Género" value={form.gender} onChange={set("gender")} placeholder="Masculino, Femenino..." />
             <Input label="Localización" value={form.location} onChange={set("location")} placeholder="Ciudad de Puertallamas..." />
             <Input label="Facción" value={form.faction} onChange={set("faction")} placeholder="Gremio de Ladrones..." />
-            <Input label="Tags (separados por coma)" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="villano, mercader, místico" className="sm:col-span-2" />
+            <TagPicker
+              label="Relación con el grupo"
+              value={form.tags}
+              onChange={(tags) => setForm((p) => ({ ...p, tags }))}
+              options={NPC_TAGS}
+              className="sm:col-span-2"
+            />
 
             {/* Toggles de estado */}
             <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">

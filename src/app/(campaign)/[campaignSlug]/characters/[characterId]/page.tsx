@@ -37,7 +37,7 @@ export default async function CharacterDetailPage({ params }: PageProps) {
       user: { select: { displayName: true, avatarUrl: true } },
       inventory: {
         select: { id: true, itemId: true, name: true, quantity: true, isEquipped: true },
-        orderBy: { createdAt: "asc" },
+        orderBy: { sortOrder: "asc" },
       },
     },
   });

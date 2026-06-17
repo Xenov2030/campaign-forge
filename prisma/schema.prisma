@@ -143,6 +143,7 @@ model InventoryItem {
   weight      Float?
   value       Float?
   isEquipped  Boolean   @default(false)
+  sortOrder   Int       @default(0)
   properties  Json      @default("{}")
   createdAt   DateTime  @default(now())
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)

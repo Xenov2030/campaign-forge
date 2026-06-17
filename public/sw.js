@@ -1,4 +1,4 @@
-const CACHE_NAME = "campaign-forge-v3";
+const CACHE_NAME = "campaign-forge-v3.1.0";
 const STATIC_ASSETS = ["/", "/offline.html"];
 
 self.addEventListener("install", (event) => {
