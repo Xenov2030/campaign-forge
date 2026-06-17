@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Sword, Users, Calendar, Target, BookOpen,
   Crown, Sparkles, Heart, ChevronRight, Skull, Package, Music,
@@ -115,10 +116,11 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
             return (
               <div key={member.id} className="flex items-center gap-3 p-2 rounded-[var(--radius-md)]">
                 {memberData?.portraitUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={memberData.portraitUrl}
                     alt={member.user.displayName}
+                    width={32}
+                    height={32}
                     className="h-8 w-8 rounded-full border border-[var(--border-subtle)] object-cover object-top shrink-0"
                   />
                 ) : (
@@ -329,10 +331,11 @@ export default async function CampaignOverviewPage({ params }: CampaignPageProps
               </div>
               <div className="flex items-center gap-3">
                 {myCharacter.portraitUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={myCharacter.portraitUrl}
                     alt={myCharacter.name}
+                    width={40}
+                    height={40}
                     className="h-10 w-10 rounded-full border-2 border-[#60a5fa]/30 object-cover object-top shrink-0"
                   />
                 ) : (

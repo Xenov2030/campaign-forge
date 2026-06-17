@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import * as Popover from "@radix-ui/react-popover";
 import { Heart, Plus, Minus, Shield, Zap, Footprints, ChevronRight, X, SmilePlus } from "lucide-react";
 import { CONDITIONS, conditionColor } from "@/lib/conditions";
@@ -76,8 +77,7 @@ export function CharacterCard({
         className="group flex items-center gap-3 p-4 bg-gradient-to-r from-[var(--bg-elevated)] to-[var(--bg-overlay)] relative"
       >
         {character.portraitUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={character.portraitUrl} alt={character.name} className="h-16 w-16 rounded-full object-cover border-2 border-[#60a5fa]/30 shrink-0" />
+          <Image src={character.portraitUrl} alt={character.name} width={64} height={64} className="h-16 w-16 rounded-full object-cover border-2 border-[#60a5fa]/30 shrink-0" />
         ) : (
           <div className="h-16 w-16 rounded-full bg-[#60a5fa]/10 border-2 border-[#60a5fa]/20 flex items-center justify-center shrink-0 font-display text-xl font-bold text-[#60a5fa]/60">
             {character.name.slice(0, 2).toUpperCase()}

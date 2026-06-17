@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, Package, Pencil, Sparkles, Link2, Eye, EyeOff, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { ItemRarity } from "@prisma/client";
@@ -64,10 +65,9 @@ export default async function ItemDetailPage({ params }: PageProps) {
       {/* Header */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 mb-6">
         <div className="flex flex-col sm:flex-row gap-5">
-          <div className="h-28 w-28 shrink-0 rounded-[var(--radius-lg)] overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center">
+          <div className="relative h-28 w-28 shrink-0 rounded-[var(--radius-lg)] overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center">
             {item.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+              <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
             ) : (
               <Package className="h-10 w-10 text-[var(--text-muted)] opacity-50" />
             )}

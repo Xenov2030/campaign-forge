@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, Heart, Shield, Zap, Star, User, Pencil, Package } from "lucide-react";
 import { formatModifier } from "@/lib/utils";
 import { InventoryList } from "@/components/campaign/inventory-list";
@@ -81,10 +82,9 @@ export default async function CharacterDetailPage({ params }: PageProps) {
         />
         <div className="px-6 pb-6">
           <div className="flex items-end gap-5 -mt-14 mb-4">
-            <div className="h-28 w-24 rounded-[var(--radius-xl)] border-4 border-[var(--bg-surface)] overflow-hidden bg-[var(--bg-elevated)] shrink-0">
+            <div className="relative h-28 w-24 rounded-[var(--radius-xl)] border-4 border-[var(--bg-surface)] overflow-hidden bg-[var(--bg-elevated)] shrink-0">
               {character.portraitUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={character.portraitUrl} alt={character.name} className="w-full h-full object-cover object-top" />
+                <Image src={character.portraitUrl} alt={character.name} fill className="object-cover object-top" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <User className="h-10 w-10 text-[var(--text-muted)]" />

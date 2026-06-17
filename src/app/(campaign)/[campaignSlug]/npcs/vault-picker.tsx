@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Archive, X, Check, Loader2, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -143,8 +144,7 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
                       >
                         <button type="button" onClick={() => toggle(e.id)} className="w-full flex items-center gap-3 p-3 pr-9 text-left">
                           {e.portraitUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={e.portraitUrl} alt={e.name} className="h-12 w-12 rounded-full object-cover border-2 border-[#34d399]/30 shrink-0" />
+                            <Image src={e.portraitUrl} alt={e.name} width={48} height={48} className="h-12 w-12 rounded-full object-cover border-2 border-[#34d399]/30 shrink-0" />
                           ) : (
                             <div className="h-12 w-12 rounded-full bg-[#34d399]/10 border-2 border-[#34d399]/20 flex items-center justify-center shrink-0 font-display text-base font-bold text-[#34d399]/60">
                               {e.name.slice(0, 2).toUpperCase()}

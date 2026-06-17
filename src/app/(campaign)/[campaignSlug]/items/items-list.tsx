@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Package, Sparkles } from "lucide-react";
+import { Plus, Package, Sparkles, Search } from "lucide-react";
 import type { ItemRarity } from "@prisma/client";
 import { ITEM_RARITIES, ITEM_RARITY_LABELS, ITEM_RARITY_COLOR } from "@/lib/items";
 import { ItemCard, type ItemCardData } from "./item-card";
@@ -16,6 +16,7 @@ export function ItemsList({
   campaignSlug: string;
   isMaster: boolean;
 }) {
+  const [search, setSearch] = useState("");
   const [rarityFilter, setRarityFilter] = useState<"all" | ItemRarity>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
@@ -23,9 +24,10 @@ export function ItemsList({
   const types = Array.from(new Set(items.map((i) => i.type).filter((t): t is string => !!t))).sort();
 
   const shown = items.filter((i) => {
+    const nameOk = !search.trim() || i.name.toLowerCase().includes(search.toLowerCase());
     const rarityOk = rarityFilter === "all" || i.rarity === rarityFilter;
     const typeOk = typeFilter === "all" || i.type === typeFilter;
-    return rarityOk && typeOk;
+    return nameOk && rarityOk && typeOk;
   });
 
   return (
@@ -60,9 +62,19 @@ export function ItemsList({
         )}
       </div>
 
-      {/* Filtros */}
+      {/* Búsqueda + Filtros */}
       {items.length > 0 && (
         <div className="flex flex-col gap-2 mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nombre..."
+              className="w-full bg-[var(--bg-surface)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-[var(--radius-md)] h-10 pl-9 pr-3 text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors placeholder:text-[var(--text-muted)]"
+            />
+          </div>
           <div className="flex flex-wrap items-center gap-1">
             <button
               onClick={() => setRarityFilter("all")}

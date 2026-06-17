@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, Package, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -62,8 +63,7 @@ export function ItemCard({
         {/* Imagen / ícono */}
         <div className="h-32 relative flex items-center justify-center bg-gradient-to-br from-[var(--bg-elevated)] to-[var(--bg-overlay)] overflow-hidden">
           {item.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+            <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
           ) : (
             <Package className="h-10 w-10 text-[var(--text-muted)] opacity-50" />
           )}

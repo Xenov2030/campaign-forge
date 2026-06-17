@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, User, MapPin, Users, Eye, EyeOff, Lock, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NpcDangerZone } from "@/components/campaign/npc-danger-zone";
@@ -37,17 +38,15 @@ export default async function NPCDetailPage({ params }: PageProps) {
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] overflow-hidden mb-6">
         <div className="h-28 relative overflow-hidden">
           {npc.portraitUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={npc.portraitUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-125 opacity-50" />
+            <Image src={npc.portraitUrl} alt="" aria-hidden="true" fill className="object-cover blur-2xl scale-125 opacity-50" />
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-[#34d399]/25 to-[#60a5fa]/20" />
         </div>
         <div className="px-6 pb-6">
           <div className="flex items-end gap-5 -mt-10 mb-4">
-            <div className="h-20 w-20 rounded-[var(--radius-xl)] border-4 border-[var(--bg-surface)] overflow-hidden bg-[var(--bg-elevated)] shrink-0">
+            <div className="relative h-20 w-20 rounded-[var(--radius-xl)] border-4 border-[var(--bg-surface)] overflow-hidden bg-[var(--bg-elevated)] shrink-0">
               {npc.portraitUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={npc.portraitUrl} alt={npc.name} className="w-full h-full object-cover" />
+                <Image src={npc.portraitUrl} alt={npc.name} fill className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <User className="h-8 w-8 text-[var(--text-muted)]" />

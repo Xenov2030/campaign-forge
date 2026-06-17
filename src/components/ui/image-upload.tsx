@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import NextImage from "next/image";
 import { X, Loader2, ImageIcon } from "lucide-react";
 
 interface ImageUploadProps {
@@ -68,8 +69,7 @@ export function ImageUpload({
       >
         {value ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={value} alt="" className="w-full h-full object-cover" />
+            <NextImage src={value} alt="" fill className="object-cover" />
             <div className="absolute inset-0 bg-black/0 hover:bg-black/50 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
               <button
                 type="button"

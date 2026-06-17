@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, Heart, Plus, Minus, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -88,8 +89,7 @@ export function NpcCard({
           {/* Fondo: retrato difuminado o gradiente */}
           {npc.portraitUrl ? (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={npc.portraitUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-125 opacity-40" />
+              <Image src={npc.portraitUrl} alt="" aria-hidden="true" fill className="object-cover blur-2xl scale-125 opacity-40" />
               <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-elevated)]/85 to-[var(--bg-overlay)]/85" />
             </>
           ) : (
@@ -97,8 +97,7 @@ export function NpcCard({
           )}
 
           {npc.portraitUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={npc.portraitUrl} alt={npc.name} className="relative h-20 w-20 rounded-full object-cover border-2 border-[#34d399]/30 shrink-0" />
+            <Image src={npc.portraitUrl} alt={npc.name} width={80} height={80} className="relative h-20 w-20 rounded-full object-cover border-2 border-[#34d399]/30 shrink-0" />
           ) : (
             <div className="relative h-20 w-20 rounded-full bg-[#34d399]/10 border-2 border-[#34d399]/20 flex items-center justify-center shrink-0 font-display text-2xl font-bold text-[#34d399]/60">
               {npc.name.slice(0, 2).toUpperCase()}
