@@ -5,16 +5,17 @@ import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { VaultManager } from "./vault-manager";
 
-export const metadata = { title: "Baúl de NPCs" };
+export const metadata = { title: "Baúl" };
 
 export default async function VaultPage() {
   const user = await getUser();
   if (!user) redirect("/login");
 
-  const vault = await prisma.npcVault.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const [npcs, monsters, items] = await Promise.all([
+    prisma.vaultNpc.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
+    prisma.vaultMonster.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
+    prisma.vaultItem.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
+  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
@@ -28,14 +29,14 @@ export default async function VaultPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-3xl font-black text-[var(--text-primary)]">Baúl de NPCs</h1>
+          <h1 className="font-display text-3xl font-black text-[var(--text-primary)]">Baúl</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">
-            NPCs guardados para reutilizar en cualquier campaña
+            NPCs, criaturas y objetos guardados para reutilizar en cualquier campaña
           </p>
         </div>
       </div>
 
-      <VaultManager initialVault={vault} />
+      <VaultManager initialNpcs={npcs} initialMonsters={monsters} initialItems={items} />
     </div>
   );
 }

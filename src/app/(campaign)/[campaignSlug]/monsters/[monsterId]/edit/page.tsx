@@ -52,7 +52,7 @@ export default async function EditMonsterPage({ params }: PageProps) {
     languages: toStr(monster.languages),
     lore: toStr(monster.lore),
     imageUrl: toStr(monster.imageUrl),
-    tags: monster.tags.join(", "),
+    tags: monster.tags,
     stats: {
       str: toNum(rawStats.str), dex: toNum(rawStats.dex), con: toNum(rawStats.con),
       int: toNum(rawStats.int), wis: toNum(rawStats.wis), cha: toNum(rawStats.cha),

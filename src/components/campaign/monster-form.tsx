@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TagPicker } from "@/components/ui/tag-picker";
+import { ImageCropUpload } from "@/components/ui/image-crop-upload";
 
 interface StatEntry { name: string; description: string }
 
@@ -29,8 +31,30 @@ export interface MonsterFormValues {
   legendaryActions: StatEntry[];
   lore: string;
   imageUrl: string;
-  tags: string;
+  tags: string[];
 }
+
+export const MONSTER_TAGS = [
+  // Disposición
+  { value: "amigable",      label: "Amigable",      color: "#34d399" },
+  { value: "neutral",       label: "Neutral",        color: "#94a3b8" },
+  { value: "hostil",        label: "Hostil",         color: "#f59e0b" },
+  { value: "legendario",    label: "Legendario",     color: "#c9a84c" },
+  { value: "jefe",          label: "Jefe",           color: "#c9a84c" },
+  // Tipo
+  { value: "dragón",        label: "Dragón",         color: "#f87171" },
+  { value: "bestia",        label: "Bestia",         color: "#a3e635" },
+  { value: "humanoide",     label: "Humanoide",      color: "#60a5fa" },
+  { value: "no-muerto",     label: "No-muerto",      color: "#a855f7" },
+  { value: "feérico",       label: "Feérico",        color: "#ec4899" },
+  { value: "céleste",       label: "Céleste",        color: "#fde68a" },
+  { value: "demonio",       label: "Demonio",        color: "#ef4444" },
+  { value: "elemental",     label: "Elemental",      color: "#22d3ee" },
+  { value: "constructo",    label: "Constructo",     color: "#a8a29e" },
+  { value: "planta",        label: "Planta",         color: "#4ade80" },
+  { value: "aberración",    label: "Aberración",     color: "#6366f1" },
+  { value: "monstruosidad", label: "Monstruosidad",  color: "#fb923c" },
+];
 
 const EMPTY: MonsterFormValues = {
   name: "", type: "", size: "Mediano", alignment: "",
@@ -41,11 +65,11 @@ const EMPTY: MonsterFormValues = {
   senses: { darkvision: "", blindsight: "", tremorsense: "", truesight: "", passivePerception: "" },
   languages: "",
   abilities: [], actions: [], reactions: [], legendaryActions: [],
-  lore: "", imageUrl: "", tags: "",
+  lore: "", imageUrl: "", tags: [],
 };
 
 const SIZES = ["Diminuto", "Pequeño", "Mediano", "Grande", "Enorme", "Gigantesco", "Colosal"];
-const TYPES = ["Bestia", "Humanoide", "No-muerto", "Monstruosidad", "Dragón", "Céleste", "Feérico", "Demonio", "Diablo", "Gigante", "Elemental", "Constructo", "Planta", "Cieno", "Aberración"];
+const TYPES = ["Bestia", "Humanoide", "No-muerto", "Monstruosidad", "Dragón", "Céleste", "Feérico", "Demonio", "Diablo", "Gigante", "Elemental", "Constructo", "Planta", "Aberración"];
 const ALIGNMENTS = ["Legal bueno", "Neutral bueno", "Caótico bueno", "Legal neutral", "Neutral", "Caótico neutral", "Legal malvado", "Neutral malvado", "Caótico malvado", "Sin alineamiento"];
 
 const DND_SKILLS = [
@@ -63,6 +87,7 @@ function mod(score: number): string {
 }
 
 const selectClass = "w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 px-3 rounded-[var(--radius-md)] text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors";
+const numInputClass = "w-full text-center bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors";
 
 function Section({ title, open, onToggle, children }: { title: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
@@ -76,11 +101,7 @@ function Section({ title, open, onToggle, children }: { title: string; open: boo
   );
 }
 
-function EntryList({ label, items, onChange }: {
-  label: string;
-  items: StatEntry[];
-  onChange: (items: StatEntry[]) => void;
-}) {
+function EntryList({ label, items, onChange }: { label: string; items: StatEntry[]; onChange: (items: StatEntry[]) => void }) {
   const add = () => onChange([...items, { name: "", description: "" }]);
   const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
   const update = (i: number, field: keyof StatEntry, val: string) =>
@@ -124,11 +145,13 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
   const router = useRouter();
   const [form, setForm] = useState<MonsterFormValues>({ ...EMPTY, ...initial });
   const [saving, setSaving] = useState(false);
-  const [open, setOpen] = useState({ basic: true, stats: true, speed: false, skills: false, senses: false, traits: true, lore: false });
+  const [open, setOpen] = useState({ basic: true, image: false, stats: true, speed: false, skills: false, senses: false, traits: true, lore: false });
 
   const toggle = (k: keyof typeof open) => setOpen((p) => ({ ...p, [k]: !p[k] }));
   const setField = <K extends keyof MonsterFormValues>(k: K, v: MonsterFormValues[K]) =>
     setForm((p) => ({ ...p, [k]: v }));
+
+  const noScroll = (e: React.WheelEvent<HTMLInputElement>) => e.currentTarget.blur();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,7 +162,6 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
         ...form,
         ...(mode === "create" ? { campaignId } : {}),
         armorClass: form.armorClass ? parseInt(form.armorClass) : null,
-        tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
         senses: {
           ...form.senses,
           passivePerception: form.senses.passivePerception ? parseInt(form.senses.passivePerception) : undefined,
@@ -163,6 +185,7 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Básico */}
       <Section title="Información básica" open={open.basic} onToggle={() => toggle("basic")}>
         <div className="pt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Nombre *" value={form.name} onChange={(e) => setField("name", e.target.value)} placeholder="Dragón rojo anciano" required className="sm:col-span-2" />
@@ -188,13 +211,40 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
           </div>
           <Input label="Desafío (CR)" value={form.challengeRating} onChange={(e) => setField("challengeRating", e.target.value)} placeholder="5, 1/2, 1/4..." />
           <Input label="Puntos de vida" value={form.hitPoints} onChange={(e) => setField("hitPoints", e.target.value)} placeholder="52 (8d10+8)" />
-          <Input label="Clase de armadura" type="number" min={0} max={30} value={form.armorClass} onChange={(e) => setField("armorClass", e.target.value)} placeholder="17" />
+          <Input
+            label="Clase de armadura"
+            type="number" min={0} max={30}
+            value={form.armorClass}
+            onChange={(e) => setField("armorClass", e.target.value)}
+            onWheel={noScroll}
+            placeholder="17"
+          />
           <Input label="Idiomas" value={form.languages} onChange={(e) => setField("languages", e.target.value)} placeholder="Común, Dracónico" className="sm:col-span-2" />
-          <Input label="Tags (separados por coma)" value={form.tags} onChange={(e) => setField("tags", e.target.value)} placeholder="dragón, legendario, jefe" className="sm:col-span-2" />
-          <Input label="URL de imagen" value={form.imageUrl} onChange={(e) => setField("imageUrl", e.target.value)} placeholder="https://..." className="sm:col-span-2" />
+          <TagPicker
+            label="Categorías"
+            value={form.tags}
+            onChange={(tags) => setField("tags", tags)}
+            options={MONSTER_TAGS}
+            className="sm:col-span-2"
+          />
         </div>
       </Section>
 
+      {/* Imagen */}
+      <Section title="Imagen" open={open.image} onToggle={() => toggle("image")}>
+        <div className="pt-5 flex justify-center">
+          <ImageCropUpload
+            value={form.imageUrl}
+            onChange={(url) => setField("imageUrl", url)}
+            folder="monsters"
+            label="Imagen del monstruo"
+            aspect="portrait"
+            className="w-40"
+          />
+        </div>
+      </Section>
+
+      {/* Stats */}
       <Section title="Puntuaciones de característica" open={open.stats} onToggle={() => toggle("stats")}>
         <div className="pt-5 grid grid-cols-3 sm:grid-cols-6 gap-3">
           {STAT_KEYS.map((key) => (
@@ -204,7 +254,8 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
                 type="number" min={1} max={30}
                 value={form.stats[key]}
                 onChange={(e) => setField("stats", { ...form.stats, [key]: Math.min(30, Math.max(1, parseInt(e.target.value) || 10)) })}
-                className="w-full text-center bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
+                onWheel={noScroll}
+                className={numInputClass}
               />
               <span className="text-xs text-[var(--text-muted)]">{mod(form.stats[key])}</span>
             </div>
@@ -212,19 +263,34 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
         </div>
       </Section>
 
+      {/* Velocidad */}
       <Section title="Velocidad" open={open.speed} onToggle={() => toggle("speed")}>
         <div className="pt-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
           {(["walk", "fly", "swim", "climb", "burrow"] as const).map((k) => (
-            <Input key={k}
-              label={k === "walk" ? "Caminando" : k === "fly" ? "Volando" : k === "swim" ? "Nadando" : k === "climb" ? "Trepando" : "Excavando"}
-              value={form.speed[k]}
-              onChange={(e) => setField("speed", { ...form.speed, [k]: e.target.value })}
-              placeholder="30 pies"
-            />
+            <div key={k} className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                {k === "walk" ? "Caminando" : k === "fly" ? "Volando" : k === "swim" ? "Nadando" : k === "climb" ? "Trepando" : "Excavando"}
+              </label>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number" min={0} max={99}
+                  value={form.speed[k] ? parseInt(form.speed[k]) || "" : ""}
+                  onChange={(e) => {
+                    const n = Math.min(99, Math.max(0, parseInt(e.target.value) || 0));
+                    setField("speed", { ...form.speed, [k]: e.target.value === "" ? "" : `${n} pies` });
+                  }}
+                  onWheel={noScroll}
+                  placeholder="30"
+                  className="w-20 text-center bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 rounded-l-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
+                />
+                <span className="h-10 flex items-center px-2 bg-[var(--bg-elevated)] border border-l-0 border-[var(--border-default)] rounded-r-[var(--radius-md)] text-xs text-[var(--text-muted)]">pies</span>
+              </div>
+            </div>
           ))}
         </div>
       </Section>
 
+      {/* Skills */}
       <Section title="Habilidades con competencia" open={open.skills} onToggle={() => toggle("skills")}>
         <div className="pt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {DND_SKILLS.map((skill) => {
@@ -233,15 +299,16 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
               <div key={skill} className="flex items-center gap-2">
                 <label className="text-xs text-[var(--text-secondary)] flex-1 min-w-0 truncate">{skill}</label>
                 <input
-                  type="number"
+                  type="number" min={-9} max={99}
                   value={val ?? ""}
                   onChange={(e) => {
                     const n = parseInt(e.target.value);
                     const next = { ...form.skills };
                     if (isNaN(n) || e.target.value === "") { delete next[skill]; }
-                    else next[skill] = n;
+                    else next[skill] = Math.min(99, Math.max(-9, n));
                     setField("skills", next);
                   }}
+                  onWheel={noScroll}
                   placeholder="—"
                   className="w-14 text-center bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-8 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
                 />
@@ -251,16 +318,25 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
         </div>
       </Section>
 
+      {/* Sentidos */}
       <Section title="Sentidos" open={open.senses} onToggle={() => toggle("senses")}>
         <div className="pt-5 grid grid-cols-2 gap-4">
           <Input label="Visión en la oscuridad" value={form.senses.darkvision} onChange={(e) => setField("senses", { ...form.senses, darkvision: e.target.value })} placeholder="60 pies" />
           <Input label="Vista ciega" value={form.senses.blindsight} onChange={(e) => setField("senses", { ...form.senses, blindsight: e.target.value })} placeholder="30 pies" />
           <Input label="Sentido sísmico" value={form.senses.tremorsense} onChange={(e) => setField("senses", { ...form.senses, tremorsense: e.target.value })} placeholder="60 pies" />
           <Input label="Visión verdadera" value={form.senses.truesight} onChange={(e) => setField("senses", { ...form.senses, truesight: e.target.value })} placeholder="120 pies" />
-          <Input label="Percepción pasiva" type="number" value={form.senses.passivePerception} onChange={(e) => setField("senses", { ...form.senses, passivePerception: e.target.value })} placeholder="12" />
+          <Input
+            label="Percepción pasiva"
+            type="number" min={0} max={99}
+            value={form.senses.passivePerception}
+            onChange={(e) => setField("senses", { ...form.senses, passivePerception: e.target.value })}
+            onWheel={noScroll}
+            placeholder="12"
+          />
         </div>
       </Section>
 
+      {/* Rasgos y acciones */}
       <Section title="Rasgos, acciones y reacciones" open={open.traits} onToggle={() => toggle("traits")}>
         <EntryList label="Rasgos" items={form.abilities} onChange={(v) => setField("abilities", v)} />
         <EntryList label="Acciones" items={form.actions} onChange={(v) => setField("actions", v)} />
@@ -268,6 +344,7 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
         <EntryList label="Acciones legendarias" items={form.legendaryActions} onChange={(v) => setField("legendaryActions", v)} />
       </Section>
 
+      {/* Lore */}
       <Section title="Trasfondo y lore" open={open.lore} onToggle={() => toggle("lore")}>
         <div className="pt-5">
           <Textarea label="Trasfondo" value={form.lore} onChange={(e) => setField("lore", e.target.value)} rows={5} placeholder="Historia, origen, motivaciones del monstruo..." />

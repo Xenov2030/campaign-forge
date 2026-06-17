@@ -4,6 +4,7 @@ import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { MonsterStatBlock } from "@/components/campaign/monster-stat-block";
 import { MonsterDeleteButton } from "./monster-delete-button";
+import { MonsterVaultButton } from "./monster-vault-button";
 import { Pencil, ChevronLeft } from "lucide-react";
 
 interface PageProps {
@@ -42,7 +43,8 @@ export default async function MonsterDetailPage({ params }: PageProps) {
           <ChevronLeft className="h-4 w-4" /> Bestiario
         </Link>
         {isMaster && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <MonsterVaultButton monsterId={monsterId} />
             <Link
               href={`/${campaignSlug}/monsters/${monsterId}/edit`}
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-colors"

@@ -29,6 +29,8 @@ model User {
   joinRequests      JoinRequest[]
   notifications     Notification[]
   vaultNpcs         VaultNpc[]
+  vaultMonsters     VaultMonster[]
+  vaultItems        VaultItem[]
 
   @@map("users")
 }
@@ -252,6 +254,57 @@ model VaultNpc {
 
   @@index([userId])
   @@map("vault_npcs")
+}
+
+model VaultMonster {
+  id               String   @id @default(cuid())
+  userId           String
+  name             String
+  type             String?
+  size             String?
+  alignment        String?
+  challengeRating  String?
+  hitPoints        String?
+  armorClass       Int?
+  speed            Json     @default("{}")
+  stats            Json     @default("{}")
+  skills           Json     @default("{}")
+  senses           Json     @default("{}")
+  languages        String?
+  abilities        Json     @default("[]")
+  actions          Json     @default("[]")
+  reactions        Json     @default("[]")
+  legendaryActions Json     @default("[]")
+  lore             String?
+  imageUrl         String?
+  tags             String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("vault_monsters")
+}
+
+model VaultItem {
+  id                 String     @id @default(cuid())
+  userId             String
+  name               String
+  type               String?
+  rarity             ItemRarity @default(COMMON)
+  description        String?
+  lore               String?
+  properties         Json       @default("{}")
+  imageUrl           String?
+  isArtifact         Boolean    @default(false)
+  requiresAttunement Boolean    @default(false)
+  tags               String[]   @default([])
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("vault_items")
 }
 
 model Monster {
