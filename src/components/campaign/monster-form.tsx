@@ -145,9 +145,9 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
   const router = useRouter();
   const [form, setForm] = useState<MonsterFormValues>({ ...EMPTY, ...initial });
   const [saving, setSaving] = useState(false);
-  const [open, setOpen] = useState({ basic: true, image: false, stats: true, speed: false, skills: false, senses: false, traits: true, lore: false });
+  const [open, setOpen] = useState({ basic: true, stats: true, speed: false, skills: false, senses: false, traits: true, lore: false });
 
-  const toggle = (k: keyof typeof open) => setOpen((p) => ({ ...p, [k]: !p[k] }));
+  const toggle = (k: keyof typeof open) => setOpen((p) => ({ ...p, [k]: !p[k] as boolean }));
   const setField = <K extends keyof MonsterFormValues>(k: K, v: MonsterFormValues[K]) =>
     setForm((p) => ({ ...p, [k]: v }));
 
@@ -185,62 +185,60 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Básico */}
+      {/* Básico + imagen */}
       <Section title="Información básica" open={open.basic} onToggle={() => toggle("basic")}>
-        <div className="pt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input label="Nombre *" value={form.name} onChange={(e) => setField("name", e.target.value)} placeholder="Dragón rojo anciano" required className="sm:col-span-2" />
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Tipo</label>
-            <select className={selectClass} value={form.type} onChange={(e) => setField("type", e.target.value)}>
-              <option value="">— Seleccionar —</option>
-              {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Tamaño</label>
-            <select className={selectClass} value={form.size} onChange={(e) => setField("size", e.target.value)}>
-              {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Alineamiento</label>
-            <select className={selectClass} value={form.alignment} onChange={(e) => setField("alignment", e.target.value)}>
-              <option value="">— Seleccionar —</option>
-              {ALIGNMENTS.map((a) => <option key={a} value={a}>{a}</option>)}
-            </select>
-          </div>
-          <Input label="Desafío (CR)" value={form.challengeRating} onChange={(e) => setField("challengeRating", e.target.value)} placeholder="5, 1/2, 1/4..." />
-          <Input label="Puntos de vida" value={form.hitPoints} onChange={(e) => setField("hitPoints", e.target.value)} placeholder="52 (8d10+8)" />
-          <Input
-            label="Clase de armadura"
-            type="number" min={0} max={30}
-            value={form.armorClass}
-            onChange={(e) => setField("armorClass", e.target.value)}
-            onWheel={noScroll}
-            placeholder="17"
-          />
-          <Input label="Idiomas" value={form.languages} onChange={(e) => setField("languages", e.target.value)} placeholder="Común, Dracónico" className="sm:col-span-2" />
-          <TagPicker
-            label="Categorías"
-            value={form.tags}
-            onChange={(tags) => setField("tags", tags)}
-            options={MONSTER_TAGS}
-            className="sm:col-span-2"
-          />
-        </div>
-      </Section>
-
-      {/* Imagen */}
-      <Section title="Imagen" open={open.image} onToggle={() => toggle("image")}>
-        <div className="pt-5 flex justify-center">
+        <div className="pt-5 flex flex-col sm:flex-row gap-6">
+          {/* Imagen lateral */}
           <ImageCropUpload
             value={form.imageUrl}
             onChange={(url) => setField("imageUrl", url)}
             folder="monsters"
-            label="Imagen del monstruo"
+            label="Imagen"
             aspect="portrait"
-            className="w-40"
+            className="w-36 shrink-0"
           />
+          {/* Campos */}
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input label="Nombre *" value={form.name} onChange={(e) => setField("name", e.target.value)} placeholder="Dragón rojo anciano" required className="sm:col-span-2" />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Tipo</label>
+              <select className={selectClass} value={form.type} onChange={(e) => setField("type", e.target.value)}>
+                <option value="">— Seleccionar —</option>
+                {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Tamaño</label>
+              <select className={selectClass} value={form.size} onChange={(e) => setField("size", e.target.value)}>
+                {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Alineamiento</label>
+              <select className={selectClass} value={form.alignment} onChange={(e) => setField("alignment", e.target.value)}>
+                <option value="">— Seleccionar —</option>
+                {ALIGNMENTS.map((a) => <option key={a} value={a}>{a}</option>)}
+              </select>
+            </div>
+            <Input label="Desafío (CR)" value={form.challengeRating} onChange={(e) => setField("challengeRating", e.target.value)} placeholder="5, 1/2, 1/4..." />
+            <Input label="Puntos de vida" value={form.hitPoints} onChange={(e) => setField("hitPoints", e.target.value)} placeholder="52 (8d10+8)" />
+            <Input
+              label="Clase de armadura"
+              type="number" min={0} max={30}
+              value={form.armorClass}
+              onChange={(e) => setField("armorClass", e.target.value)}
+              onWheel={noScroll}
+              placeholder="17"
+            />
+            <Input label="Idiomas" value={form.languages} onChange={(e) => setField("languages", e.target.value)} placeholder="Común, Dracónico" className="sm:col-span-2" />
+            <TagPicker
+              label="Categorías"
+              value={form.tags}
+              onChange={(tags) => setField("tags", tags)}
+              options={MONSTER_TAGS}
+              className="sm:col-span-2"
+            />
+          </div>
         </div>
       </Section>
 

@@ -132,19 +132,21 @@ export function VaultManager({ initialNpcs, initialMonsters, initialItems }: Pro
         ))}
       </div>
 
-      {/* Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre…"
-            className="w-full h-9 pl-9 pr-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
-          />
+      {/* Search — solo si hay 10+ entradas en la pestaña activa */}
+      {((tab === "npcs" && npcs.length >= 10) || (tab === "monsters" && monsters.length >= 10) || (tab === "items" && items.length >= 10)) && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nombre…"
+              className="w-full h-9 pl-9 pr-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       {tab === "npcs" && (
