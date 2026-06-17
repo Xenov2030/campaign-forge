@@ -1,123 +1,71 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
+import { getUser } from "@/lib/supabase/server";
+import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, Calendar, Save, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { ChevronLeft, Calendar } from "lucide-react";
+import { SessionForm } from "@/components/campaign/session-form";
+import type { SessionMember } from "@/components/campaign/session-form";
 
-const STATUS_OPTIONS = [
-  { value: "PLANNED", label: "Planificada" },
-  { value: "IN_PROGRESS", label: "En curso" },
-  { value: "COMPLETED", label: "Completada" },
-  { value: "CANCELLED", label: "Cancelada" },
-];
+interface PageProps {
+  params: Promise<{ campaignSlug: string }>;
+}
 
-export default function NewSessionPage() {
-  const router = useRouter();
-  const params = useParams();
-  const slug = params.campaignSlug as string;
+export const metadata = { title: "Nueva sesión" };
 
-  const [campaignId, setCampaignId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    title: "", date: "", status: "PLANNED", summary: "", notes: "",
+export default async function NewSessionPage({ params }: PageProps) {
+  const { campaignSlug } = await params;
+  const user = await getUser();
+  if (!user) redirect("/login");
+
+  const campaign = await prisma.campaign.findUnique({
+    where: { slug: campaignSlug },
+    select: {
+      id: true,
+      masterId: true,
+      members: {
+        select: {
+          user: { select: { id: true, displayName: true, avatarUrl: true } },
+        },
+      },
+    },
   });
+  if (!campaign) notFound();
+  if (campaign.masterId !== user.id) redirect(`/${campaignSlug}/sessions`);
 
-  const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((p) => ({ ...p, [field]: e.target.value }));
-
-  useEffect(() => {
-    fetch(`/api/campaigns/by-slug/${slug}`)
-      .then((r) => r.json())
-      .then((d) => { if (d.id) setCampaignId(d.id); });
-  }, [slug]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!campaignId) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, campaignId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      router.push(`/${slug}/sessions`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear sesión");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const members: SessionMember[] = campaign.members.map(
+    (m: { user: { id: string; displayName: string; avatarUrl: string | null } }) => ({
+      userId: m.user.id,
+      displayName: m.user.displayName,
+      avatarUrl: m.user.avatarUrl,
+    }),
+  );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-      <Link href={`/${slug}/sessions`} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6">
+    <div className="max-w-3xl mx-auto px-4 md:px-6 py-8">
+      <Link
+        href={`/${campaignSlug}/sessions`}
+        className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6"
+      >
         <ChevronLeft className="h-4 w-4" />
         Volver a sesiones
       </Link>
 
       <div className="flex items-center gap-3 mb-8">
-        <div className="h-10 w-10 rounded-[var(--radius-lg)] bg-[#a855f7]/10 border border-[#a855f7]/30 flex items-center justify-center">
-          <Calendar className="h-5 w-5 text-[#a855f7]" />
+        <div className="h-10 w-10 rounded-[var(--radius-lg)] bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 flex items-center justify-center">
+          <Calendar className="h-5 w-5 text-[var(--accent-gold)]" />
         </div>
         <div>
-          <h1 className="font-display text-3xl font-black text-[var(--text-primary)]">Nueva sesión</h1>
-          <p className="text-sm text-[var(--text-muted)]">Registra o planifica una sesión de juego</p>
+          <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Nueva sesión</h1>
+          <p className="text-sm text-[var(--text-muted)]">Registrá el próximo encuentro</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 space-y-4">
-          <Input label="Título de la sesión (opcional)" value={form.title} onChange={set("title")} placeholder="El asalto al castillo de Ravenloft..." />
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Fecha</label>
-              <input
-                type="date"
-                value={form.date}
-                onChange={set("date")}
-                className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Estado</label>
-              <select
-                value={form.status}
-                onChange={set("status")}
-                className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
-              >
-                {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <Textarea label="Resumen" value={form.summary} onChange={set("summary")} rows={4} placeholder="¿Qué pasó en esta sesión? ¿Cuáles fueron los momentos destacados?..." />
-          <Textarea label="Notas del máster" value={form.notes} onChange={set("notes")} rows={3} placeholder="Notas privadas, lo que falta, cosas a recordar para la próxima..." />
-        </div>
-
-        {error && (
-          <div className="px-4 py-3 rounded-[var(--radius-md)] bg-red-900/20 border border-red-800/50 text-red-400 text-sm">{error}</div>
-        )}
-
-        <div className="flex gap-3 justify-end pb-8">
-          <Link href={`/${slug}/sessions`}>
-            <Button variant="ghost" type="button">Cancelar</Button>
-          </Link>
-          <Button type="submit" disabled={saving || !campaignId}>
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Crear sesión
-          </Button>
-        </div>
-      </form>
+      <SessionForm
+        campaignSlug={campaignSlug}
+        campaignId={campaign.id}
+        mode="create"
+        members={members}
+      />
     </div>
   );
 }

@@ -429,23 +429,25 @@ model Quest {
 }
 
 model Session {
-  id         String        @id @default(cuid())
-  campaignId String
-  masterId   String
-  number     Int
-  title      String?
-  date       DateTime?
-  duration   Int?
-  summary    String?
-  aiSummary  String?
-  notes      String?
-  status     SessionStatus @default(PLANNED)
-  recap      String?
-  highlights Json          @default("[]")
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  campaign   Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  master     User          @relation(fields: [masterId], references: [id])
+  id           String        @id @default(cuid())
+  campaignId   String
+  masterId     String
+  number       Int
+  title        String?
+  date         DateTime?
+  duration     Int?
+  summary      String?
+  aiSummary    String?
+  notes        String?
+  status       SessionStatus @default(PLANNED)
+  recap        String?
+  highlights   Json          @default("[]")
+  isPresential Boolean       @default(true)
+  attendeeIds  String[]      @default([])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  campaign     Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  master       User          @relation(fields: [masterId], references: [id])
 
   @@index([campaignId])
   @@map("sessions")
@@ -642,6 +644,7 @@ enum NotificationType {
   JOIN_REQUEST
   JOIN_ACCEPTED
   JOIN_REJECTED
+  SESSION_SCHEDULED
 }
 
 enum CampaignTheme {

@@ -67,7 +67,7 @@ export function ItemsList({
       </div>
 
       {/* Búsqueda + Filtros */}
-      {items.length >= 20 && (
+      {items.length > 0 && (
         <div className="flex flex-col gap-2 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
