@@ -39,7 +39,7 @@ export function ItemsList({
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Package className="h-5 w-5 text-[var(--accent-gold)]" />
+            <Package className="h-5 w-5 text-[#06b6d4]" />
             <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Objetos</h1>
           </div>
           <p className="text-sm text-[var(--text-muted)]">{items.length} objetos</p>

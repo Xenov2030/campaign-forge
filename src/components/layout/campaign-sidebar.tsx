@@ -56,6 +56,7 @@ interface SidebarItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  iconColor?: string;
   isMasterOnly?: boolean;
   badge?: number;
   disabled?: boolean;
@@ -174,26 +175,31 @@ export function CampaignSidebar({
       label: "Personajes",
       href: `${base}/characters`,
       icon: <Sword className="h-4 w-4" />,
+      iconColor: "#60a5fa",
     },
     {
       label: "NPCs",
       href: `${base}/npcs`,
       icon: <Users className="h-4 w-4" />,
+      iconColor: "#34d399",
     },
     {
       label: "Quests",
       href: `${base}/quests`,
       icon: <Target className="h-4 w-4" />,
+      iconColor: "#f59e0b",
     },
     {
       label: "Objetos",
       href: `${base}/items`,
       icon: <Package className="h-4 w-4" />,
+      iconColor: "#06b6d4",
     },
     {
       label: "Monstruos",
       href: `${base}/monsters`,
       icon: <Skull className="h-4 w-4" />,
+      iconColor: "#f87171",
     },
     {
       label: "Mundo",
@@ -236,6 +242,7 @@ export function CampaignSidebar({
       label: "Baúl",
       href: `${base}/vault`,
       icon: <Archive className="h-4 w-4" />,
+      iconColor: "#a855f7",
       isMasterOnly: true,
     },
     // Sesiones al final
@@ -319,7 +326,10 @@ export function CampaignSidebar({
           if (window.innerWidth < 768 && sidebarOpen) toggleSidebar();
         }}
       >
-        <span className="shrink-0 relative">
+        <span
+          className="shrink-0 relative"
+          style={!isActive && item.iconColor ? { color: item.iconColor } : undefined}
+        >
           {item.icon}
           {item.badge !== undefined && !sidebarOpen && (
             <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center leading-none">

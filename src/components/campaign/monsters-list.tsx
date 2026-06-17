@@ -45,7 +45,7 @@ export function MonstersList({ monsters, campaignSlug, isMaster, campaignId }: P
         <div className="flex items-center gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Skull className="h-5 w-5 text-[var(--accent-gold)]" />
+              <Skull className="h-5 w-5 text-[#f87171]" />
               <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Bestiario</h1>
             </div>
             <p className="text-sm text-[var(--text-muted)]">{monsters.length} criatura{monsters.length !== 1 ? "s" : ""}</p>
