@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ChevronLeft, Heart, Shield, Zap, Star, User, Pencil, Package } from "lucide-react";
 import { formatModifier } from "@/lib/utils";
 import { InventoryList } from "@/components/campaign/inventory-list";
+import { PrintButton } from "@/components/campaign/print-button";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; characterId: string }>;
@@ -63,15 +64,18 @@ export default async function CharacterDetailPage({ params }: PageProps) {
           <ChevronLeft className="h-4 w-4" />
           Volver a personajes
         </Link>
-        {canEdit && (
-          <Link
-            href={`/${campaignSlug}/characters/${characterId}/edit`}
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm font-medium bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors"
-          >
-            <Pencil className="h-4 w-4" />
-            Editar
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <PrintButton />
+          {canEdit && (
+            <Link
+              href={`/${campaignSlug}/characters/${characterId}/edit`}
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm font-medium bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors"
+            >
+              <Pencil className="h-4 w-4" />
+              Editar
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Header */}

@@ -405,7 +405,7 @@ export function CampaignSidebar({
         transition={{ duration: 0.25, ease: "easeInOut" }}
         aria-label="Navegación de campaña"
         className={cn(
-          "relative flex h-full bg-[var(--bg-surface)] border-r border-[var(--border-subtle)] shrink-0",
+          "no-print relative flex h-full bg-[var(--bg-surface)] border-r border-[var(--border-subtle)] shrink-0",
           "md:relative",
           "max-md:fixed max-md:z-50 max-md:top-0 max-md:left-0 max-md:h-screen max-md:!w-60",
           !sidebarOpen && "max-md:!hidden",

@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, History, Dices, Eye, EyeOff } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCampaignStore } from "@/store/campaign-store";
 import { DiceRoller } from "./dice-roller";
@@ -14,6 +13,31 @@ type RollResult = ReturnType<typeof rollDice>;
 interface DiceTrayProps {
   isMaster?: boolean;
   campaignId?: string;
+}
+
+const DICE_COLOR: Record<number, string> = {
+  4:   "#c084fc",
+  6:   "#60a5fa",
+  8:   "#34d399",
+  10:  "#f59e0b",
+  12:  "#f87171",
+  20:  "#c9a84c",
+  100: "#94a3b8",
+};
+
+function HistoryDiceDot({ notation }: { notation: string }) {
+  const match = notation.match(/\dd(\d+)/);
+  const sides = match ? parseInt(match[1], 10) : 20;
+  const color = DICE_COLOR[sides] ?? "#94a3b8";
+  return (
+    <span
+      className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-[9px] font-bold border shrink-0"
+      style={{ borderColor: `${color}50`, color, background: `${color}15` }}
+      title={notation}
+    >
+      {sides === 100 ? "%" : `${sides}`}
+    </span>
+  );
 }
 
 export function DiceTray({ isMaster, campaignId }: DiceTrayProps) {
@@ -62,7 +86,7 @@ export function DiceTray({ isMaster, campaignId }: DiceTrayProps) {
 
   return (
     <>
-      {/* Backdrop — closes tray on outside click */}
+      {/* Backdrop */}
       <AnimatePresence>
         {diceTrayOpen && (
           <motion.div
@@ -78,7 +102,7 @@ export function DiceTray({ isMaster, campaignId }: DiceTrayProps) {
         )}
       </AnimatePresence>
 
-      {/* Persistent vertical tab — always visible on right edge */}
+      {/* Persistent tab — right edge */}
       <AnimatePresence>
         {!diceTrayOpen && (
           <motion.button
@@ -88,7 +112,7 @@ export function DiceTray({ isMaster, campaignId }: DiceTrayProps) {
             exit={{ opacity: 0, x: 16 }}
             transition={{ duration: 0.18 }}
             onClick={() => setDiceTrayOpen(true)}
-            title="Abrir dados"
+            title="Abrir bandeja de dados"
             className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2 py-4 px-2.5 bg-[var(--bg-surface)]/95 backdrop-blur-sm border border-r-0 border-[var(--border-subtle)] rounded-l-[var(--radius-lg)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)]/40 hover:bg-[var(--bg-elevated)] transition-all shadow-lg cursor-pointer"
           >
             <Dices className="h-4 w-4 shrink-0" />
@@ -114,10 +138,12 @@ export function DiceTray({ isMaster, campaignId }: DiceTrayProps) {
             className="fixed right-0 top-0 h-full w-80 bg-[var(--bg-surface)] border-l border-[var(--border-default)] z-40 flex flex-col shadow-[var(--shadow-xl)]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[var(--border-subtle)]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)]">
               <div className="flex items-center gap-2">
                 <Dices className="h-4 w-4 text-[var(--accent-gold)]" />
-                <h2 className="font-display text-base text-[var(--accent-gold)]">Bandeja de Dados</h2>
+                <h2 className="font-display text-base font-bold text-[var(--accent-gold)]">
+                  Bandeja de Dados
+                </h2>
               </div>
               <Button variant="ghost" size="icon-sm" onClick={() => setDiceTrayOpen(false)}>
                 <X className="h-4 w-4" />
@@ -125,69 +151,68 @@ export function DiceTray({ isMaster, campaignId }: DiceTrayProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
-              {/* Master hide-rolls toggle */}
+              {/* Master: toggle tiradas ocultas */}
               {isMaster && (
                 <button
+                  type="button"
                   onClick={() => setMasterHidingRolls(!masterHidingRolls)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-[var(--radius-lg)] border transition-all duration-200 text-left",
-                    masterHidingRolls
-                      ? "bg-amber-500/10 border-amber-500/40 shadow-[0_0_16px_rgba(245,158,11,0.15)]"
-                      : "bg-[var(--bg-elevated)] border-[var(--border-subtle)] hover:border-[var(--border-default)]"
-                  )}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-lg)] border transition-all text-left"
+                  style={{
+                    background: masterHidingRolls ? "rgba(245,158,11,0.08)" : "var(--bg-elevated)",
+                    borderColor: masterHidingRolls ? "rgba(245,158,11,0.35)" : "var(--border-subtle)",
+                  }}
                 >
-                  {/* Toggle pill */}
                   <div
-                    className={cn(
-                      "relative h-5 w-9 rounded-full transition-colors duration-200 shrink-0",
-                      masterHidingRolls ? "bg-amber-500" : "bg-[var(--bg-overlay)]"
-                    )}
+                    className="relative h-5 w-9 rounded-full transition-colors duration-200 shrink-0"
+                    style={{ background: masterHidingRolls ? "#f59e0b" : "var(--bg-overlay)" }}
                   >
                     <div
-                      className={cn(
-                        "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200",
-                        masterHidingRolls ? "translate-x-4" : "translate-x-0.5"
-                      )}
+                      className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200"
+                      style={{ transform: masterHidingRolls ? "translateX(16px)" : "translateX(2px)" }}
                     />
                   </div>
-
-                  {/* Labels */}
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className={cn(
-                      "text-sm font-semibold leading-tight",
-                      masterHidingRolls ? "text-amber-400" : "text-[var(--text-secondary)]"
-                    )}>
+                    <span
+                      className="text-xs font-semibold leading-tight"
+                      style={{ color: masterHidingRolls ? "#f59e0b" : "var(--text-secondary)" }}
+                    >
                       {masterHidingRolls ? "Tiradas ocultas" : "Tiradas visibles"}
                     </span>
-                    <span className="text-[11px] text-[var(--text-muted)] leading-tight mt-0.5">
-                      {masterHidingRolls
-                        ? "Solo tú las ves en el chat"
-                        : "Todos los jugadores las ven"}
+                    <span className="text-[10px] text-[var(--text-muted)] leading-tight mt-0.5">
+                      {masterHidingRolls ? "Solo tú las ves" : "Todos los jugadores las ven"}
                     </span>
                   </div>
-
-                  {/* Icon */}
                   {masterHidingRolls
                     ? <EyeOff className="h-4 w-4 text-amber-400 shrink-0" />
-                    : <Eye className="h-4 w-4 text-[var(--text-muted)] shrink-0" />
+                    : <Eye    className="h-4 w-4 text-[var(--text-muted)] shrink-0" />
                   }
                 </button>
               )}
 
               <DiceRoller onRollComplete={handleRollComplete} />
 
-              {/* Session history */}
+              {/* Historial de sesión */}
               {diceHistory.length > 0 && (
                 <div>
                   <div className="flex items-center gap-1.5 mb-2">
                     <History className="h-3 w-3 text-[var(--text-muted)]" />
-                    <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Historial</p>
+                    <p className="text-[11px] text-[var(--text-muted)] uppercase tracking-widest">
+                      Historial de sesión
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    {diceHistory.slice(0, 10).map((roll, i) => (
-                      <div key={i} className="flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] text-xs">
-                        <span className="text-[var(--text-muted)]">{roll.notation}</span>
-                        <span className="font-display font-bold text-[var(--accent-gold)]">{roll.total}</span>
+                    {diceHistory.slice(0, 12).map((roll, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)]"
+                      >
+                        <HistoryDiceDot notation={roll.notation} />
+                        <span className="text-xs text-[var(--text-muted)] flex-1 truncate">
+                          {roll.notation}
+                        </span>
+                        <span className="font-display font-bold text-sm text-[var(--accent-gold)] shrink-0">
+                          {roll.total}
+                        </span>
                       </div>
                     ))}
                   </div>

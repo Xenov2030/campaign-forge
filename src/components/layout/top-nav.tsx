@@ -6,11 +6,13 @@ import {
   ChevronRight,
   Home,
   Menu,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCampaignStore } from "@/store/campaign-store";
 import { UserMenu } from "@/components/layout/user-menu";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 interface TopNavProps {
   campaignName: string;
@@ -19,6 +21,8 @@ interface TopNavProps {
   userAvatarUrl?: string;
   userId: string;
   isMaster?: boolean;
+  campaignSlug?: string;
+  campaignId?: string;
 }
 
 export function TopNav({
@@ -28,11 +32,13 @@ export function TopNav({
   userAvatarUrl,
   userId,
   isMaster,
+  campaignSlug,
+  campaignId,
 }: TopNavProps) {
   const { setAIAssistantOpen, toggleSidebar } = useCampaignStore();
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 h-14 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/80 backdrop-blur-sm shrink-0">
+    <header className="no-print flex items-center justify-between px-4 md:px-6 h-14 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/80 backdrop-blur-sm shrink-0">
       {/* Mobile hamburger + Breadcrumb */}
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <Button
@@ -65,6 +71,28 @@ export function TopNav({
 
       {/* Actions */}
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
+        {campaignSlug && campaignId && (
+          <>
+            <button
+              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              aria-label="Buscar en la campaña"
+              className="hidden sm:inline-flex items-center gap-2 h-8 px-3 rounded-[var(--radius-md)] text-xs text-[var(--text-muted)] border border-[var(--border-subtle)] hover:border-[var(--border-default)] hover:text-[var(--text-secondary)] transition-colors"
+            >
+              <Search className="h-3.5 w-3.5" />
+              Buscar...
+              <kbd className="text-[10px] opacity-60">Ctrl K</kbd>
+            </button>
+            <button
+              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              aria-label="Buscar"
+              className="sm:hidden h-9 w-9 flex items-center justify-center rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+            <CommandPalette campaignSlug={campaignSlug} campaignId={campaignId} isMaster={isMaster ?? false} />
+          </>
+        )}
+
         <Link
           href="/dashboard"
           aria-label="Volver al inicio"

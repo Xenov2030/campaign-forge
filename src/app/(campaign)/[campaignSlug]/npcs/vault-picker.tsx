@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Archive, X, Check, Loader2, Download, Trash2 } from "lucide-react";
+import { Archive, X, Check, Loader2, Download, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 interface VaultEntry {
@@ -17,6 +17,8 @@ interface VaultEntry {
   tags: string[];
 }
 
+const PAGE_SIZE = 12;
+
 export function VaultPicker({ campaignId }: { campaignId: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -25,6 +27,7 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
   const removeEntry = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -52,6 +55,7 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
     setOpen(true);
     setLoading(true);
     setSelected(new Set());
+    setPage(0);
     try {
       const res = await fetch("/api/npc-vault");
       const data = await res.json();
@@ -133,7 +137,7 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {entries.map((e) => {
+                  {entries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((e) => {
                     const isSel = selected.has(e.id);
                     return (
                       <div
@@ -170,7 +174,7 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
                           disabled={deletingId === e.id}
                           aria-label="Quitar del baúl"
                           title="Quitar del baúl"
-                          className="absolute bottom-2 right-2 h-7 w-7 rounded-full flex items-center justify-center bg-black/40 text-[var(--text-muted)] hover:text-[var(--accent-crimson)] hover:bg-black/60 transition-colors disabled:opacity-50"
+                          className="absolute bottom-2 right-2 h-7 w-7 rounded-full flex items-center justify-center bg-black/40 text-[var(--text-muted)] hover:text-red-400 hover:bg-black/60 transition-colors disabled:opacity-50"
                         >
                           {deletingId === e.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                         </button>
@@ -181,17 +185,42 @@ export function VaultPicker({ campaignId }: { campaignId: string }) {
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-3 p-4 border-t border-[var(--border-subtle)]">
-              <span className="text-sm text-[var(--text-muted)]">{selected.size} seleccionado{selected.size === 1 ? "" : "s"}</span>
-              <button
-                type="button"
-                onClick={importSelected}
-                disabled={selected.size === 0 || importing}
-                className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-sm font-semibold bg-[var(--accent-gold)] text-[var(--bg-base)] hover:brightness-110 disabled:opacity-50 transition-all"
-              >
-                {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                Traer a la campaña
-              </button>
+            <div className="flex flex-col gap-2 p-4 border-t border-[var(--border-subtle)]">
+              {entries.length > PAGE_SIZE && (
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={page === 0}
+                    className="h-8 w-8 flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)] disabled:opacity-40 transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="text-xs text-[var(--text-muted)]">
+                    {page + 1} / {Math.ceil(entries.length / PAGE_SIZE)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(Math.ceil(entries.length / PAGE_SIZE) - 1, p + 1))}
+                    disabled={page >= Math.ceil(entries.length / PAGE_SIZE) - 1}
+                    className="h-8 w-8 flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)] disabled:opacity-40 transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-[var(--text-muted)]">{selected.size} seleccionado{selected.size === 1 ? "" : "s"}</span>
+                <button
+                  type="button"
+                  onClick={importSelected}
+                  disabled={selected.size === 0 || importing}
+                  className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-sm font-semibold bg-[var(--accent-gold)] text-[var(--bg-base)] hover:brightness-110 disabled:opacity-50 transition-all"
+                >
+                  {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  Traer a la campaña
+                </button>
+              </div>
             </div>
           </div>
         </div>

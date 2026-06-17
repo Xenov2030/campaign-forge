@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import * as Popover from "@radix-ui/react-popover";
-import { Bell, Check, X, Loader2 } from "lucide-react";
+import { Bell, Check, X, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { getPusherClient } from "@/lib/pusher/client";
 import { formatRelativeTime } from "@/lib/utils";
@@ -110,9 +110,20 @@ export function NotificationBell({ userId }: { userId: string }) {
           sideOffset={8}
           className="z-50 w-80 max-h-96 overflow-y-auto bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)]"
         >
-          <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider px-3 py-2 border-b border-[var(--border-subtle)]">
-            Notificaciones
-          </p>
+          <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-subtle)]">
+            <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider">
+              Notificaciones
+            </p>
+            {items.length > 0 && (
+              <button
+                onClick={() => setItems([])}
+                className="inline-flex items-center gap-1 text-[10px] text-[var(--text-muted)] hover:text-red-400 transition-colors"
+              >
+                <Trash2 className="h-3 w-3" />
+                Limpiar
+              </button>
+            )}
+          </div>
           {items.length === 0 ? (
             <p className="text-sm text-[var(--text-muted)] text-center py-8 px-3">Sin notificaciones</p>
           ) : (

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ServiceWorkerRegistration } from "@/components/sw-registration";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default function RootLayout({
         {children}
         <Toaster position="top-right" richColors />
         <ConfirmDialog />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
