@@ -234,7 +234,7 @@ export function CampaignSidebar({
     },
     {
       label: "Baúl",
-      href: "/vault",
+      href: `${base}/vault`,
       icon: <Archive className="h-4 w-4" />,
       isMasterOnly: true,
     },

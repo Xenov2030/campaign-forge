@@ -37,5 +37,5 @@ export default async function ItemsPage({ params }: PageProps) {
     },
   });
 
-  return <ItemsList items={items} campaignSlug={campaignSlug} isMaster={isMaster} />;
+  return <ItemsList items={items} campaignSlug={campaignSlug} campaignId={campaign.id} isMaster={isMaster} />;
 }

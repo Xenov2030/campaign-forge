@@ -6,14 +6,17 @@ import { Plus, Package, Sparkles, Search } from "lucide-react";
 import type { ItemRarity } from "@prisma/client";
 import { ITEM_RARITIES, ITEM_RARITY_LABELS, ITEM_RARITY_COLOR } from "@/lib/items";
 import { ItemCard, type ItemCardData } from "./item-card";
+import { ItemVaultPicker } from "./item-vault-picker";
 
 export function ItemsList({
   items,
   campaignSlug,
+  campaignId,
   isMaster,
 }: {
   items: ItemCardData[];
   campaignSlug: string;
+  campaignId: string;
   isMaster: boolean;
 }) {
   const [search, setSearch] = useState("");
@@ -44,6 +47,7 @@ export function ItemsList({
 
         {isMaster && (
           <div className="flex gap-2 flex-wrap">
+            <ItemVaultPicker campaignId={campaignId} />
             <Link
               href={`/${campaignSlug}/ai-forge?type=ITEM`}
               className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm border border-[var(--accent-arcane)]/30 bg-[var(--accent-arcane)]/10 text-[var(--accent-arcane)] hover:bg-[var(--accent-arcane)]/15 transition-colors"
@@ -63,7 +67,7 @@ export function ItemsList({
       </div>
 
       {/* Búsqueda + Filtros */}
-      {items.length > 0 && (
+      {items.length >= 20 && (
         <div className="flex flex-col gap-2 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />

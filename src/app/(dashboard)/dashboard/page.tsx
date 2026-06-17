@@ -11,6 +11,7 @@ import {
   ArrowRight,
   BookOpen,
   UserPlus,
+  Archive,
 } from "lucide-react";
 import { formatRelativeTime, getThemeColors } from "@/lib/utils";
 
@@ -270,7 +271,8 @@ export default async function DashboardPage() {
 
       {/* Compact stats strip — below campaigns */}
       {(masteredCampaigns.length > 0 || playerCampaigns.length > 0) && (
-        <div className="flex flex-wrap gap-x-6 gap-y-2 pt-6 mt-2 border-t border-[var(--border-subtle)]">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-6 mt-2 border-t border-[var(--border-subtle)]">
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
           {[
             { label: "campañas como máster", value: masteredCampaigns.length, icon: <Crown className="h-3.5 w-3.5" />, color: "var(--accent-gold)" },
             { label: "como jugador", value: playerCampaigns.length, icon: <Sword className="h-3.5 w-3.5" />, color: "#60a5fa" },
@@ -283,6 +285,16 @@ export default async function DashboardPage() {
               <span>{stat.label}</span>
             </span>
           ))}
+          </div>
+          {canMaster && (
+            <Link
+              href="/vault"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius-md)] text-xs font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-colors shrink-0"
+            >
+              <Archive className="h-3.5 w-3.5" />
+              Mi baúl
+            </Link>
+          )}
         </div>
       )}
 
