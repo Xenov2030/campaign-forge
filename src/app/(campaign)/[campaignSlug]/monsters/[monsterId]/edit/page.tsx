@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
+import { Skull } from "lucide-react";
 import { MonsterForm } from "@/components/campaign/monster-form";
 import type { MonsterFormValues } from "@/components/campaign/monster-form";
 
@@ -77,9 +78,14 @@ export default async function EditMonsterPage({ params }: PageProps) {
 
   return (
     <div className="px-4 md:px-6 py-8">
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Editar monstruo</h1>
-        <p className="text-sm text-[var(--text-muted)] mt-1">{monster.name}</p>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="h-10 w-10 rounded-[var(--radius-lg)] bg-[#f87171]/10 border border-[#f87171]/30 flex items-center justify-center">
+          <Skull className="h-5 w-5 text-[#f87171]" />
+        </div>
+        <div>
+          <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Editar monstruo</h1>
+          <p className="text-sm text-[var(--text-muted)]">{monster.name}</p>
+        </div>
       </div>
       <MonsterForm slug={campaignSlug} mode="edit" monsterId={monsterId} initial={initial} />
     </div>

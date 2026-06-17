@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Swords, Shield, Heart, Plus, Minus } from "lucide-react";
@@ -36,6 +36,7 @@ export interface MonsterCardData {
   armorClass: number | null;
   imageUrl: string | null;
   tags: string[];
+  currentHp: number | null;
 }
 
 export function MonsterCard({
@@ -53,10 +54,25 @@ export function MonsterCard({
   const typeTags = monster.tags.filter((t) => !DISPOSITION_ORDER.includes(t));
 
   const maxHp = parseMaxHp(monster.hitPoints);
-  const [currentHp, setCurrentHp] = useState(maxHp ?? 0);
+  const [currentHp, setCurrentHp] = useState(monster.currentHp ?? maxHp ?? 0);
   const hpPercent = maxHp && maxHp > 0 ? Math.min(100, Math.round((currentHp / maxHp) * 100)) : 0;
   const hpColor = hpPercent > 50 ? "#34d399" : hpPercent > 25 ? "#f59e0b" : "#f87171";
-  const changeHp = (delta: number) => setCurrentHp((p) => Math.max(0, Math.min(maxHp ?? 0, p + delta)));
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const changeHp = (delta: number) => {
+    setCurrentHp((p) => {
+      const next = Math.max(0, Math.min(maxHp ?? 0, p + delta));
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        fetch(`/api/monsters/${monster.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentHp: next }),
+        });
+      }, 600);
+      return next;
+    });
+  };
 
   return (
     <div

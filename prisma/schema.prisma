@@ -330,6 +330,7 @@ model Monster {
   imageUrl         String?
   generatedBy      String?
   tags             String[] @default([])
+  currentHp        Int?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   campaign         Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)

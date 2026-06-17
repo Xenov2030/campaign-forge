@@ -63,6 +63,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if ("lore" in body) data.lore = typeof body.lore === "string" ? body.lore : null;
     if ("imageUrl" in body) data.imageUrl = typeof body.imageUrl === "string" ? body.imageUrl : null;
     if (Array.isArray(body.tags)) data.tags = body.tags as string[];
+    if ("currentHp" in body) data.currentHp = typeof body.currentHp === "number" ? body.currentHp : null;
 
     const updated = await prisma.monster.update({ where: { id }, data });
     return NextResponse.json({ monster: updated });

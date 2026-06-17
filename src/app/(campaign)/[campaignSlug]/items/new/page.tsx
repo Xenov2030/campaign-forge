@@ -25,8 +25,8 @@ export default function NewItemPage() {
       </Link>
 
       <div className="flex items-center gap-3 mb-8">
-        <div className="h-10 w-10 rounded-[var(--radius-lg)] bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 flex items-center justify-center">
-          <Package className="h-5 w-5 text-[var(--accent-gold)]" />
+        <div className="h-10 w-10 rounded-[var(--radius-lg)] bg-[#06b6d4]/10 border border-[#06b6d4]/30 flex items-center justify-center">
+          <Package className="h-5 w-5 text-[#06b6d4]" />
         </div>
         <div>
           <h1 className="font-display text-3xl font-black text-[var(--text-primary)]">Nuevo objeto</h1>

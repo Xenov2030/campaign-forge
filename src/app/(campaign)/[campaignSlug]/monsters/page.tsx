@@ -34,7 +34,7 @@ export default async function MonstersPage({ params }: PageProps) {
     select: {
       id: true, name: true, type: true, size: true, alignment: true,
       challengeRating: true, hitPoints: true, armorClass: true,
-      tags: true, imageUrl: true,
+      tags: true, imageUrl: true, currentHp: true,
     },
   });
 
