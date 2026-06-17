@@ -5,6 +5,52 @@
 
 ---
 
+## [2.9] — 2026-06-17
+
+### feat(int) — Sección Objetos completa (catálogo, recompensas de misión, inventario)
+
+**Archivos nuevos:**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `src/lib/items.ts` | Helper central: enums de rareza, labels, colores por rareza, `MISSION_REWARD_TAG`. |
+| `src/app/api/items/route.ts` | `GET` (filtros por campaignId, tag, visibilidad) + `POST` crear objeto (solo máster). |
+| `src/app/api/items/[id]/route.ts` | `PATCH` (edición parcial vía helper `getOwnedItem`) + `DELETE` (solo máster). |
+| `src/app/api/inventory/route.ts` | `POST` asignar objeto del catálogo al inventario de un personaje (solo máster). |
+| `src/app/api/inventory/[id]/route.ts` | `DELETE` quitar ítem del inventario (dueño del personaje o máster). |
+| `src/app/(campaign)/[campaignSlug]/items/page.tsx` | Lista del catálogo con filtros de rareza y tipo dinámico. |
+| `src/app/(campaign)/[campaignSlug]/items/item-card.tsx` | Card con imagen/ícono, badge de rareza, toggle optimista de visibilidad (máster). |
+| `src/app/(campaign)/[campaignSlug]/items/items-list.tsx` | Componente cliente: grid 4 col, filtros multi-rareza con colores. |
+| `src/app/(campaign)/[campaignSlug]/items/new/page.tsx` | Página de creación. |
+| `src/app/(campaign)/[campaignSlug]/items/[itemId]/page.tsx` | Detalle: badges, descripción, lore, tags, panel de asignación (máster) y danger zone. |
+| `src/app/(campaign)/[campaignSlug]/items/[itemId]/edit/page.tsx` | Página de edición (solo máster). |
+| `src/components/campaign/item-form.tsx` | Formulario con `ImageCropUpload`, rareza, tipo, descripción/lore, 4 toggles (artefacto, sintonización, visibilidad, recompensa de misión). |
+| `src/components/campaign/item-danger-zone.tsx` | Doble confirmación para eliminar objeto. |
+| `src/components/campaign/assign-to-inventory.tsx` | Panel en el detalle del objeto: selector de personaje + cantidad + botón "Asignar". |
+| `src/components/campaign/inventory-list.tsx` | Lista de inventario en la ficha del personaje: link al objeto, cantidad, quitar optimista. |
+
+**Archivos modificados:**
+
+| Archivo | Cambios |
+|---------|---------|
+| `prisma/schema.prisma` | `Item.isKnownToParty Boolean @default(false)` + `@@index([campaignId])`. |
+| `src/components/layout/campaign-sidebar.tsx` | Entrada "Objetos" habilitada (eliminado `disabled: true`). |
+| `src/components/campaign/quest-form.tsx` | `useEffect` que fetcha ítems con tag `"Objeto de misión"` y rellena el selector de recompensa. |
+| `src/app/(campaign)/[campaignSlug]/quests/[questId]/edit/page.tsx` | Pasa `campaignId` al `QuestForm` para que cargue los objetos de recompensa. |
+| `src/app/(campaign)/[campaignSlug]/quests/[questId]/page.tsx` | Resuelve el ítem de recompensa desde DB y lo muestra como chip clickeable (Package icon). |
+| `src/app/(campaign)/[campaignSlug]/characters/[characterId]/page.tsx` | Incluye `inventory` en la query; sección "Inventario" con `InventoryList`. |
+
+**Reglas clave:**
+- **Rareza** con 6 niveles (COMMON → ARTIFACT) con colores por nivel.
+- **Recompensa de misión**: se implementa como tag sentinel `"Objeto de misión"` en el array `tags`, sin campo extra en el schema. El formulario lo gestiona transparentemente como checkbox.
+- **Visibilidad**: filtro en la query `where` (no en JS) — nunca viajan datos ocultos al cliente jugador.
+- **Inventario denormalizado**: `InventoryItem.name` copia el nombre del ítem al asignarlo — si el objeto se borra del catálogo, el inventario conserva el nombre histórico.
+- **Roles**: asignar a inventario → solo máster; quitar del inventario → dueño del personaje o máster.
+
+**Rama:** `develop`
+
+---
+
 ## [2.8] — 2026-06-10
 
 ### feat(quests) — Módulo de Misiones completo + borrado de campaña

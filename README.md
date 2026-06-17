@@ -1,4 +1,4 @@
-# CampaignForge `v2.8`
+# CampaignForge `v2.9`
 
 Plataforma web completa para campañas de rol multijugador con IA integrada.
 
@@ -120,13 +120,13 @@ src/app/
 - **Comunidad**: solicitudes de unión con aprobación del máster, notificaciones en tiempo real (campana), expulsar/abandonar campaña, perfil con avatar y correo editable, banner y tema de campaña editables (v2.6)
 - **Sección NPCs completa**: CRUD, visibilidad oculto/conocido con filtro, vida solo-máster, apodo, y **baúl de NPCs** reutilizables entre campañas (v2.7)
 - **Sección Misiones completa**: objetivos colaborativos con auto-completado, estados, tipos con color, filtros, recompensas, y borrado de campaña en cascada (v2.8)
+- **Sección Objetos completa**: catálogo CRUD con rareza/tipo/artefacto/sintonización, visibilidad máster/jugador, recompensa de misión vinculada a quests, inventario asignable por personaje (v2.9)
 
 > El detalle de funcionalidades por versión vive en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 
 ### Próximas fases (v3.x)
-- Sección **Objetos** (conecta con el selector de "Objeto de misión" en recompensas)
 - Bestiario de **Monstruos**, **Mundo** (locaciones/facciones) y **Mapas** interactivos
-- "Guardar como NPC/Misión" desde la IA Forge (persistir lo generado)
+- "Guardar como NPC/Misión/Objeto" desde la IA Forge (persistir lo generado)
 - Relaciones vinculadas entre NPCs
 - Export PDF de fichas de personaje
 - Timeline interactiva de campaña

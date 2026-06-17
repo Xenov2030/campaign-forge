@@ -1,6 +1,6 @@
 # CampaignForge — Documento de Mejoras Pendientes
 
-**Versión:** 2.8 | **Última actualización:** 2026-06-10
+**Versión:** 2.9 | **Última actualización:** 2026-06-17
 
 > Las mejoras están ordenadas por prioridad. Al implementar una, marcarla con `[x]` y moverla al changelog.
 
@@ -195,3 +195,6 @@ La app está en español. Soporte para inglés y portugués.
 | v2.8 | Auditoría: índices `@@index([campaignId])` en tablas activas |
 | v2.8 | Auditoría: errores de IA centralizados + `try/catch` en `profile` |
 | v2.8 | README reconciliado con el estado real (Gemini, Neon, JWT) |
+| v2.9 | **Sección Objetos completa — catálogo CRUD con rareza/tipo/artefacto/sintonización/visibilidad** |
+| v2.9 | **Recompensa de misión**: objeto vinculado a quest (selector + chip clickeable en detalle) |
+| v2.9 | **Inventario de personaje**: asignar desde el detalle del objeto, listado en ficha con quitar optimista |
