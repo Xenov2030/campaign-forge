@@ -77,7 +77,7 @@ export function MonstersList({ monsters, campaignSlug, isMaster, campaignId }: P
           <div className="flex gap-2 flex-wrap">
             <MonsterVaultPicker campaignId={campaignId} />
             <Link
-              href={`/${campaignSlug}/ai-forge`}
+              href={`/${campaignSlug}/ai-forge?type=MONSTER`}
               className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm border border-[var(--accent-arcane)]/30 bg-[var(--accent-arcane)]/10 text-[var(--accent-arcane)] hover:bg-[var(--accent-arcane)]/15 transition-colors"
             >
               <Sparkles className="h-3.5 w-3.5" />
@@ -126,7 +126,7 @@ export function MonstersList({ monsters, campaignSlug, isMaster, campaignId }: P
             <div className="flex gap-3 justify-center flex-wrap">
               <MonsterVaultPicker campaignId={campaignId} />
               <Link
-                href={`/${campaignSlug}/ai-forge`}
+                href={`/${campaignSlug}/ai-forge?type=MONSTER`}
                 className="inline-flex items-center gap-2 h-10 px-5 rounded-[var(--radius-md)] text-sm bg-[var(--accent-arcane)]/15 border border-[var(--accent-arcane)]/30 text-[var(--accent-arcane)]"
               >
                 <Sparkles className="h-4 w-4" />

@@ -62,6 +62,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Solo el máster puede guardar criaturas en el baúl" }, { status: 403 });
     }
 
+    // Prevenir duplicados por nombre
+    const existing = await prisma.vaultMonster.findFirst({
+      where: { userId: user.id, name: monster.name },
+    });
+    if (existing) {
+      return NextResponse.json({ error: "Esta criatura ya está en tu baúl" }, { status: 409 });
+    }
+
     const entry = await prisma.vaultMonster.create({
       data: { userId: user.id, ...vaultDataFromMonster(monster as unknown as Record<string, unknown>) },
     });

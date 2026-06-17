@@ -1,11 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, Swords, Shield, Heart } from "lucide-react";
+import { ChevronRight, Swords, Shield, Heart, Plus, Minus } from "lucide-react";
 import { MONSTER_TAGS } from "@/components/campaign/monster-form";
 
 const DISPOSITION_ORDER = ["legendario", "jefe", "hostil", "neutral", "amigable"];
+
+function parseMaxHp(hp: string | null): number | null {
+  if (!hp) return null;
+  const match = hp.match(/^(\d+)/);
+  return match ? parseInt(match[1]) : null;
+}
 
 function getAccentColor(tags: string[]): string {
   for (const d of DISPOSITION_ORDER) {
@@ -44,6 +51,12 @@ export function MonsterCard({
   const dispTag = DISPOSITION_ORDER.find((d) => monster.tags.includes(d));
   const dispOpt = dispTag ? MONSTER_TAGS.find((t) => t.value === dispTag) : null;
   const typeTags = monster.tags.filter((t) => !DISPOSITION_ORDER.includes(t));
+
+  const maxHp = parseMaxHp(monster.hitPoints);
+  const [currentHp, setCurrentHp] = useState(maxHp ?? 0);
+  const hpPercent = maxHp && maxHp > 0 ? Math.min(100, Math.round((currentHp / maxHp) * 100)) : 0;
+  const hpColor = hpPercent > 50 ? "#34d399" : hpPercent > 25 ? "#f59e0b" : "#f87171";
+  const changeHp = (delta: number) => setCurrentHp((p) => Math.max(0, Math.min(maxHp ?? 0, p + delta)));
 
   return (
     <div
@@ -120,54 +133,78 @@ export function MonsterCard({
         </Link>
       </div>
 
-      {/* Estadísticas y tags */}
-      {(monster.challengeRating || monster.armorClass != null || monster.hitPoints || typeTags.length > 0) && (
-        <div className="p-4 space-y-3">
-          {(monster.challengeRating || monster.armorClass != null || monster.hitPoints) && (
-            <div className="flex items-center gap-3 flex-wrap">
-              {monster.challengeRating && (
-                <span
-                  className="text-xs font-bold px-2 py-0.5 rounded border"
-                  style={{ color: accent, borderColor: `${accent}40`, backgroundColor: `${accent}15` }}
-                >
-                  CR {monster.challengeRating}
-                </span>
-              )}
-              {monster.armorClass != null && (
-                <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
-                  <Shield className="h-3.5 w-3.5" /> CA {monster.armorClass}
-                </span>
-              )}
-              {monster.hitPoints && (
-                <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
-                  <Heart className="h-3.5 w-3.5 text-red-400" /> {monster.hitPoints}
-                </span>
-              )}
-            </div>
-          )}
+      {/* Estadísticas, barra de vida y tags */}
+      <div className="p-4 space-y-3">
+        {/* Badges CR / CA */}
+        {(monster.challengeRating || monster.armorClass != null) && (
+          <div className="flex items-center gap-3 flex-wrap">
+            {monster.challengeRating && (
+              <span
+                className="text-xs font-bold px-2 py-0.5 rounded border"
+                style={{ color: accent, borderColor: `${accent}40`, backgroundColor: `${accent}15` }}
+              >
+                CR {monster.challengeRating}
+              </span>
+            )}
+            {monster.armorClass != null && (
+              <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                <Shield className="h-3.5 w-3.5" /> CA {monster.armorClass}
+              </span>
+            )}
+          </div>
+        )}
 
-          {typeTags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {typeTags.slice(0, 3).map((tag) => {
-                const opt = MONSTER_TAGS.find((t) => t.value === tag);
-                return (
-                  <span
-                    key={tag}
-                    className="text-xs px-1.5 py-0.5 rounded-full border"
-                    style={
-                      opt
-                        ? { color: opt.color, borderColor: `${opt.color}40`, backgroundColor: `${opt.color}10` }
-                        : {}
-                    }
-                  >
-                    {opt?.label ?? tag}
-                  </span>
-                );
-              })}
+        {/* HP bar — visible si hay HP parseables */}
+        {maxHp != null && maxHp > 0 && (
+          <div>
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="flex items-center gap-1 text-[var(--text-muted)]">
+                <Heart className="h-3.5 w-3.5" /> Vida
+              </span>
+              <span className="font-semibold tabular-nums" style={{ color: hpColor }}>
+                {currentHp}/{maxHp}
+              </span>
             </div>
-          )}
-        </div>
-      )}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => { e.preventDefault(); changeHp(-1); }}
+                aria-label="Restar 1 PV"
+                className="h-7 w-7 shrink-0 rounded flex items-center justify-center bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[#f87171] transition-colors"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <div className="flex-1 h-2.5 rounded-full bg-[var(--bg-overlay)] overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: `${hpPercent}%`, background: hpColor }} />
+              </div>
+              <button
+                onClick={(e) => { e.preventDefault(); changeHp(1); }}
+                aria-label="Sumar 1 PV"
+                className="h-7 w-7 shrink-0 rounded flex items-center justify-center bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[#34d399] transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Type tags */}
+        {typeTags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {typeTags.slice(0, 3).map((tag) => {
+              const opt = MONSTER_TAGS.find((t) => t.value === tag);
+              return (
+                <span
+                  key={tag}
+                  className="text-xs px-1.5 py-0.5 rounded-full border"
+                  style={opt ? { color: opt.color, borderColor: `${opt.color}40`, backgroundColor: `${opt.color}10` } : {}}
+                >
+                  {opt?.label ?? tag}
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

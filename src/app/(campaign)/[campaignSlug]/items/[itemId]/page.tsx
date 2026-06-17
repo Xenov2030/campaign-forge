@@ -9,6 +9,7 @@ import type { ItemRarity } from "@prisma/client";
 import { ITEM_RARITY_LABELS, ITEM_RARITY_COLOR, MISSION_REWARD_TAG } from "@/lib/items";
 import { ItemDangerZone } from "@/components/campaign/item-danger-zone";
 import { AssignToInventory } from "@/components/campaign/assign-to-inventory";
+import { ItemVaultButton } from "./item-vault-button";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; itemId: string }>;
@@ -52,13 +53,16 @@ export default async function ItemDetailPage({ params }: PageProps) {
           Volver a Objetos
         </Link>
         {isMaster && (
-          <Link
-            href={`/${campaignSlug}/items/${itemId}/edit`}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-colors"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Editar
-          </Link>
+          <div className="flex items-center gap-2 flex-wrap">
+            <ItemVaultButton itemId={itemId} />
+            <Link
+              href={`/${campaignSlug}/items/${itemId}/edit`}
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-colors"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Editar
+            </Link>
+          </div>
         )}
       </div>
 

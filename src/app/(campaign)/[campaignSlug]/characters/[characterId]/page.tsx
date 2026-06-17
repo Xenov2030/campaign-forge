@@ -7,6 +7,7 @@ import { ChevronLeft, Heart, Shield, Zap, Star, User, Pencil, Package } from "lu
 import { formatModifier } from "@/lib/utils";
 import { InventoryList } from "@/components/campaign/inventory-list";
 import { PrintButton } from "@/components/campaign/print-button";
+import { AddItemToInventory } from "@/components/campaign/add-item-to-inventory";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; characterId: string }>;
@@ -56,6 +57,14 @@ export default async function CharacterDetailPage({ params }: PageProps) {
   }
 
   const stats = character.stats as Record<string, number>;
+
+  const campaignItems = isMaster
+    ? await prisma.item.findMany({
+        where: { campaignId: character.campaign.id },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -179,9 +188,14 @@ export default async function CharacterDetailPage({ params }: PageProps) {
 
       {/* Inventario */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Package className="h-4 w-4 text-[var(--accent-gold)]" />
-          <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">Inventario</h2>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-[var(--accent-gold)]" />
+            <h2 className="font-display text-lg font-bold text-[var(--text-primary)]">Inventario</h2>
+          </div>
+          {isMaster && (
+            <AddItemToInventory characterId={characterId} campaignItems={campaignItems} />
+          )}
         </div>
         <InventoryList
           campaignSlug={campaignSlug}

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 
@@ -16,5 +16,56 @@ export async function GET() {
   } catch (error) {
     console.error("Item vault list error:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  }
+}
+
+// POST /api/item-vault  body { itemId } — guarda un objeto de campaña en el baúl.
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { itemId } = await request.json() as { itemId?: string };
+    if (!itemId) return NextResponse.json({ error: "itemId requerido" }, { status: 400 });
+
+    const item = await prisma.item.findUnique({
+      where: { id: itemId },
+      include: { campaign: { select: { masterId: true } } },
+    });
+    if (!item) return NextResponse.json({ error: "Objeto no encontrado" }, { status: 404 });
+    if (item.campaign.masterId !== user.id) {
+      return NextResponse.json({ error: "Solo el máster puede guardar objetos en el baúl" }, { status: 403 });
+    }
+
+    // Prevenir duplicados por nombre
+    const existing = await prisma.vaultItem.findFirst({
+      where: { userId: user.id, name: item.name },
+    });
+    if (existing) {
+      return NextResponse.json({ error: "Ya tenés este objeto en el baúl" }, { status: 409 });
+    }
+
+    const entry = await prisma.vaultItem.create({
+      data: {
+        userId: user.id,
+        name: item.name,
+        type: item.type,
+        rarity: item.rarity,
+        description: item.description,
+        lore: item.lore,
+        imageUrl: item.imageUrl,
+        isArtifact: item.isArtifact,
+        requiresAttunement: item.requiresAttunement,
+        tags: item.tags,
+      },
+    });
+
+    return NextResponse.json({ vaultItem: entry }, { status: 201 });
+  } catch (error) {
+    console.error("Item vault save error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Error interno" },
+      { status: 500 }
+    );
   }
 }

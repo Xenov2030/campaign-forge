@@ -45,7 +45,7 @@ export function ItemsList({
         {isMaster && (
           <div className="flex gap-2 flex-wrap">
             <Link
-              href={`/${campaignSlug}/ai-forge`}
+              href={`/${campaignSlug}/ai-forge?type=ITEM`}
               className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] text-sm border border-[var(--accent-arcane)]/30 bg-[var(--accent-arcane)]/10 text-[var(--accent-arcane)] hover:bg-[var(--accent-arcane)]/15 transition-colors"
             >
               <Sparkles className="h-3.5 w-3.5" />
@@ -141,7 +141,7 @@ export function ItemsList({
                 Crea el botín, armas y tesoros de tu mundo. Podés generarlos con IA.
               </p>
               <div className="flex gap-3 justify-center">
-                <Link href={`/${campaignSlug}/ai-forge`} className="inline-flex items-center gap-2 h-10 px-5 rounded-[var(--radius-md)] text-sm bg-[var(--accent-arcane)]/15 border border-[var(--accent-arcane)]/30 text-[var(--accent-arcane)]">
+                <Link href={`/${campaignSlug}/ai-forge?type=ITEM`} className="inline-flex items-center gap-2 h-10 px-5 rounded-[var(--radius-md)] text-sm bg-[var(--accent-arcane)]/15 border border-[var(--accent-arcane)]/30 text-[var(--accent-arcane)]">
                   <Sparkles className="h-4 w-4" /> Generar con IA
                 </Link>
                 <Link href={`/${campaignSlug}/items/new`} className="inline-flex items-center gap-2 h-10 px-5 bg-[var(--accent-gold)] text-[var(--bg-base)] text-sm font-semibold rounded-[var(--radius-md)]">

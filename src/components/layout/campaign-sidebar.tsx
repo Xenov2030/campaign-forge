@@ -21,6 +21,7 @@ import {
   Target,
   Settings,
   Crown,
+  Archive,
   ImageIcon,
   Volume2,
   Mic,
@@ -229,6 +230,12 @@ export function CampaignSidebar({
       label: "IA Forge",
       href: `${base}/ai-forge`,
       icon: <Sparkles className="h-4 w-4" />,
+      isMasterOnly: true,
+    },
+    {
+      label: "Baúl",
+      href: "/vault",
+      icon: <Archive className="h-4 w-4" />,
       isMasterOnly: true,
     },
     // Sesiones al final
