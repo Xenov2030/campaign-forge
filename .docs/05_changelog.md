@@ -5,6 +5,40 @@
 
 ---
 
+## [3.0] — 2026-06-17
+
+### feat(int) — Mejoras globales: equip/inventario, búsqueda de objetos, quest deadline, skeletons, dados reales, next/image
+
+**Inventario (personaje + catálogo):**
+- `InventoryList`: equip/unequip toggle con ícono dorado animado, stepper de cantidad (+/-), PATCH optimista con rollback.
+- `assign-to-inventory`: asignación desde el detalle del objeto.
+- API `PATCH /api/inventory/[id]`: acepta `{ isEquipped?, quantity? }` (dueño o máster); extrae helper `resolvePermissions()`.
+
+**Catálogo de objetos:**
+- `items-list.tsx`: input de búsqueda por nombre (icono Search, debounced en estado local).
+
+**Quests:**
+- `prisma/schema.prisma`: `deadline DateTime?` en `Quest`.
+- `quest-form.tsx`: campo de fecha con ícono Calendar.
+- `quests/[questId]/page.tsx`: chip de deadline cuando está definido.
+- APIs `POST/PATCH /api/quests`: aceptan y persisten `deadline`.
+
+**Loading skeletons:**
+- 6 archivos `loading.tsx` creados en: `characters/`, `npcs/`, `quests/`, `items/`, `sessions/`, `lore/`.
+
+**Dados reales:**
+- `DiceRoll` conectado a DB: `GET /api/dice-rolls` (últimos 50, `isSecret` filtrado), `POST` persiste tirada.
+- `dice-tray.tsx`: acepta `campaignId?` y postea en background.
+- `dice/page.tsx`: convertido a Server Component con datos reales, sin mocks.
+
+**next/image + remotePatterns:**
+- `next.config.ts`: `remotePatterns` para `res.cloudinary.com` y `lh3.googleusercontent.com`.
+- 11 componentes migrados de `<img>` a `<Image>` (`fill` para contenedores relativos, dimensiones fijas para avatares).
+
+**Rama:** `develop`
+
+---
+
 ## [2.9] — 2026-06-17
 
 ### feat(int) — Sección Objetos completa (catálogo, recompensas de misión, inventario)
