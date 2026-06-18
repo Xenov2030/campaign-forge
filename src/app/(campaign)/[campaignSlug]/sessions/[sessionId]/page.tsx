@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { ChevronLeft, Calendar, Clock, Users, Home, Wifi } from "lucide-react";
+import { ChevronLeft, Calendar, Clock, Users, Home, Wifi, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PageProps {
@@ -35,9 +35,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
   if (!session) notFound();
 
   const isMaster = session.campaign.masterId === user.id;
-  if (isMaster) redirect(`/${campaignSlug}/sessions/${sessionId}/edit`);
-
-  const isMember = session.campaign.members.some((m: { userId: string }) => m.userId === user.id);
+  const isMember = isMaster || session.campaign.members.some((m: { userId: string }) => m.userId === user.id);
   if (!isMember) redirect("/dashboard");
 
   const dateLabel = session.date
@@ -55,14 +53,27 @@ export default async function SessionDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-      <Link
-        href={`/${campaignSlug}/sessions`}
-        className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Volver a sesiones
-      </Link>
+      {/* Barra superior */}
+      <div className="flex items-center justify-between mb-6">
+        <Link
+          href={`/${campaignSlug}/sessions`}
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Volver a sesiones
+        </Link>
+        {isMaster && (
+          <Link
+            href={`/${campaignSlug}/sessions/${sessionId}/edit`}
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] border border-[var(--border-default)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-gold)] transition-colors"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Editar
+          </Link>
+        )}
+      </div>
 
+      {/* Header */}
       <div className="flex items-start gap-4 mb-8">
         <div className="h-10 w-10 shrink-0 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center">
           <span className="font-display text-sm font-black text-[var(--text-muted)]">#{session.number}</span>
@@ -88,6 +99,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Estadísticas */}
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
         {dateLabel && (
           <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 flex items-center gap-3">

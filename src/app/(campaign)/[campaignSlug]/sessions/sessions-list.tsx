@@ -180,7 +180,7 @@ export function SessionsList({ sessions, campaignSlug, isMaster }: SessionsListP
           {shown.map((s) => (
             <Link
               key={s.id}
-              href={isMaster ? `/${campaignSlug}/sessions/${s.id}/edit` : `/${campaignSlug}/sessions/${s.id}`}
+              href={`/${campaignSlug}/sessions/${s.id}`}
               className="group flex items-start gap-4 bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--border-default)] rounded-[var(--radius-xl)] p-4 transition-all"
             >
               {/* Número */}

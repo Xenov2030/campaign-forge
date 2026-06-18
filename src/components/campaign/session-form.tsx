@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Save, Trash2, Users, Wifi, Home } from "lucide-react";
+import { Loader2, Save, Trash2, Users, Wifi, Home, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -70,6 +70,23 @@ export function SessionForm({
   const set = (key: keyof SessionFormValues, value: unknown) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  // Dirty state — sólo relevante en modo edición
+  const isDirty = mode === "create" || (() => {
+    const a = form;
+    const b = initial ?? {};
+    return (
+      a.title !== (b.title ?? "") ||
+      a.date !== (b.date ?? "") ||
+      a.time !== (b.time ?? "") ||
+      a.duration !== (b.duration ?? "") ||
+      a.summary !== (b.summary ?? "") ||
+      a.notes !== (b.notes ?? "") ||
+      a.status !== (b.status ?? "PLANNED") ||
+      a.isPresential !== (b.isPresential ?? true) ||
+      [...a.attendeeIds].sort().join(",") !== [...(b.attendeeIds ?? members.map((m) => m.userId))].sort().join(",")
+    );
+  })();
+
   const toggleAttendee = (userId: string) => {
     setForm((f) => ({
       ...f,
@@ -81,6 +98,7 @@ export function SessionForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isDirty) return;
     setSaving(true);
     try {
       const payload = {
@@ -108,7 +126,12 @@ export function SessionForm({
       if (!res.ok) throw new Error(data.error ?? "Error al guardar");
 
       toast.success(mode === "edit" ? "Sesión actualizada" : "Sesión creada");
-      router.push(`/${campaignSlug}/sessions`);
+      // Edit: vuelve al detalle. Create: vuelve al listado.
+      if (mode === "edit" && sessionId) {
+        router.push(`/${campaignSlug}/sessions/${sessionId}`);
+      } else {
+        router.push(`/${campaignSlug}/sessions`);
+      }
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
@@ -302,21 +325,30 @@ export function SessionForm({
         </div>
       </div>
 
-      {/* Acciones */}
-      <div className="flex items-center justify-between gap-3 pt-2">
-        {mode === "edit" ? (
-          <Button type="button" variant="destructive" disabled={deleting} onClick={handleDelete}>
-            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Eliminar
-          </Button>
-        ) : (
-          <span />
-        )}
-        <Button type="submit" disabled={saving}>
+      {/* Guardar */}
+      <div className="flex justify-end pt-2">
+        <Button type="submit" disabled={saving || !isDirty}>
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           {mode === "edit" ? "Guardar cambios" : "Crear sesión"}
         </Button>
       </div>
+
+      {/* Zona de peligro — solo en edición */}
+      {mode === "edit" && (
+        <div className="border border-red-500/20 rounded-[var(--radius-xl)] p-5 bg-red-500/5 mt-8">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle className="h-4 w-4 text-red-400" />
+            <h3 className="text-sm font-semibold text-red-400">Zona de peligro</h3>
+          </div>
+          <p className="text-xs text-[var(--text-muted)] mb-4">
+            Esta acción es permanente y no se puede deshacer.
+          </p>
+          <Button type="button" variant="destructive" disabled={deleting} onClick={handleDelete}>
+            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            Eliminar sesión
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

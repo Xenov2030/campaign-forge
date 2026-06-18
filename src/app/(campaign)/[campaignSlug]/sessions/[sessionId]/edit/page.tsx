@@ -74,11 +74,11 @@ export default async function EditSessionPage({ params }: PageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
       <Link
-        href={`/${campaignSlug}/sessions`}
+        href={`/${campaignSlug}/sessions/${sessionId}`}
         className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mb-6"
       >
         <ChevronLeft className="h-4 w-4" />
-        Volver a sesiones
+        Volver al detalle
       </Link>
 
       <div className="flex items-center gap-3 mb-8">
