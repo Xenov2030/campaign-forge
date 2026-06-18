@@ -1,6 +1,6 @@
 # CampaignForge — Alcance Funcional
 
-**Versión:** 2.4 | **Última actualización:** 2026-06-09
+**Versión:** 3.1 | **Última actualización:** 2026-06-18
 
 ---
 
@@ -88,10 +88,12 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 - **Quests**: principal/secundaria/personal, estado, recompensa
 
 ### 9. Sesiones
-- Registro con fecha, título, resumen manual
+- Registro con fecha/hora de inicio y fin, título, resumen manual
+- Switch presencial/online; campo de asistentes (lista de nombres)
 - Estado: planned, in-progress, completed
 - Resumen automático via IA (Gemini 2.0 Flash)
-- Highlights y notas post-sesión
+- Notas del máster (privadas) por sesión
+- Filtros por estado y búsqueda por título en la lista
 
 ### 10. Lore / Wiki
 - Entradas con título, contenido, categoría y etiquetas
@@ -136,18 +138,18 @@ CampaignForge es una plataforma web multijugador para la gestión integral de ca
 
 ---
 
-## Fuera de scope (v2.x) — Planificado para versiones futuras
+## Fuera de scope (v3.x) — Planificado para versiones futuras
 
 | Funcionalidad | Versión estimada |
 |---------------|-----------------|
-| Mapas interactivos con fog of war | v3.0 |
-| Upload real de imágenes (Cloudinary integrado) | v2.x |
-| Export PDF de fichas de personaje | v3.0 |
-| Generación de imágenes con IA | v3.0 |
-| Timeline interactiva | v3.0 |
-| Sistema de notificaciones push (campana) | v2.x |
-| Historial de tiradas de dados por campaña/sesión | v2.x |
-| Modo presentación (DM screen) | v3.0 |
+| Mapas interactivos con fog of war | v4.0 |
+| Export PDF de fichas de personaje | v3.x |
+| Generación de imágenes con IA (Imagen 3) | v3.x |
+| Timeline interactiva (modelo `TimelineEvent` existe) | v3.x |
+| Modo presentación (DM screen) | v3.x |
+| Lore / Wiki completo (temporalmente en construcción) | v3.x |
+| Manual del sistema desde Google Drive → Wiki | v3.x |
+| Reset de contraseña por email | v3.x |
 | App mobile nativa | v4.0 |
 | Integración con Roll20 / Foundry VTT | v4.0 |
 

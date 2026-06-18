@@ -513,7 +513,7 @@
       <p>Historial completo de versiones, funcionalidades y correcciones.</p>
       <div class="current-badge">
         <span class="dot"></span>
-        Versión actual: 3.0
+        Versión actual: 3.1
       </div>
     </header>
 
@@ -544,23 +544,108 @@
     <!-- Versions -->
     <div class="versions">
 
+      <!-- v3.1 -->
+      <div class="version-entry major" id="v3.1">
+        <div class="version-card">
+          <div class="card-header">
+            <div class="version-info">
+              <div class="version-number">v3.1</div>
+              <div class="version-title">Sesiones completas · Baúl en campaña · Colores de sección · Zonas de peligro unificadas</div>
+            </div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-18</span>
+              <span class="type-badge badge-major">MAJOR</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat — Sesiones</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Form de sesión completo</strong> — fecha/hora inicio-fin, switch presencial/online, campo de asistentes, resumen narrativo y notas del máster.</span></li>
+                <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Detalle de sesión</strong> — encabezado con estado y fecha, asistentes, resumen y notas; edición y zona de peligro solo para máster.</span></li>
+                <li class="change-item"><span><span class="tag new">nuevo</span> <strong>SessionDangerZone</strong> extraída — doble confirmación + DELETE + redirect.</span></li>
+                <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Sessions list</strong> — componente cliente con búsqueda por título y filtros por estado.</span></li>
+                <li class="change-item"><span><span class="tag mod">api</span> <code>POST/PATCH /api/sessions</code> acepta <code>scheduledAt</code>, <code>endsAt</code>, <code>isOnline</code>, <code>attendees</code> y <code>notes</code>.</span></li>
+              </ul>
+            </div>
+            <div class="section-divider"></div>
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat — Baúl y objetos</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Baúl en campaña</strong> — picker de ítems del baúl global dentro del workspace.</span></li>
+                <li class="change-item"><span><span class="tag mod">items</span> Búsqueda de objetos <strong>sin gate de 20 ítems</strong> — input inmediato.</span></li>
+                <li class="change-item"><span><span class="tag mod">dashboard</span> <strong>"Mi baúl"</strong> visible en el dashboard principal del usuario.</span></li>
+              </ul>
+            </div>
+            <div class="section-divider"></div>
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat — UI y refactors</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span><span class="tag mod">design</span> <strong>Colores por sección</strong> — objetos cian, monstruos rojo, baúl violeta; sidebar con íconos coloreados por módulo.</span></li>
+                <li class="change-item"><span><span class="tag mod">monsters</span> <strong>HP de monstruo persistido en DB</strong> vía <code>PATCH /api/monsters/[id]</code>.</span></li>
+                <li class="change-item"><span><span class="tag mod">profile</span> Stats del perfil calculadas server-side.</span></li>
+                <li class="change-item"><span><span class="tag mod">refactor</span> Patrón de <strong>zona de peligro unificado</strong> en los 5 módulos (NPC, quest, personaje, monstruo, sesión).</span></li>
+                <li class="change-item"><span><span class="tag mod">schema</span> <strong>37 columnas sin uso eliminadas</strong> del schema Prisma.</span></li>
+              </ul>
+            </div>
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              develop
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- v3.0 -->
       <div class="version-entry major" id="v3.0">
         <div class="version-card">
-          <div class="version-header">
+          <div class="card-header">
             <div class="version-info">
               <div class="version-number">v3.0</div>
-              <div class="version-title">Mejoras globales · Equip/inventario · Búsqueda objetos · Quest deadline · Skeletons · Dados reales · next/image</div>
+              <div class="version-title">Inventario equip/unequip · Búsqueda objetos · Quest deadline · Skeletons · Dados reales · next/image</div>
             </div>
-            <div class="version-date">2026-06-17</div>
+            <div class="version-meta">
+              <span class="version-date">2026-06-17</span>
+              <span class="type-badge badge-major">MAJOR</span>
+            </div>
           </div>
-          <div class="changes">
-            <div class="change feat"><span class="change-type feat">feat</span>Inventario: equip/unequip toggle dorado, stepper +/- de cantidad, PATCH optimista con rollback en personaje.</div>
-            <div class="change feat"><span class="change-type feat">feat</span>Catálogo de objetos: búsqueda por nombre (input con ícono Search).</div>
-            <div class="change feat"><span class="change-type feat">feat</span>Quests: campo deadline con fecha y ícono Calendar; chip en el detalle.</div>
-            <div class="change feat"><span class="change-type feat">feat</span>Loading skeletons en 6 secciones: personajes, NPCs, quests, objetos, sesiones, lore.</div>
-            <div class="change feat"><span class="change-type feat">feat</span>Dados: historial real desde DB; tiradas persistidas en background; sin datos mock.</div>
-            <div class="change chore"><span class="change-type chore">chore</span>next/image: 11 componentes migrados; remotePatterns Cloudinary + Google en next.config.ts.</div>
+          <div class="card-body">
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot feat"></span>
+                <span class="section-name feat">feat</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span><span class="tag mod">inventario</span> <strong>Equip/unequip toggle</strong> con ícono dorado animado, stepper de cantidad (+/-), PATCH optimista con rollback.</span></li>
+                <li class="change-item"><span><span class="tag mod">objetos</span> <strong>Búsqueda en el catálogo</strong> por nombre con ícono Search.</span></li>
+                <li class="change-item"><span><span class="tag mod">quests</span> <strong>Quest deadline</strong> — campo de fecha con ícono Calendar; chip en el detalle.</span></li>
+                <li class="change-item"><span><span class="tag new">nuevo</span> <strong>Loading skeletons</strong> en 6 secciones: personajes, NPCs, quests, objetos, sesiones, lore.</span></li>
+                <li class="change-item"><span><span class="tag mod">dados</span> <strong>Dados reales</strong> — historial conectado a DB, tiradas persistidas en background. Sin datos mock.</span></li>
+              </ul>
+            </div>
+            <div class="section-divider"></div>
+            <div class="change-section">
+              <div class="section-label">
+                <span class="section-dot chore"></span>
+                <span class="section-name chore">chore</span>
+              </div>
+              <ul class="change-list">
+                <li class="change-item"><span><span class="tag mod">imágenes</span> <strong>next/image</strong> migrado en 11 componentes; <code>remotePatterns</code> para Cloudinary y Google en <code>next.config.ts</code>.</span></li>
+              </ul>
+            </div>
+            <div class="branch-note">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>
+              develop
+            </div>
           </div>
         </div>
       </div>
@@ -1203,7 +1288,7 @@
     </div><!-- /versions -->
 
     <footer class="footer">
-      <p>CampaignForge v2.3 &mdash; <a href="/">Volver a la app</a> &mdash; <a href="https://github.com/Xenov2030/campaign-forge" target="_blank" rel="noopener">GitHub</a></p>
+      <p>CampaignForge v3.1 &mdash; <a href="/">Volver a la app</a> &mdash; <a href="https://github.com/Xenov2030/campaign-forge" target="_blank" rel="noopener">GitHub</a></p>
     </footer>
 
   </div><!-- /wrapper -->

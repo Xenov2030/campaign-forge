@@ -4,7 +4,7 @@
 
 ---
 
-## Versión actual: `3.0`
+## Versión actual: `3.1`
 
 Historial de versiones en [`.docs/05_changelog.md`](.docs/05_changelog.md).
 
@@ -35,7 +35,7 @@ src/
 │   │   ├── gallery/         → Galería visual
 │   │   ├── notes/           → Notas privadas
 │   │   ├── chat/            → Chat de texto en tiempo real (Pusher)
-│   │   ├── dice/            → Historial de tiradas + roller (mock data)
+│   │   ├── dice/            → Historial de tiradas real (DB) + roller
 │   │   ├── voice/           → Canales de voz LiveKit (sidebar integrado)
 │   │   └── ai-forge/        → Generador IA (máster only)
 │   ├── api/                 → Route handlers (auth, campaigns, characters, chat, livekit, etc.)

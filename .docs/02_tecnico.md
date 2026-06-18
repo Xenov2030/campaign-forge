@@ -1,6 +1,6 @@
 # CampaignForge — Documentación Técnica
 
-**Versión:** 2.4 | **Última actualización:** 2026-06-09
+**Versión:** 3.1 | **Última actualización:** 2026-06-18
 
 ---
 

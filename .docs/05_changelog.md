@@ -5,6 +5,48 @@
 
 ---
 
+## [3.1] — 2026-06-18
+
+### feat(int) — Sesiones completas, baúl en campaña, colores de sección, zonas de peligro unificadas
+
+**Sesiones:**
+- `session-form.tsx` (318 líneas nuevas): form con fecha/hora inicio-fin, switch presencial/online, campo de asistentes, resumen narrativo y notas del máster.
+- `sessions/[sessionId]/page.tsx` (216 líneas): detalle completo — encabezado con estado, fecha y hora, asistentes, resumen, notas; edición y peligro solo para máster.
+- `sessions/[sessionId]/edit/page.tsx` (115 líneas): página de edición separada.
+- `sessions/sessions-list.tsx` (245 líneas): componente cliente con búsqueda por título y filtros por estado.
+- `session-danger-zone.tsx`: zona de peligro extraída — doble confirmación + DELETE + redirect.
+- APIs `POST/PATCH /api/sessions`: aceptan y persisten `scheduledAt`, `endsAt`, `isOnline`, `attendees` y `notes`.
+
+**Baúl en campaña y objetos:**
+- Página `/[campaignSlug]/vault`: picker de ítems del baúl global del usuario dentro del workspace.
+- Búsqueda de objetos sin gate de 20 ítems (input inmediato sin threshold).
+- "Mi baúl" visible en el dashboard principal.
+
+**Colores de sección:**
+- Objetos: cian (`--accent-ice`), Monstruos: rojo (`--accent-crimson`), Baúl: violeta (`--accent-arcane`).
+- Sidebar: íconos de cada sección con color representativo por módulo.
+
+**Monstruos y NPCs:**
+- HP de monstruo persistido en DB vía `PATCH /api/monsters/[id]` (antes solo era estado local).
+- `monster-danger-zone.tsx`: zona de peligro extraída de la page de monstruo.
+- `npc-vault-button.tsx`: botón "Guardar al baúl" extraído como componente reutilizable.
+
+**Perfil:**
+- Stats del perfil (campañas, sesiones, personajes) calculadas server-side.
+
+**Lore / Wiki:**
+- Sección marcada temporalmente como "en construcción" — pendiente definir flujo de contenido.
+
+**Refactors:**
+- Patrón de zona de peligro unificado en todos los módulos: misma estructura de doble confirmación + DELETE + feedback (`npc`, `quest`, `character`, `monster`, `session`).
+- `assign-to-inventory.tsx`: validación y feedback visual mejorados.
+- `master-assistant.tsx`: mejoras de UX del panel flotante.
+- `prisma/schema.prisma`: 37 líneas eliminadas (columnas sin uso en `NPC` y entidades de contenido generado).
+
+**Rama:** `develop`
+
+---
+
 ## [3.0] — 2026-06-17
 
 ### feat(int) — Mejoras globales: equip/inventario, búsqueda de objetos, quest deadline, skeletons, dados reales, next/image

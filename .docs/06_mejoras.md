@@ -1,6 +1,6 @@
 # CampaignForge — Documento de Mejoras Pendientes
 
-**Versión:** 2.9 | **Última actualización:** 2026-06-17
+**Versión:** 3.1 | **Última actualización:** 2026-06-18
 
 > Las mejoras están ordenadas por prioridad. Al implementar una, marcarla con `[x]` y moverla al changelog.
 
@@ -13,12 +13,6 @@
 **Impacto:** La experiencia de imágenes está resuelta en personajes, pero todavía no es homogénea en toda la plataforma.
 **Approach:** Reutilizar `ImageCropUpload` y `/api/upload` en galería y formularios restantes.
 **Versión estimada:** v2.5
-
-### [ ] Historial de tiradas de dados por campaña/sesión
-**Estado:** Modelo `DiceRoll` existe en DB. La página `/dice` muestra datos mock hardcodeados.
-**Impacto:** No se persiste el historial real de tiradas.
-**Approach:** POST `/api/dice-rolls` al tirar en la bandeja. GET en `/dice/page.tsx` para listar por campaña, filtrable por sesión y jugador.
-**Versión estimada:** v2.4
 
 ### [ ] Reset de contraseña
 **Estado:** No existe flujo de recuperación. Si un usuario olvida su contraseña hay que editar `passwordHash` a mano (Prisma Studio).
@@ -33,15 +27,6 @@
 ---
 
 ## Prioridad MEDIA — Mejoras UX significativas
-
-### [ ] Skeletons en páginas faltantes
-**Estado:** Se agregaron en dashboard y campaña overview. Faltan en characters, npcs, sessions, lore, gallery, etc.
-**Archivos a crear:**
-- `src/app/(campaign)/[campaignSlug]/characters/loading.tsx`
-- `src/app/(campaign)/[campaignSlug]/npcs/loading.tsx`
-- `src/app/(campaign)/[campaignSlug]/sessions/loading.tsx`
-- `src/app/(campaign)/[campaignSlug]/lore/loading.tsx`
-- `src/app/(campaign)/[campaignSlug]/gallery/loading.tsx`
 
 ### [ ] Export PDF de fichas de personaje
 **Estado:** No implementado.
@@ -67,12 +52,6 @@
 
 ## Prioridad MEDIA — Mejoras de código y calidad
 
-### [x] Indicadores de campo requerido en formularios ✅ v2.4
-Asterisco rojo global en `Input`/`Textarea` vía prop `required`.
-
-### [x] Contador de caracteres en textareas ✅ v2.4
-`maxLength` + contador visual en nombre y descripción del wizard de campañas.
-
 ### [ ] `aria-invalid` y `aria-describedby` en inputs
 Actualizar `src/components/ui/input.tsx` para aceptar y propagar `error` como `aria-invalid` + mensaje vinculado.
 
@@ -81,7 +60,7 @@ Archivos afectados: `npcs/page.tsx`, `characters/[characterId]/page.tsx`.
 
 ---
 
-## Deuda técnica identificada (auditoría v2.8)
+## Deuda técnica identificada (auditoría v3.1)
 
 > Hallazgos de la auditoría de código que NO se aplicaron en v2.8 (refactores de mayor alcance o que requieren decisión). Ordenados por valor.
 
@@ -98,16 +77,14 @@ Los bodies se desestructuran y castean a mano (`type as never` en `ai/route.ts`)
 **Approach:** esquemas zod por ruta, al menos en los POST de creación.
 
 ### [ ] Deduplicar patrones de UI repetidos
-- `npc/quest/character-danger-zone.tsx`: misma estructura (doble confirm + DELETE + redirect). Extraer `<DangerZone>` o `useDeleteResource`.
 - `toggleVisibility` optimista duplicado en `npc-card`/`quest-card`. Extraer `useOptimisticToggle`.
 - `changeHp` duplicado en `npc-card`/`npc-hp-control`. Extraer helper.
+- `selectClass` CSS duplicada en `monster-form`, `item-form`, `quest-form`.
+- `NumberField` custom en `CharacterForm` sin extraerse a componente reutilizable.
 
 ### [ ] `$transaction` en aceptar solicitud de unión
 `join-requests/[id]` (accept) hace 3 writes secuenciales sin transacción; si falla a mitad queda estado inconsistente.
 **Approach:** `prisma.$transaction([...])`.
-
-### [ ] Columnas de schema sin uso
-`NPC.relationships`, `NPC.generatedBy`/`Monster`/`Item`/`Quest.generatedBy` nunca se leen ni escriben; `NPC.vaultNpcId` se escribe pero no se lee. Evaluar eliminarlas o darles uso.
 
 ### [ ] Renombrar `lib/supabase/` (legado)
 La auth es JWT propia; el módulo `lib/supabase/server.ts` solo re-exporta `getSessionUser`. El nombre confunde. Renombrar a `lib/session.ts`.
@@ -115,8 +92,17 @@ La auth es JWT propia; el módulo `lib/supabase/server.ts` solo re-exporta `getS
 ### [ ] `generateUniqueUsername` puede hacer N queries
 `lib/auth.ts`: bucle con un `findUnique` por iteración. Resolver con una sola query `startsWith` + sufijo en memoria.
 
-### [ ] `next/image` para retratos/banners
-Hoy se usa `<img>` (con `eslint-disable`). Configurar dominios en `next.config` y migrar para lazy-loading + optimización.
+### [ ] Forms sin Zod + React Hook Form
+`CharacterForm`, `MonsterForm`, `NpcForm`, `QuestForm`, `ItemForm` validan manualmente. Introducir Zod + React Hook Form eliminaría ~40% de boilerplate y unificaría el manejo de errores. Los esquemas Zod también sirven para validar los bodies en las API routes correspondientes.
+
+### [ ] `campaign-store` demasiado ancho
+Un solo store mezcla estado de chat, voz, UI (sidebar, sección activa), AI assistant y dice tray. Separar en stores por dominio: `ui-store`, `voice-store`, `chat-store`.
+
+### [ ] `ChatMessageWithUser` duplicado
+Definido en `src/types/index.ts:195` Y en `src/hooks/useChatMessages.ts:7-21`. Eliminar la definición local y exportar desde types.
+
+### [ ] Tags inconsistentes entre forms
+`ItemForm` guarda tags como string comma-separated; `QuestForm`/`MonsterForm` como array. Unificar a array en todos los formularios.
 
 ---
 
@@ -198,3 +184,14 @@ La app está en español. Soporte para inglés y portugués.
 | v2.9 | **Sección Objetos completa — catálogo CRUD con rareza/tipo/artefacto/sintonización/visibilidad** |
 | v2.9 | **Recompensa de misión**: objeto vinculado a quest (selector + chip clickeable en detalle) |
 | v2.9 | **Inventario de personaje**: asignar desde el detalle del objeto, listado en ficha con quitar optimista |
+| v3.0 | **Inventario**: equip/unequip toggle con ícono animado, stepper de cantidad, rollback optimista |
+| v3.0 | **Dados reales**: `DiceRoll` conectado a DB, historial filtrado por `isSecret` |
+| v3.0 | **Quest deadline**: campo de fecha en form y chip en detalle |
+| v3.0 | **Loading skeletons** en characters, npcs, quests, items, sessions, lore |
+| v3.0 | **next/image** migrado en 11 componentes, `remotePatterns` configurados |
+| v3.1 | **Sesiones completas**: form con hora, online/presencial, asistentes, detalle, edición, filtros |
+| v3.1 | **Baúl en campaña**: vault picker en workspace, búsqueda sin gate, "Mi baúl" en dashboard |
+| v3.1 | **Colores por sección**: cyan, rojo, violeta; sidebar con íconos coloreados |
+| v3.1 | **HP monstruo persistido en DB** |
+| v3.1 | **Zonas de peligro unificadas** en los 5 módulos |
+| v3.1 | **Columnas sin uso eliminadas del schema** (37 líneas) |
