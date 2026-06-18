@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, Calendar } from "lucide-react";
 import { SessionForm } from "@/components/campaign/session-form";
 import type { SessionMember, SessionFormValues } from "@/components/campaign/session-form";
+import { SessionDangerZone } from "@/components/campaign/session-danger-zone";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; sessionId: string }>;
@@ -102,6 +103,12 @@ export default async function EditSessionPage({ params }: PageProps) {
         sessionId={sessionId}
         members={members}
         initial={initial}
+      />
+
+      <SessionDangerZone
+        slug={campaignSlug}
+        sessionId={sessionId}
+        sessionName={session.title ?? `Sesión ${session.number}`}
       />
     </div>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Save, Trash2, Users, Wifi, Home } from "lucide-react";
+import { Loader2, Save, Users, Wifi, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,6 @@ export function SessionForm({
 }: SessionFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   const [form, setForm] = useState<SessionFormValues>({
     title: initial?.title ?? "",
@@ -137,25 +136,6 @@ export function SessionForm({
       toast.error(err instanceof Error ? err.message : "Error");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!sessionId) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/sessions/${sessionId}`, { method: "DELETE" });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error ?? "Error al eliminar");
-      }
-      toast.success("Sesión eliminada");
-      router.push(`/${campaignSlug}/sessions`);
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error");
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -333,21 +313,6 @@ export function SessionForm({
         </Button>
       </div>
 
-      {/* Zona de peligro — solo en edición */}
-      {mode === "edit" && (
-        <div className="mt-8 pt-6 border-t border-[var(--border-subtle)]">
-          <h2 className="text-sm font-semibold text-[var(--accent-crimson)] uppercase tracking-wider mb-3">Zona de peligro</h2>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--accent-crimson)]/30 bg-[var(--accent-crimson)]/10 text-[var(--accent-crimson)] hover:bg-[var(--accent-crimson)]/15 transition-colors disabled:opacity-50"
-          >
-            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Eliminar sesión
-          </button>
-        </div>
-      )}
     </form>
   );
 }
