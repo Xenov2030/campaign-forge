@@ -44,9 +44,9 @@ export function AssignToInventory({ itemId, itemName, characters }: Props) {
         <UserRound className="h-4 w-4 text-[var(--accent-gold)]" />
         <h2 className="font-display text-base font-bold text-[var(--text-primary)]">Asignar a personaje</h2>
       </div>
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] items-end">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Personaje</label>
+      <div className="flex flex-col sm:flex-row gap-3 items-end">
+        <div className="flex flex-col gap-2 flex-1 min-w-0">
+          <label className="text-sm font-medium text-[var(--text-secondary)]">Personaje</label>
           <select
             value={characterId}
             onChange={(e) => setCharacterId(e.target.value)}
@@ -57,21 +57,21 @@ export function AssignToInventory({ itemId, itemName, characters }: Props) {
             ))}
           </select>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Cantidad</label>
+        <div className="flex flex-col gap-2 sm:w-32">
+          <label className="text-sm font-medium text-[var(--text-secondary)]">Cantidad</label>
           <input
             type="number"
             min={1}
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
             onWheel={(e) => e.currentTarget.blur()}
-            className="h-11 w-24 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors"
+            className="h-11 w-full rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors"
           />
         </div>
         <button
           onClick={assign}
           disabled={loading || !characterId}
-          className="inline-flex items-center gap-1.5 h-11 px-5 rounded-[var(--radius-md)] text-sm font-semibold bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 hover:bg-[var(--accent-gold)]/25 disabled:opacity-50 transition-colors"
+          className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-[var(--radius-md)] text-sm font-semibold bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 hover:bg-[var(--accent-gold)]/25 disabled:opacity-50 transition-colors shrink-0"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Asignar

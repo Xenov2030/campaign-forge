@@ -34,7 +34,7 @@ export default async function MonsterDetailPage({ params }: PageProps) {
   if (!isMember) redirect("/dashboard");
 
   return (
-    <div className="px-4 md:px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <Link
           href={`/${campaignSlug}/monsters`}
