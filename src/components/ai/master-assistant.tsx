@@ -119,8 +119,12 @@ export function MasterAssistant({
               <Sparkles className="h-4 w-4 text-[var(--accent-arcane)]" />
             </div>
             <div>
-              <p className="text-sm font-display font-semibold text-[var(--text-primary)]">Asistente del Máster</p>
-              <p className="text-xs text-[var(--text-muted)]">Powered by GPT-4o</p>
+              <p className="text-sm font-display font-semibold text-[var(--text-primary)]">
+                Asistente del Máster
+              </p>
+              <p className="text-xs text-[var(--text-muted)]">
+                Powered by Gemini AI
+              </p>
             </div>
           </div>
           <div className="flex gap-1">
@@ -132,7 +136,11 @@ export function MasterAssistant({
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="ghost" size="icon-sm" onClick={() => setAIAssistantOpen(false)}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setAIAssistantOpen(false)}
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -145,7 +153,7 @@ export function MasterAssistant({
               key={i}
               className={cn(
                 "flex gap-3",
-                message.role === "user" && "flex-row-reverse"
+                message.role === "user" && "flex-row-reverse",
               )}
             >
               <div
@@ -153,7 +161,7 @@ export function MasterAssistant({
                   "h-7 w-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold",
                   message.role === "assistant"
                     ? "bg-[var(--accent-arcane)]/20 text-[var(--accent-arcane)]"
-                    : "bg-[var(--accent-gold)]/20 text-[var(--accent-gold)]"
+                    : "bg-[var(--accent-gold)]/20 text-[var(--accent-gold)]",
                 )}
               >
                 {message.role === "assistant" ? "IA" : "TÚ"}
@@ -163,10 +171,12 @@ export function MasterAssistant({
                   "max-w-[80%] rounded-[var(--radius-lg)] px-4 py-3 text-sm",
                   message.role === "assistant"
                     ? "bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]"
-                    : "bg-[var(--accent-arcane)]/15 text-[var(--text-primary)] border border-[var(--accent-arcane)]/20"
+                    : "bg-[var(--accent-arcane)]/15 text-[var(--text-primary)] border border-[var(--accent-arcane)]/20",
                 )}
               >
-                <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                <p className="whitespace-pre-wrap leading-relaxed">
+                  {message.content}
+                </p>
               </div>
             </div>
           ))}
@@ -183,7 +193,11 @@ export function MasterAssistant({
                       key={i}
                       className="h-1.5 w-1.5 rounded-full bg-[var(--accent-arcane)]"
                       animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                      transition={{
+                        duration: 1.2,
+                        repeat: Infinity,
+                        delay: i * 0.2,
+                      }}
                     />
                   ))}
                 </div>
