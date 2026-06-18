@@ -50,16 +50,17 @@ export function ItemForm({ slug, mode, campaignId, itemId, initial }: Props) {
   const [form, setForm] = useState<ItemFormValues>(base);
   const [tagsInput, setTagsInput] = useState(base.tags.join(", "));
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const toggle = (field: "isArtifact" | "requiresAttunement" | "isKnownToParty" | "missionReward") =>
     setForm((p) => ({ ...p, [field]: !p[field] }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) {
-      toast.error("El nombre es obligatorio");
-      return;
-    }
+    const newErrors: Record<string, string> = {};
+    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    setErrors({});
     setSaving(true);
     try {
       // Los tags libres del usuario + el tag de control de "recompensa de misión".
@@ -98,8 +99,8 @@ export function ItemForm({ slug, mode, campaignId, itemId, initial }: Props) {
             className="w-32 shrink-0"
           />
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Nombre *" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Espada de las Brasas" required className="sm:col-span-2" />
-            <Input label="Tipo" value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))} placeholder="Arma, Armadura, Poción..." />
+            <Input label="Nombre *" value={form.name} onChange={(e) => { setForm((p) => ({ ...p, name: e.target.value })); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }} placeholder="Espada de las Brasas" required maxLength={100} error={errors.name} className="sm:col-span-2" />
+            <Input label="Tipo" value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))} placeholder="Arma, Armadura, Poción..." maxLength={100} />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Rareza</label>
               <select className={selectClass} value={form.rarity} onChange={(e) => setForm((p) => ({ ...p, rarity: e.target.value as ItemRarity }))}>
@@ -108,15 +109,15 @@ export function ItemForm({ slug, mode, campaignId, itemId, initial }: Props) {
                 ))}
               </select>
             </div>
-            <Input label="Tags (separados por coma)" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="mágico, maldito, único" className="sm:col-span-2" />
+            <Input label="Tags (separados por coma)" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="mágico, maldito, único" maxLength={200} className="sm:col-span-2" />
           </div>
         </div>
       </div>
 
       {/* Descripción */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 space-y-4">
-        <Textarea label="Descripción" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} placeholder="Qué hace el objeto, propiedades, daño..." />
-        <Textarea label="Historia / Lore" value={form.lore} onChange={(e) => setForm((p) => ({ ...p, lore: e.target.value }))} rows={3} placeholder="Origen e historia del objeto..." />
+        <Textarea label="Descripción" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} maxLength={4000} placeholder="Qué hace el objeto, propiedades, daño..." />
+        <Textarea label="Historia / Lore" value={form.lore} onChange={(e) => setForm((p) => ({ ...p, lore: e.target.value }))} rows={3} maxLength={4000} placeholder="Origen e historia del objeto..." />
       </div>
 
       {/* Propiedades y estado */}

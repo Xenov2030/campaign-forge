@@ -120,12 +120,12 @@ function EntryList({ label, items, onChange }: { label: string; items: StatEntry
         {items.map((item, i) => (
           <div key={i} className="bg-[var(--bg-elevated)] rounded-[var(--radius-md)] p-3 space-y-2">
             <div className="flex items-center gap-2">
-              <Input value={item.name} onChange={(e) => update(i, "name", e.target.value)} placeholder="Nombre" className="flex-1" />
+              <Input value={item.name} onChange={(e) => update(i, "name", e.target.value)} placeholder="Nombre" maxLength={100} className="flex-1" />
               <button type="button" onClick={() => remove(i)} className="h-9 w-9 shrink-0 flex items-center justify-center rounded text-[var(--text-muted)] hover:text-red-400 transition-colors">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
-            <Textarea value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Descripción..." rows={2} />
+            <Textarea value={item.description} onChange={(e) => update(i, "description", e.target.value)} placeholder="Descripción..." rows={2} maxLength={2000} />
           </div>
         ))}
       </div>
@@ -145,6 +145,7 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
   const router = useRouter();
   const [form, setForm] = useState<MonsterFormValues>({ ...EMPTY, ...initial });
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [open, setOpen] = useState({ basic: true, stats: true, speed: false, skills: false, senses: false, traits: true, lore: false });
 
   const toggle = (k: keyof typeof open) => setOpen((p) => ({ ...p, [k]: !p[k] as boolean }));
@@ -155,7 +156,10 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) { toast.error("El nombre es obligatorio"); return; }
+    const newErrors: Record<string, string> = {};
+    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    setErrors({});
     setSaving(true);
     try {
       const payload = {
@@ -199,7 +203,7 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
           />
           {/* Campos */}
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Nombre *" value={form.name} onChange={(e) => setField("name", e.target.value)} placeholder="Dragón rojo anciano" required className="sm:col-span-2" />
+            <Input label="Nombre *" value={form.name} onChange={(e) => { setField("name", e.target.value); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }} placeholder="Dragón rojo anciano" required maxLength={100} error={errors.name} className="sm:col-span-2" />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Tipo</label>
               <select className={selectClass} value={form.type} onChange={(e) => setField("type", e.target.value)}>
@@ -220,8 +224,8 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
                 {ALIGNMENTS.map((a) => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
-            <Input label="Desafío (CR)" value={form.challengeRating} onChange={(e) => setField("challengeRating", e.target.value)} placeholder="5, 1/2, 1/4..." />
-            <Input label="Puntos de vida" value={form.hitPoints} onChange={(e) => setField("hitPoints", e.target.value)} placeholder="52 (8d10+8)" />
+            <Input label="Desafío (CR)" value={form.challengeRating} onChange={(e) => setField("challengeRating", e.target.value)} placeholder="5, 1/2, 1/4..." maxLength={20} />
+            <Input label="Puntos de vida" value={form.hitPoints} onChange={(e) => setField("hitPoints", e.target.value)} placeholder="52 (8d10+8)" maxLength={50} />
             <Input
               label="Clase de armadura"
               type="number" min={0} max={30}
@@ -230,7 +234,7 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
               onWheel={noScroll}
               placeholder="17"
             />
-            <Input label="Idiomas" value={form.languages} onChange={(e) => setField("languages", e.target.value)} placeholder="Común, Dracónico" className="sm:col-span-2" />
+            <Input label="Idiomas" value={form.languages} onChange={(e) => setField("languages", e.target.value)} placeholder="Común, Dracónico" maxLength={200} className="sm:col-span-2" />
             <TagPicker
               label="Categorías"
               value={form.tags}
@@ -319,10 +323,10 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
       {/* Sentidos */}
       <Section title="Sentidos" open={open.senses} onToggle={() => toggle("senses")}>
         <div className="pt-5 grid grid-cols-2 gap-4">
-          <Input label="Visión en la oscuridad" value={form.senses.darkvision} onChange={(e) => setField("senses", { ...form.senses, darkvision: e.target.value })} placeholder="60 pies" />
-          <Input label="Vista ciega" value={form.senses.blindsight} onChange={(e) => setField("senses", { ...form.senses, blindsight: e.target.value })} placeholder="30 pies" />
-          <Input label="Sentido sísmico" value={form.senses.tremorsense} onChange={(e) => setField("senses", { ...form.senses, tremorsense: e.target.value })} placeholder="60 pies" />
-          <Input label="Visión verdadera" value={form.senses.truesight} onChange={(e) => setField("senses", { ...form.senses, truesight: e.target.value })} placeholder="120 pies" />
+          <Input label="Visión en la oscuridad" value={form.senses.darkvision} onChange={(e) => setField("senses", { ...form.senses, darkvision: e.target.value })} placeholder="60 pies" maxLength={50} />
+          <Input label="Vista ciega" value={form.senses.blindsight} onChange={(e) => setField("senses", { ...form.senses, blindsight: e.target.value })} placeholder="30 pies" maxLength={50} />
+          <Input label="Sentido sísmico" value={form.senses.tremorsense} onChange={(e) => setField("senses", { ...form.senses, tremorsense: e.target.value })} placeholder="60 pies" maxLength={50} />
+          <Input label="Visión verdadera" value={form.senses.truesight} onChange={(e) => setField("senses", { ...form.senses, truesight: e.target.value })} placeholder="120 pies" maxLength={50} />
           <Input
             label="Percepción pasiva"
             type="number" min={0} max={99}
@@ -345,7 +349,7 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
       {/* Lore */}
       <Section title="Trasfondo y lore" open={open.lore} onToggle={() => toggle("lore")}>
         <div className="pt-5">
-          <Textarea label="Trasfondo" value={form.lore} onChange={(e) => setField("lore", e.target.value)} rows={5} placeholder="Historia, origen, motivaciones del monstruo..." />
+          <Textarea label="Trasfondo" value={form.lore} onChange={(e) => setField("lore", e.target.value)} rows={5} maxLength={4000} placeholder="Historia, origen, motivaciones del monstruo..." />
         </div>
       </Section>
 

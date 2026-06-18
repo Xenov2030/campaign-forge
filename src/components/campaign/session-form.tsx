@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { Loader2, Save, Users, Wifi, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
 import { cn } from "@/lib/utils";
 
 export interface SessionMember {
@@ -148,6 +151,7 @@ export function SessionForm({
           value={form.title}
           onChange={(e) => set("title", e.target.value)}
           placeholder="La noche del pacto…"
+          maxLength={100}
         />
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-[var(--text-secondary)]">Estado</label>
@@ -165,24 +169,17 @@ export function SessionForm({
 
       {/* Fecha + hora + duración */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Fecha</label>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => set("date", e.target.value)}
-            className="h-10 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 focus:outline-none focus:border-[var(--accent-gold)] transition-colors [color-scheme:dark]"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Hora</label>
-          <input
-            type="time"
-            value={form.time}
-            onChange={(e) => set("time", e.target.value)}
-            className="h-10 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 focus:outline-none focus:border-[var(--accent-gold)] transition-colors [color-scheme:dark]"
-          />
-        </div>
+        <DatePicker
+          label="Fecha"
+          value={form.date}
+          onChange={(v) => set("date", v)}
+          placeholder="Sin fecha"
+        />
+        <TimePicker
+          label="Hora"
+          value={form.time}
+          onChange={(v) => set("time", v)}
+        />
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-[var(--text-secondary)]">Duración (min)</label>
           <input
@@ -283,26 +280,22 @@ export function SessionForm({
 
       {/* Resumen + notas */}
       <div className="space-y-4">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Resumen (opcional)</label>
-          <textarea
-            value={form.summary}
-            onChange={(e) => set("summary", e.target.value)}
-            rows={3}
-            placeholder="Qué sucedió en esta sesión…"
-            className="rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 py-2 resize-none focus:outline-none focus:border-[var(--accent-gold)] transition-colors placeholder:text-[var(--text-muted)]"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Notas privadas del máster</label>
-          <textarea
-            value={form.notes}
-            onChange={(e) => set("notes", e.target.value)}
-            rows={3}
-            placeholder="Notas que solo verás vos…"
-            className="rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 py-2 resize-none focus:outline-none focus:border-[var(--accent-gold)] transition-colors placeholder:text-[var(--text-muted)]"
-          />
-        </div>
+        <Textarea
+          label="Resumen (opcional)"
+          value={form.summary}
+          onChange={(e) => set("summary", e.target.value)}
+          rows={3}
+          maxLength={4000}
+          placeholder="Qué sucedió en esta sesión…"
+        />
+        <Textarea
+          label="Notas privadas del máster"
+          value={form.notes}
+          onChange={(e) => set("notes", e.target.value)}
+          rows={3}
+          maxLength={4000}
+          placeholder="Notas que solo verás vos…"
+        />
       </div>
 
       {/* Guardar */}

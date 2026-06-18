@@ -505,28 +505,29 @@ function TextMessage({ msg, isContinuation, currentUserId, onEdit, onDelete }: {
   );
 }
 
-function DiceRollMessage({ msg, currentUserId }: {
+function DiceRollMessage({ msg }: {
   msg: ChatMessageWithUser;
   currentUserId?: string;
 }) {
   const diceData = formatDiceRoll(msg);
-  const isOwn = msg.user.id === currentUserId;
 
   return (
-    <div className="flex gap-3 mt-3 group flex-row">
-      <Avatar className="h-7 w-7 shrink-0">
-        <AvatarImage src={msg.user.avatarUrl ?? undefined} />
-        <AvatarFallback className="text-[10px]">{msg.user.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
-      </Avatar>
+    <div className="flex gap-3 mt-4 group relative">
+      <div className="w-8 shrink-0">
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={msg.user.avatarUrl ?? undefined} />
+          <AvatarFallback className="text-[10px]">{msg.user.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+      </div>
 
-      <div className="max-w-[280px]">
+      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-xs font-medium text-[var(--text-muted)]">{msg.user.displayName}</span>
+          <span className="text-sm font-semibold text-[var(--text-primary)]">{msg.user.displayName}</span>
           <Dices className="h-3 w-3 text-[var(--accent-gold)]/60" />
           <span className="text-[10px] text-[var(--text-muted)]">{formatTime(msg.createdAt)}</span>
         </div>
 
-        <div className="bg-[var(--bg-elevated)]/80 border border-[var(--accent-gold)]/20 rounded-[var(--radius-md)] px-3 py-2 backdrop-blur-sm">
+        <div className="inline-block max-w-[280px] bg-[var(--bg-elevated)]/80 border border-[var(--accent-gold)]/20 rounded-[var(--radius-md)] px-3 py-2 backdrop-blur-sm">
           {diceData ? (
             <>
               <div className="flex items-center gap-2 mb-1.5">

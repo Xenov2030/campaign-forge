@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Save, Loader2, Plus, Trash2, Eye, EyeOff, Calendar } from "lucide-react";
+import { Save, Loader2, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import type { QuestType, QuestStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TagPicker } from "@/components/ui/tag-picker";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   QUEST_TYPE_OPTIONS,
   QUEST_STATUSES,
@@ -71,6 +72,7 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
   const router = useRouter();
   const [form, setForm] = useState<QuestFormValues>(initial ?? EMPTY_QUEST);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [rewardItems, setRewardItems] = useState<{ id: string; name: string }[]>([]);
 
   // Objetos marcados como "Objeto de misión" para ofrecer como recompensa.
@@ -99,10 +101,10 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) {
-      toast.error("El nombre es obligatorio");
-      return;
-    }
+    const newErrors: Record<string, string> = {};
+    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    setErrors({});
     setSaving(true);
     try {
       const objectives = form.objectives.filter((o) => o.description.trim() !== "");
@@ -128,7 +130,7 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Básico */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6 space-y-4">
-        <Input label="Nombre *" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="La reliquia perdida" required />
+        <Input label="Nombre *" value={form.name} onChange={(e) => { setForm((p) => ({ ...p, name: e.target.value })); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }} placeholder="La reliquia perdida" required maxLength={100} error={errors.name} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
@@ -149,21 +151,15 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5" />
-            Fecha límite (opcional)
-          </label>
-          <input
-            type="date"
-            value={form.deadline}
-            onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
-            className={selectClass}
-          />
-        </div>
+        <DatePicker
+          label="Fecha límite (opcional)"
+          value={form.deadline}
+          onChange={(v) => setForm((p) => ({ ...p, deadline: v }))}
+          placeholder="Sin fecha límite"
+        />
 
-        <Textarea label="Descripción" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} placeholder="De qué trata la misión..." />
-        <Textarea label="Gancho (cómo se presenta a los jugadores)" value={form.hook} onChange={(e) => setForm((p) => ({ ...p, hook: e.target.value }))} rows={2} placeholder="Un mensajero llega con un sello real..." />
+        <Textarea label="Descripción" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} maxLength={4000} placeholder="De qué trata la misión..." />
+        <Textarea label="Gancho (cómo se presenta a los jugadores)" value={form.hook} onChange={(e) => setForm((p) => ({ ...p, hook: e.target.value }))} rows={2} maxLength={4000} placeholder="Un mensajero llega con un sello real..." />
         <TagPicker
           label="Categorías"
           value={form.tags}
@@ -196,7 +192,7 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
           <div className="space-y-2">
             {form.objectives.map((o) => (
               <div key={o.id} className="flex items-center gap-2">
-                <Input value={o.description} onChange={(e) => updateObjective(o.id, { description: e.target.value })} placeholder="Describe el objetivo..." className="flex-1" />
+                <Input value={o.description} onChange={(e) => updateObjective(o.id, { description: e.target.value })} placeholder="Describe el objetivo..." maxLength={500} className="flex-1" />
                 <label className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] shrink-0 cursor-pointer select-none px-2">
                   <input type="checkbox" checked={o.isOptional} onChange={(e) => updateObjective(o.id, { isOptional: e.target.checked })} className="h-4 w-4 accent-[var(--accent-gold)]" />
                   Opcional
@@ -214,9 +210,9 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-4">Recompensas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Input label="Experiencia" type="number" min={0} value={form.rewards.experience ?? ""} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, experience: e.target.value === "" ? null : Math.max(0, Number(e.target.value)) } }))} placeholder="500" />
-          <Input label="Oro / monedas" value={form.rewards.gold} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, gold: e.target.value } }))} placeholder="100 monedas de oro" />
-          <Input label="Otras recompensas" value={form.rewards.other} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, other: e.target.value } }))} placeholder="Favor del gremio" />
+          <Input label="Experiencia" type="number" min={0} max={999999} value={form.rewards.experience ?? ""} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, experience: e.target.value === "" ? null : Math.max(0, Number(e.target.value)) } }))} onWheel={(e) => e.currentTarget.blur()} placeholder="500" />
+          <Input label="Oro / monedas" value={form.rewards.gold} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, gold: e.target.value } }))} placeholder="100 monedas de oro" maxLength={100} />
+          <Input label="Otras recompensas" value={form.rewards.other} onChange={(e) => setForm((p) => ({ ...p, rewards: { ...p.rewards, other: e.target.value } }))} placeholder="Favor del gremio" maxLength={100} />
         </div>
         <div className="mt-4 flex flex-col gap-1.5">
           <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Objeto de recompensa</label>
@@ -242,7 +238,7 @@ export function QuestForm({ slug, mode, campaignId, questId, initial }: Props) {
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-1">Notas del máster</h2>
         <p className="text-xs text-[var(--text-muted)] mb-4">Esta información solo la verás tú como máster</p>
-        <Textarea label="Notas" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} rows={3} placeholder="Giros, secretos, conexiones con otras tramas..." />
+        <Textarea label="Notas" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} rows={3} maxLength={4000} placeholder="Giros, secretos, conexiones con otras tramas..." />
       </div>
 
       <div className="flex gap-3 justify-end pb-8">

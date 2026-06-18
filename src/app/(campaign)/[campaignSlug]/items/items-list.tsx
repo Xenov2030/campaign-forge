@@ -36,13 +36,69 @@ export function ItemsList({
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Package className="h-5 w-5 text-[#06b6d4]" />
-            <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Objetos</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Package className="h-5 w-5 text-[#06b6d4]" />
+              <h1 className="font-display text-2xl font-black text-[var(--text-primary)]">Objetos</h1>
+            </div>
+            <p className="text-sm text-[var(--text-muted)]">{items.length} objetos</p>
           </div>
-          <p className="text-sm text-[var(--text-muted)]">{items.length} objetos</p>
+
+          {/* Filtro por rareza */}
+          {items.length > 0 && (
+            <div className="flex items-center gap-0.5 p-0.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+              <button
+                onClick={() => setRarityFilter("all")}
+                aria-pressed={rarityFilter === "all"}
+                className={`h-8 px-3 rounded-[var(--radius-sm)] text-xs font-medium transition-colors ${
+                  rarityFilter === "all" ? "bg-[#06b6d4]/15 text-[#06b6d4]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                }`}
+              >
+                Toda rareza
+              </button>
+              {ITEM_RARITIES.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRarityFilter(r)}
+                  aria-pressed={rarityFilter === r}
+                  className={`h-8 px-3 rounded-[var(--radius-sm)] text-xs font-medium transition-colors border ${
+                    rarityFilter === r ? ITEM_RARITY_COLOR[r] : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  }`}
+                >
+                  {ITEM_RARITY_LABELS[r]}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Filtro por tipo */}
+          {types.length > 0 && (
+            <div className="flex items-center gap-0.5 p-0.5 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
+              <button
+                onClick={() => setTypeFilter("all")}
+                aria-pressed={typeFilter === "all"}
+                className={`h-8 px-3 rounded-[var(--radius-sm)] text-xs font-medium transition-colors ${
+                  typeFilter === "all" ? "bg-[#06b6d4]/15 text-[#06b6d4]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                }`}
+              >
+                Todo tipo
+              </button>
+              {types.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTypeFilter(t)}
+                  aria-pressed={typeFilter === t}
+                  className={`h-8 px-3 rounded-[var(--radius-sm)] text-xs font-medium transition-colors ${
+                    typeFilter === t ? "bg-[#06b6d4]/15 text-[#06b6d4]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {isMaster && (
@@ -66,68 +122,17 @@ export function ItemsList({
         )}
       </div>
 
-      {/* Búsqueda + Filtros */}
-      {items.length > 0 && (
-        <div className="flex flex-col gap-2 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nombre..."
-              className="w-full bg-[var(--bg-surface)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-[var(--radius-md)] h-10 pl-9 pr-3 text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors placeholder:text-[var(--text-muted)]"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-1">
-            <button
-              onClick={() => setRarityFilter("all")}
-              aria-pressed={rarityFilter === "all"}
-              className={`h-7 px-2.5 rounded-full text-[11px] font-medium transition-colors border ${
-                rarityFilter === "all" ? "bg-[var(--bg-overlay)] text-[var(--text-primary)] border-[var(--border-default)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-              }`}
-            >
-              Toda rareza
-            </button>
-            {ITEM_RARITIES.map((r) => (
-              <button
-                key={r}
-                onClick={() => setRarityFilter(r)}
-                aria-pressed={rarityFilter === r}
-                className={`h-7 px-2.5 rounded-full text-[11px] font-medium transition-colors border ${
-                  rarityFilter === r ? ITEM_RARITY_COLOR[r] : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-                }`}
-              >
-                {ITEM_RARITY_LABELS[r]}
-              </button>
-            ))}
-          </div>
-
-          {types.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1">
-              <button
-                onClick={() => setTypeFilter("all")}
-                aria-pressed={typeFilter === "all"}
-                className={`h-7 px-2.5 rounded-full text-[11px] font-medium transition-colors border ${
-                  typeFilter === "all" ? "bg-[var(--bg-overlay)] text-[var(--text-primary)] border-[var(--border-default)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-                }`}
-              >
-                Todo tipo
-              </button>
-              {types.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTypeFilter(t)}
-                  aria-pressed={typeFilter === t}
-                  className={`h-7 px-2.5 rounded-full text-[11px] font-medium transition-colors border ${
-                    typeFilter === t ? "bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] border-[var(--accent-gold)]/30" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          )}
+      {/* Búsqueda — solo con 20+ objetos */}
+      {items.length > 20 && (
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nombre..."
+            className="w-full bg-[var(--bg-surface)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-[var(--radius-md)] h-10 pl-9 pr-3 text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors placeholder:text-[var(--text-muted)]"
+          />
         </div>
       )}
 

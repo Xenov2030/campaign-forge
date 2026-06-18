@@ -131,6 +131,7 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
   const [campaignId, setCampaignId] = useState<string | null>(campaignIdProp ?? null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [portraitUrl, setPortraitUrl] = useState(initial?.portraitUrl ?? "");
   const [bannerUrl, setBannerUrl] = useState(initial?.bannerUrl ?? "");
 
@@ -159,6 +160,10 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    setErrors({});
     setSaving(true);
     setError(null);
     try {
@@ -209,8 +214,8 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
             className="w-36 shrink-0"
           />
           <div className="flex-1 grid grid-cols-2 gap-4">
-            <Input label="Nombre *" value={form.name} onChange={set("name")} placeholder="Thorin Escudoderoble" required className="col-span-2" />
-            <Input label="Raza" value={form.race} onChange={set("race")} placeholder="Enano, Élfo, Humano..." />
+            <Input label="Nombre *" value={form.name} onChange={(e) => { set("name")(e); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }} placeholder="Thorin Escudoderoble" required maxLength={100} error={errors.name} className="col-span-2" />
+            <Input label="Raza" value={form.race} onChange={set("race")} placeholder="Enano, Élfo, Humano..." maxLength={100} />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Clase</label>
               <select
@@ -222,7 +227,7 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
                 {CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <Input label="Subclase" value={form.subclass} onChange={set("subclass")} placeholder="Camino del Berserker..." />
+            <Input label="Subclase" value={form.subclass} onChange={set("subclass")} placeholder="Camino del Berserker..." maxLength={100} />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Nivel</label>
               <NumberField
@@ -230,7 +235,7 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
                 className="h-10 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] px-3 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors"
               />
             </div>
-            <Input label="Trasfondo" value={form.background} onChange={set("background")} placeholder="Soldado, Noble, Forajido..." />
+            <Input label="Trasfondo" value={form.background} onChange={set("background")} placeholder="Soldado, Noble, Forajido..." maxLength={100} />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Alineamiento</label>
               <select
@@ -283,9 +288,9 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-5">Descripción e historia</h2>
         <div className="space-y-4">
-          <Textarea label="Historia / Trasfondo" value={form.backstory} onChange={set("backstory")} rows={5} placeholder="¿De dónde viene? ¿Qué le llevó a la aventura? ¿Qué motivaciones tiene?..." />
-          <Textarea label="Ideales" value={form.ideals} onChange={set("ideals")} rows={3} placeholder="¿Qué principios guían a tu personaje? ¿En qué cree?..." />
-          <Textarea label="Apariencia física" value={form.appearance} onChange={set("appearance")} rows={3} placeholder="Describe el aspecto de tu personaje..." />
+          <Textarea label="Historia / Trasfondo" value={form.backstory} onChange={set("backstory")} rows={5} maxLength={4000} placeholder="¿De dónde viene? ¿Qué le llevó a la aventura? ¿Qué motivaciones tiene?..." />
+          <Textarea label="Ideales" value={form.ideals} onChange={set("ideals")} rows={3} maxLength={4000} placeholder="¿Qué principios guían a tu personaje? ¿En qué cree?..." />
+          <Textarea label="Apariencia física" value={form.appearance} onChange={set("appearance")} rows={3} maxLength={4000} placeholder="Describe el aspecto de tu personaje..." />
         </div>
       </div>
 

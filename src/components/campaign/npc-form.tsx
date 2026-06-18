@@ -73,6 +73,7 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
 
   const [form, setForm] = useState<NpcFormValues>(base);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = (field: keyof NpcFormValues) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -84,10 +85,10 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) {
-      toast.error("El nombre es obligatorio");
-      return;
-    }
+    const newErrors: Record<string, string> = {};
+    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    setErrors({});
     setSaving(true);
     try {
       const payload = { ...form, ...(mode === "create" ? { campaignId } : {}) };
@@ -123,14 +124,14 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
             className="w-36 shrink-0"
           />
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Nombre *" value={form.name} onChange={set("name")} placeholder="Nombre del NPC" required />
-            <Input label="Apodo" value={form.nickname} onChange={set("nickname")} placeholder="El Tuerto, La Sombra..." />
-            <Input label="Raza" value={form.race} onChange={set("race")} placeholder="Humano, Elfo..." />
-            <Input label="Ocupación / Rol" value={form.occupation} onChange={set("occupation")} placeholder="Tabernero, Guardia real..." />
-            <Input label="Edad" value={form.age} onChange={set("age")} placeholder="35 años, anciano..." />
-            <Input label="Género" value={form.gender} onChange={set("gender")} placeholder="Masculino, Femenino..." />
-            <Input label="Localización" value={form.location} onChange={set("location")} placeholder="Ciudad de Puertallamas..." />
-            <Input label="Facción" value={form.faction} onChange={set("faction")} placeholder="Gremio de Ladrones..." />
+            <Input label="Nombre *" value={form.name} onChange={(e) => { set("name")(e); if (errors.name) setErrors((p) => ({ ...p, name: "" })); }} placeholder="Nombre del NPC" required maxLength={100} error={errors.name} />
+            <Input label="Apodo" value={form.nickname} onChange={set("nickname")} placeholder="El Tuerto, La Sombra..." maxLength={100} />
+            <Input label="Raza" value={form.race} onChange={set("race")} placeholder="Humano, Elfo..." maxLength={100} />
+            <Input label="Ocupación / Rol" value={form.occupation} onChange={set("occupation")} placeholder="Tabernero, Guardia real..." maxLength={100} />
+            <Input label="Edad" value={form.age} onChange={set("age")} placeholder="35 años, anciano..." maxLength={50} />
+            <Input label="Género" value={form.gender} onChange={set("gender")} placeholder="Masculino, Femenino..." maxLength={50} />
+            <Input label="Localización" value={form.location} onChange={set("location")} placeholder="Ciudad de Puertallamas..." maxLength={100} />
+            <Input label="Facción" value={form.faction} onChange={set("faction")} placeholder="Gremio de Ladrones..." maxLength={100} />
             <TagPicker
               label="Relación con el grupo"
               value={form.tags}
@@ -174,9 +175,9 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
       <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
         <h2 className="font-display text-lg font-bold text-[var(--text-primary)] mb-5">Personalidad e historia</h2>
         <div className="space-y-4">
-          <Textarea label="Historia" value={form.backstory} onChange={set("backstory")} rows={4} placeholder="Trasfondo e historia del personaje..." />
-          <Textarea label="Personalidad" value={form.personality} onChange={set("personality")} rows={3} placeholder="Cómo se comporta, qué rasgos lo definen..." />
-          <Textarea label="Apariencia física" value={form.appearance} onChange={set("appearance")} rows={2} placeholder="Describe cómo se ve este personaje..." />
+          <Textarea label="Historia" value={form.backstory} onChange={set("backstory")} rows={4} maxLength={4000} placeholder="Trasfondo e historia del personaje..." />
+          <Textarea label="Personalidad" value={form.personality} onChange={set("personality")} rows={3} maxLength={4000} placeholder="Cómo se comporta, qué rasgos lo definen..." />
+          <Textarea label="Apariencia física" value={form.appearance} onChange={set("appearance")} rows={2} maxLength={4000} placeholder="Describe cómo se ve este personaje..." />
         </div>
       </div>
 
@@ -186,13 +187,13 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
         <p className="text-xs text-[var(--text-muted)] mb-5">Esta información solo la verás tú como máster</p>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Puntos de vida (actuales)" type="number" min={0} value={form.hitPoints ?? ""} onChange={setNum("hitPoints")} placeholder="Ej: 25" />
-            <Input label="Puntos de vida (máximo)" type="number" min={0} value={form.maxHitPoints ?? ""} onChange={setNum("maxHitPoints")} placeholder="Ej: 25" />
+            <Input label="Puntos de vida (actuales)" type="number" min={0} max={9999} value={form.hitPoints ?? ""} onChange={setNum("hitPoints")} onWheel={(e) => e.currentTarget.blur()} placeholder="Ej: 25" />
+            <Input label="Puntos de vida (máximo)" type="number" min={0} max={9999} value={form.maxHitPoints ?? ""} onChange={setNum("maxHitPoints")} onWheel={(e) => e.currentTarget.blur()} placeholder="Ej: 25" />
           </div>
-          <Textarea label="Motivaciones" value={form.motivations} onChange={set("motivations")} rows={2} placeholder="Qué quiere este personaje y por qué..." />
-          <Textarea label="Secretos" value={form.secrets} onChange={set("secrets")} rows={2} placeholder="Información oculta que no conocen los jugadores..." />
-          <Input label="Peculiaridad / Manierismo" value={form.quirks} onChange={set("quirks")} placeholder="Un tic, costumbre o detalle memorable..." />
-          <Input label="Notas de voz / Acento" value={form.voiceNotes} onChange={set("voiceNotes")} placeholder="Cómo habla, tono, expresiones características..." />
+          <Textarea label="Motivaciones" value={form.motivations} onChange={set("motivations")} rows={2} maxLength={4000} placeholder="Qué quiere este personaje y por qué..." />
+          <Textarea label="Secretos" value={form.secrets} onChange={set("secrets")} rows={2} maxLength={4000} placeholder="Información oculta que no conocen los jugadores..." />
+          <Input label="Peculiaridad / Manierismo" value={form.quirks} onChange={set("quirks")} placeholder="Un tic, costumbre o detalle memorable..." maxLength={200} />
+          <Input label="Notas de voz / Acento" value={form.voiceNotes} onChange={set("voiceNotes")} placeholder="Cómo habla, tono, expresiones características..." maxLength={200} />
         </div>
       </div>
 
