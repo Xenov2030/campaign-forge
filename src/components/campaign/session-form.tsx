@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Save, Trash2, Users, Wifi, Home, AlertTriangle } from "lucide-react";
+import { Loader2, Save, Trash2, Users, Wifi, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -335,18 +335,17 @@ export function SessionForm({
 
       {/* Zona de peligro — solo en edición */}
       {mode === "edit" && (
-        <div className="border border-red-500/20 rounded-[var(--radius-xl)] p-5 bg-red-500/5 mt-8">
-          <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle className="h-4 w-4 text-red-400" />
-            <h3 className="text-sm font-semibold text-red-400">Zona de peligro</h3>
-          </div>
-          <p className="text-xs text-[var(--text-muted)] mb-4">
-            Esta acción es permanente y no se puede deshacer.
-          </p>
-          <Button type="button" variant="destructive" disabled={deleting} onClick={handleDelete}>
+        <div className="mt-8 pt-6 border-t border-[var(--border-subtle)]">
+          <h2 className="text-sm font-semibold text-[var(--accent-crimson)] uppercase tracking-wider mb-3">Zona de peligro</h2>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--accent-crimson)]/30 bg-[var(--accent-crimson)]/10 text-[var(--accent-crimson)] hover:bg-[var(--accent-crimson)]/15 transition-colors disabled:opacity-50"
+          >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
             Eliminar sesión
-          </Button>
+          </button>
         </div>
       )}
     </form>

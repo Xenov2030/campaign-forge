@@ -7,6 +7,7 @@ import { ChevronLeft, User, MapPin, Users, Eye, EyeOff, Lock, Pencil } from "luc
 import { Badge } from "@/components/ui/badge";
 import { NpcDangerZone } from "@/components/campaign/npc-danger-zone";
 import { NpcHpControl } from "@/components/campaign/npc-hp-control";
+import { NpcVaultButton } from "./npc-vault-button";
 
 interface PageProps {
   params: Promise<{ campaignSlug: string; npcId: string }>;
@@ -78,13 +79,16 @@ export default async function NPCDetailPage({ params }: PageProps) {
               </p>
             </div>
             {isMaster && (
-              <Link
-                href={`/${campaignSlug}/npcs/${npcId}/edit`}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[#34d399] hover:text-[#34d399] transition-colors shrink-0"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Editar
-              </Link>
+              <div className="flex items-center gap-2 shrink-0">
+                <NpcVaultButton npcId={npcId} />
+                <Link
+                  href={`/${campaignSlug}/npcs/${npcId}/edit`}
+                  className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[#34d399] hover:text-[#34d399] transition-colors"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Editar
+                </Link>
+              </div>
             )}
           </div>
 

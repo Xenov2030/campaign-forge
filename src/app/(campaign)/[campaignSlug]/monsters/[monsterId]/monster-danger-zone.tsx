@@ -7,20 +7,20 @@ import { toast } from "sonner";
 import { useConfirmStore } from "@/store/confirm-store";
 
 interface Props {
-  slug: string;
-  npcId: string;
-  npcName: string;
+  monsterId: string;
+  monsterName: string;
+  campaignSlug: string;
 }
 
-export function NpcDangerZone({ slug, npcId, npcName }: Props) {
+export function MonsterDangerZone({ monsterId, monsterName, campaignSlug }: Props) {
   const router = useRouter();
   const confirm = useConfirmStore((s) => s.confirm);
   const [busy, setBusy] = useState(false);
 
   const run = async () => {
     const first = await confirm({
-      title: "Eliminar NPC",
-      description: `Se eliminará "${npcName}" de forma permanente. Las copias que tengas en el baúl se conservan.`,
+      title: "Eliminar monstruo",
+      description: `Se eliminará "${monsterName}" de forma permanente.`,
       confirmLabel: "Continuar",
       cancelLabel: "Cancelar",
       danger: true,
@@ -38,13 +38,13 @@ export function NpcDangerZone({ slug, npcId, npcName }: Props) {
 
     setBusy(true);
     try {
-      const res = await fetch(`/api/npcs/${npcId}`, { method: "DELETE" });
+      const res = await fetch(`/api/monsters/${monsterId}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "No se pudo eliminar el NPC");
+        throw new Error(data.error ?? "No se pudo eliminar el monstruo");
       }
-      toast.success("NPC eliminado");
-      router.push(`/${slug}/npcs`);
+      toast.success("Monstruo eliminado");
+      router.push(`/${campaignSlug}/monsters`);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
@@ -61,7 +61,7 @@ export function NpcDangerZone({ slug, npcId, npcName }: Props) {
         className="inline-flex items-center gap-2 h-10 px-4 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--accent-crimson)]/30 bg-[var(--accent-crimson)]/10 text-[var(--accent-crimson)] hover:bg-[var(--accent-crimson)]/15 transition-colors disabled:opacity-50"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-        Eliminar NPC
+        Eliminar monstruo
       </button>
     </div>
   );

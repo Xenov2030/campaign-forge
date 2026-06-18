@@ -3,8 +3,8 @@ import Link from "next/link";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
 import { MonsterStatBlock } from "@/components/campaign/monster-stat-block";
-import { MonsterDeleteButton } from "./monster-delete-button";
 import { MonsterVaultButton } from "./monster-vault-button";
+import { MonsterDangerZone } from "./monster-danger-zone";
 import { Pencil, ChevronLeft } from "lucide-react";
 
 interface PageProps {
@@ -51,12 +51,12 @@ export default async function MonsterDetailPage({ params }: PageProps) {
             >
               <Pencil className="h-3.5 w-3.5" /> Editar
             </Link>
-            <MonsterDeleteButton monsterId={monsterId} campaignSlug={campaignSlug} />
           </div>
         )}
       </div>
 
       <MonsterStatBlock monster={monster} />
+      {isMaster && <MonsterDangerZone monsterId={monsterId} monsterName={monster.name} campaignSlug={campaignSlug} />}
     </div>
   );
 }

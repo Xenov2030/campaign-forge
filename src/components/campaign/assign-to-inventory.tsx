@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 
 interface Character { id: string; name: string }
@@ -11,9 +11,6 @@ interface Props {
   itemName: string;
   characters: Character[];
 }
-
-const selectClass =
-  "flex-1 bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 px-3 rounded-[var(--radius-md)] text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors";
 
 export function AssignToInventory({ itemId, itemName, characters }: Props) {
   const [characterId, setCharacterId] = useState(characters[0]?.id ?? "");
@@ -42,31 +39,39 @@ export function AssignToInventory({ itemId, itemName, characters }: Props) {
   };
 
   return (
-    <div className="mt-8 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-5">
-      <h2 className="font-display text-base font-bold text-[var(--text-primary)] mb-4">Asignar a personaje</h2>
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="flex flex-col gap-1.5 flex-1 min-w-40">
+    <div className="mt-8 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-[var(--radius-xl)] p-6">
+      <div className="flex items-center gap-2 mb-5">
+        <UserRound className="h-4 w-4 text-[var(--accent-gold)]" />
+        <h2 className="font-display text-base font-bold text-[var(--text-primary)]">Asignar a personaje</h2>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] items-end">
+        <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Personaje</label>
-          <select className={selectClass} value={characterId} onChange={(e) => setCharacterId(e.target.value)}>
+          <select
+            value={characterId}
+            onChange={(e) => setCharacterId(e.target.value)}
+            className="h-11 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors"
+          >
             {characters.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
-        <div className="flex flex-col gap-1.5 w-24">
+        <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Cantidad</label>
           <input
             type="number"
             min={1}
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-            className={selectClass}
+            onWheel={(e) => e.currentTarget.blur()}
+            className="h-11 w-24 rounded-[var(--radius-md)] bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] text-sm px-3 hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors"
           />
         </div>
         <button
           onClick={assign}
           disabled={loading || !characterId}
-          className="inline-flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-md)] text-sm font-medium bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 hover:bg-[var(--accent-gold)]/25 disabled:opacity-50 transition-colors"
+          className="inline-flex items-center gap-1.5 h-11 px-5 rounded-[var(--radius-md)] text-sm font-semibold bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] border border-[var(--accent-gold)]/30 hover:bg-[var(--accent-gold)]/25 disabled:opacity-50 transition-colors"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Asignar
