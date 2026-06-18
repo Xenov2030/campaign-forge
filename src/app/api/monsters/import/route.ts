@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 // POST /api/monsters/import  body { campaignId, vaultMonsterIds: string[] }
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { campaignId, vaultMonsterIds } = await request.json() as { campaignId?: string; vaultMonsterIds?: string[] };
     if (!campaignId || !Array.isArray(vaultMonsterIds) || vaultMonsterIds.length === 0) {

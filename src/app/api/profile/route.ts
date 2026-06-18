@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 export async function PUT(request: NextRequest) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const { user } = authResult;
 
   try {
     const { action, displayName, currentPassword, newPassword, avatarUrl, email } = await request.json();

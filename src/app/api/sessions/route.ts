@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 // GET /api/sessions?campaignId=xxx
 export async function GET(request: NextRequest) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const { user } = authResult;
 
   const campaignId = request.nextUrl.searchParams.get("campaignId");
   if (!campaignId) return NextResponse.json({ error: "campaignId required" }, { status: 400 });
@@ -35,8 +36,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/sessions
 export async function POST(request: NextRequest) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) return authResult;
+  const { user } = authResult;
 
   const body = await request.json();
   const { campaignId, title, date, time, duration, summary, notes, status, isPresential, attendeeIds } = body;

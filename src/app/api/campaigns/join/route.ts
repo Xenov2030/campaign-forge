@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import { getPusherServer, userChannel } from "@/lib/pusher/server";
 
 type CampaignLite = { id: string; name: string; slug: string; masterId: string };
@@ -10,8 +10,9 @@ type JoinReqLite = { id: string; status: string };
 // Crea una JoinRequest PENDIENTE y notifica al máster (públicas y privadas).
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { inviteCode } = await request.json();
     if (!inviteCode) return NextResponse.json({ error: "Código requerido" }, { status: 400 });

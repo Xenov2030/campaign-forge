@@ -10,6 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageCropUpload } from "@/components/ui/image-crop-upload";
 import { TagPicker } from "@/components/ui/tag-picker";
+import { z } from "zod";
+
+const NpcSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").max(100),
+  hitPoints: z.number().int().min(0).nullable(),
+  maxHitPoints: z.number().int().min(0).nullable(),
+});
 
 const NPC_TAGS = [
   { value: "amigable",   label: "Amigable",   color: "#34d399" },
@@ -85,9 +92,12 @@ export function NpcForm({ slug, mode, campaignId, npcId, initial }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
-    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    const result = NpcSchema.safeParse(form);
+    if (!result.success) {
+      const flat = result.error.flatten().fieldErrors;
+      setErrors(Object.fromEntries(Object.entries(flat).map(([k, v]) => [k, v?.[0] ?? ""])));
+      return;
+    }
     setErrors({});
     setSaving(true);
     try {

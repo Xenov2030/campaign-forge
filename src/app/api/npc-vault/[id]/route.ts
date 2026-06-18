@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 // DELETE /api/npc-vault/[id] — quita una entrada del baúl (los NPCs vinculados se desvinculan).
@@ -8,8 +8,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { id } = await params;
     const entry = await prisma.vaultNpc.findUnique({ where: { id } });

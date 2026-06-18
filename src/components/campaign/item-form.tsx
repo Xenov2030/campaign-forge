@@ -11,6 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageCropUpload } from "@/components/ui/image-crop-upload";
 import { ITEM_RARITIES, ITEM_RARITY_LABELS, MISSION_REWARD_TAG } from "@/lib/items";
+import { z } from "zod";
+
+const ItemSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").max(100),
+});
 
 export interface ItemFormValues {
   name: string;
@@ -33,8 +38,7 @@ export const EMPTY_ITEM: ItemFormValues = {
   imageUrl: "", tags: [],
 };
 
-const selectClass =
-  "w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 px-3 rounded-[var(--radius-md)] text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors";
+import { selectClass } from "@/lib/form-styles";
 
 interface Props {
   slug: string;
@@ -57,9 +61,12 @@ export function ItemForm({ slug, mode, campaignId, itemId, initial }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
-    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    const result = ItemSchema.safeParse(form);
+    if (!result.success) {
+      const flat = result.error.flatten().fieldErrors;
+      setErrors(Object.fromEntries(Object.entries(flat).map(([k, v]) => [k, v?.[0] ?? ""])));
+      return;
+    }
     setErrors({});
     setSaving(true);
     try {

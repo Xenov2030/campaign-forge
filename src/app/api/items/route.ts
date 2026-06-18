@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 import { isItemRarity } from "@/lib/items";
 
@@ -7,8 +7,9 @@ import { isItemRarity } from "@/lib/items";
 // El máster ve todos; el jugador solo los visibles. `tag` filtra por etiqueta (p. ej. recompensas de misión).
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { searchParams } = new URL(request.url);
     const campaignId = searchParams.get("campaignId");
@@ -45,8 +46,9 @@ export async function GET(request: NextRequest) {
 // POST /api/items — crear objeto (solo máster).
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const body = await request.json();
     const { campaignId, name } = body;

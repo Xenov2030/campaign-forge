@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 // GET /api/chat/rooms?campaignId=xxx
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { searchParams } = new URL(request.url);
     const campaignId = searchParams.get("campaignId");
@@ -39,8 +40,9 @@ export async function GET(request: NextRequest) {
 // POST /api/chat/rooms — master creates a new voice channel
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { campaignId, name, channelType } = await request.json();
     if (!campaignId || !name?.trim()) {

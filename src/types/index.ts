@@ -191,7 +191,5 @@ export interface MapMarker {
   linkedEntityId?: string;
 }
 
-// Chat types
-export interface ChatMessageWithUser extends ChatMessage {
-  user: Pick<User, "id" | "username" | "displayName" | "avatarUrl">;
-}
+// ChatMessageWithUser — definición canónica en @/hooks/useChatMessages
+export type { ChatMessageWithUser } from "@/hooks/useChatMessages";

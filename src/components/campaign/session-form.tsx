@@ -10,6 +10,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { cn } from "@/lib/utils";
+import { z } from "zod";
+
+export const SessionSchema = z.object({
+  title: z.string().max(100).optional(),
+  date: z.string().optional(),
+  time: z.string().optional(),
+  duration: z.string().optional(),
+  summary: z.string().max(4000).optional(),
+  notes: z.string().max(4000).optional(),
+});
 
 export interface SessionMember {
   userId: string;

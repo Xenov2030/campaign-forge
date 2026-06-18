@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 // Campos narrativos que se copian entre NPC y entrada del baúl.
@@ -32,8 +32,9 @@ function vaultDataFromNpc(npc: Record<string, unknown>) {
 // GET /api/npc-vault — lista el baúl del usuario.
 export async function GET() {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const vault = await prisma.vaultNpc.findMany({
       where: { userId: user.id },
@@ -49,8 +50,9 @@ export async function GET() {
 // POST /api/npc-vault  body { npcId } — guarda un NPC de campaña en el baúl.
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { npcId } = await request.json();
     if (!npcId) return NextResponse.json({ error: "npcId requerido" }, { status: 400 });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import { getPusherServer, chatChannel } from "@/lib/pusher/server";
 
 // POST /api/chat/[roomId]/typing — avisa que el usuario está escribiendo.
@@ -9,8 +9,9 @@ export async function POST(
   { params }: { params: Promise<{ roomId: string }> }
 ) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { roomId } = await params;
     const pusher = getPusherServer();

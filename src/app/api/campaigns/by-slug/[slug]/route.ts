@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CampaignTheme } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 
 const VALID_THEMES = new Set<string>(Object.values(CampaignTheme));
 
@@ -10,8 +10,9 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { slug } = await params;
     const campaign = await prisma.campaign.findUnique({
@@ -33,8 +34,9 @@ export async function PATCH(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { slug } = await params;
     const campaign = await prisma.campaign.findUnique({
@@ -84,8 +86,9 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { slug } = await params;
     const campaign = await prisma.campaign.findUnique({

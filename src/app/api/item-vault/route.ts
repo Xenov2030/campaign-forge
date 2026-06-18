@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 // GET /api/item-vault — lista objetos del baúl del usuario.
 export async function GET() {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const vault = await prisma.vaultItem.findMany({
       where: { userId: user.id },
@@ -22,8 +23,9 @@ export async function GET() {
 // POST /api/item-vault  body { itemId } — guarda un objeto de campaña en el baúl.
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { itemId } = await request.json() as { itemId?: string };
     if (!itemId) return NextResponse.json({ error: "itemId requerido" }, { status: 400 });

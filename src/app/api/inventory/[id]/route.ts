@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 interface Params { params: Promise<{ id: string }> }
@@ -25,8 +25,9 @@ async function resolvePermissions(id: string, userId: string) {
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { id } = await params;
     const resolved = await resolvePermissions(id, user.id);
@@ -49,8 +50,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { id } = await params;
     const resolved = await resolvePermissions(id, user.id);

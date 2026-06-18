@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import { slugify, generateInviteCode } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     // Solo MASTER/ADMIN pueden crear campañas. Un PLAYER no está habilitado.
     if (user.role === "PLAYER") {
@@ -73,8 +74,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const campaigns = await prisma.campaign.findMany({
       where: {

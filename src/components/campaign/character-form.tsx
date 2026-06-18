@@ -8,6 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageCropUpload } from "@/components/ui/image-crop-upload";
+import { z } from "zod";
+
+const CharacterSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").max(100),
+  level: z.number().int().min(1).max(20),
+  str: z.number().int().min(1).max(30),
+  dex: z.number().int().min(1).max(30),
+  con: z.number().int().min(1).max(30),
+  int: z.number().int().min(1).max(30),
+  wis: z.number().int().min(1).max(30),
+  cha: z.number().int().min(1).max(30),
+  hitPoints: z.number().int().min(1),
+  armorClass: z.number().int().min(1),
+  speed: z.number().int().min(0),
+});
 
 const CLASSES = ["Bárbaro","Bardo","Clérigo","Druida","Explorador","Guerrero","Hechicero","Mago","Monje","Nigromante","Paladín","Pícaro","Warlock","Personalizado"];
 const ALIGNMENTS = ["Legal Bueno","Neutral Bueno","Caótico Bueno","Legal Neutral","Neutral Verdadero","Caótico Neutral","Legal Malvado","Neutral Malvado","Caótico Malvado"];
@@ -160,9 +175,12 @@ export function CharacterForm({ slug, mode, campaignId: campaignIdProp, characte
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
-    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    const result = CharacterSchema.safeParse(form);
+    if (!result.success) {
+      const flat = result.error.flatten().fieldErrors;
+      setErrors(Object.fromEntries(Object.entries(flat).map(([k, v]) => [k, v?.[0] ?? ""])));
+      return;
+    }
     setErrors({});
     setSaving(true);
     setError(null);

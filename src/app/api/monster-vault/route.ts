@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 function vaultDataFromMonster(m: Record<string, unknown>) {
@@ -30,8 +30,9 @@ function vaultDataFromMonster(m: Record<string, unknown>) {
 // GET /api/monster-vault — lista criaturas del baúl del usuario.
 export async function GET() {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const vault = await prisma.vaultMonster.findMany({
       where: { userId: user.id },
@@ -47,8 +48,9 @@ export async function GET() {
 // POST /api/monster-vault  body { monsterId } — guarda un monstruo de campaña en el baúl.
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { monsterId } = await request.json() as { monsterId?: string };
     if (!monsterId) return NextResponse.json({ error: "monsterId requerido" }, { status: 400 });

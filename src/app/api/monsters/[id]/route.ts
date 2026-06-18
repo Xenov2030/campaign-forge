@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/api-helpers";
 import prisma from "@/lib/prisma";
 
 interface RouteParams { params: Promise<{ id: string }> }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { id } = await params;
     const monster = await prisma.monster.findUnique({
@@ -28,8 +29,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { id } = await params;
     const monster = await prisma.monster.findUnique({
@@ -74,8 +76,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const { id } = await params;
     const monster = await prisma.monster.findUnique({

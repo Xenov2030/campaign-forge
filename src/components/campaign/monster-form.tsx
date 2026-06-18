@@ -9,6 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TagPicker } from "@/components/ui/tag-picker";
 import { ImageCropUpload } from "@/components/ui/image-crop-upload";
+import { selectClass } from "@/lib/form-styles";
+import { z } from "zod";
+
+const MonsterSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").max(100),
+});
 
 interface StatEntry { name: string; description: string }
 
@@ -86,7 +92,6 @@ function mod(score: number): string {
   return m >= 0 ? `+${m}` : `${m}`;
 }
 
-const selectClass = "w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 px-3 rounded-[var(--radius-md)] text-sm hover:border-[var(--border-strong)] focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] transition-colors";
 const numInputClass = "w-full text-center bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-primary)] h-10 rounded-[var(--radius-md)] text-sm focus:outline-none focus:border-[var(--accent-gold)] transition-colors";
 
 function Section({ title, open, onToggle, children }: { title: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
@@ -156,9 +161,12 @@ export function MonsterForm({ slug, mode, campaignId, monsterId, initial }: Prop
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
-    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    const result = MonsterSchema.safeParse(form);
+    if (!result.success) {
+      const flat = result.error.flatten().fieldErrors;
+      setErrors(Object.fromEntries(Object.entries(flat).map(([k, v]) => [k, v?.[0] ?? ""])));
+      return;
+    }
     setErrors({});
     setSaving(true);
     try {
