@@ -77,7 +77,7 @@ export default async function EditMonsterPage({ params }: PageProps) {
   };
 
   return (
-    <div className="px-4 md:px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="h-10 w-10 rounded-[var(--radius-lg)] bg-[#f87171]/10 border border-[#f87171]/30 flex items-center justify-center">
           <Skull className="h-5 w-5 text-[#f87171]" />
