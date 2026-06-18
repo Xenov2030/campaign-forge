@@ -5,8 +5,9 @@ import prisma from "@/lib/prisma";
 // GET /api/notifications — notificaciones del usuario (recientes primero) + no leídas.
 export async function GET() {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     const notifications = await prisma.notification.findMany({
       where: { userId: user.id },
@@ -47,8 +48,9 @@ export async function GET() {
 // POST /api/notifications — marca todas las del usuario como leídas.
 export async function POST() {
   try {
-    const user = await getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { user } = authResult;
 
     await prisma.notification.updateMany({
       where: { userId: user.id, read: false },
