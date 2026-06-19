@@ -6,6 +6,7 @@ import { TopNav } from "@/components/layout/top-nav";
 import { DiceTray } from "@/components/dice/dice-tray";
 import { MasterAssistant } from "@/components/ai/master-assistant";
 import { CampaignRealtime } from "@/components/realtime/campaign-realtime";
+import { NotesWidget } from "@/components/campaign/notes-widget";
 
 interface CampaignLayoutProps {
   children: React.ReactNode;
@@ -99,6 +100,7 @@ export default async function CampaignLayout({ children, params }: CampaignLayou
         userId={user.id}
       />
       <DiceTray isMaster={isMaster} campaignId={campaign.id} />
+      <NotesWidget campaignId={campaign.id} />
       {isMaster && (
         <MasterAssistant
           campaignId={campaign.id}

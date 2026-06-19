@@ -448,6 +448,7 @@ model Session {
   updatedAt    DateTime      @updatedAt
   campaign     Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   master       User          @relation(fields: [masterId], references: [id])
+  playerNotes  Note[]
 
   @@index([campaignId])
   @@map("sessions")
@@ -512,6 +513,7 @@ model Note {
   campaignId  String
   userId      String
   characterId String?
+  sessionId   String?
   title       String?
   content     String
   isPrivate   Boolean    @default(true)
@@ -520,6 +522,7 @@ model Note {
   updatedAt   DateTime   @updatedAt
   campaign    Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   character   Character? @relation("CharacterNotes", fields: [characterId], references: [id])
+  session     Session?   @relation(fields: [sessionId], references: [id], onDelete: SetNull)
   user        User       @relation(fields: [userId], references: [id])
 
   @@map("notes")

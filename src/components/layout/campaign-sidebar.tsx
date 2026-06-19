@@ -9,7 +9,6 @@ import {
   Users,
   Map,
   BookOpen,
-  Scroll,
   MessageSquare,
   Sparkles,
   ChevronLeft,
@@ -158,12 +157,6 @@ export function CampaignSidebar({
       label: "Lore / Wiki",
       href: `${base}/lore`,
       icon: <BookOpen className="h-4 w-4" />,
-      disabled: true,
-    },
-    {
-      label: "Notas",
-      href: `${base}/notes`,
-      icon: <Scroll className="h-4 w-4" />,
       disabled: true,
     },
     {
