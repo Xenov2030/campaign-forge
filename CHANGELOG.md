@@ -1,5 +1,37 @@
 # Changelog — CampaignForge
 
+## [0.3.0] — 2026-06-19
+
+### Sesiones
+- Formulario completo: selector de hora (`TimePicker`), switch presencial/online, selector de asistentes con checkboxes.
+- Filtros por estado (Planificada/En curso/Completada/Cancelada) y buscador de sesiones.
+- Notificación automática a asistentes seleccionados al programar sesión (`Notification` + Pusher).
+- PATCH `/api/sessions/[id]` acepta `recap` (resumen post-sesión).
+
+### Notificaciones (sistema completo)
+- `NotificationBell` en navbar: badge con conteo de no leídas, popover con lista de notificaciones.
+- Realtime vía Pusher en canal `user-{id}`; marca como leídas al abrir.
+- Solicitudes de unión (`JoinRequest`): aceptar/rechazar desde la campana del máster; notifica al jugador del resultado.
+- Endpoints: `GET/POST /api/notifications`, `POST /api/join-requests/[id]`.
+
+### Formularios (refactoring completo)
+- Validación Zod en los 6 formularios principales (`CharacterSchema`, `NpcSchema`, `ItemSchema`, `QuestSchema`, `MonsterSchema`, `SessionSchema`).
+- Componente `DatePicker` (react-day-picker v9 + Radix Popover, locale español, sin CSS import) — usado en session-form y quest-form.
+- Componente `TimePicker` (selects HH:MM estilizados) — usado en session-form.
+
+### Infraestructura API
+- `requireAuth()` y `requireMember()` extraídas a `src/lib/api-helpers.ts`; aplicadas en ~40 rutas API.
+- `parseBody<T>(request, schema)` en `api-helpers.ts`: captura JSON malformado y valida body con Zod antes de procesar.
+- `src/lib/api-schemas.ts`: schemas `CreateCharacterBody`, `CreateNpcBody`, `CreateMonsterBody`, `CreateItemBody`, `CreateQuestBody`, `CreateSessionBody` — aplicados en los 6 endpoints POST principales.
+
+### Refactoring y deuda técnica
+- `CampaignSidebar` (~830 líneas → 434 líneas): voice section extraída a `voice-section.tsx` (`VoiceChannelSection`, `ConnectedVoiceBar`, `VoiceParticipantRow`).
+- `selectClass` extraída a `src/lib/form-styles.ts`; importada en monster-form, item-form, quest-form.
+- `ChatMessageWithUser` deduplicado: `types/index.ts` re-exporta desde `useChatMessages`.
+- Objetos: eliminado gate de ≥20 para mostrar buscador (ahora siempre visible).
+
+---
+
 ## [0.2.0] — 2026-06-17
 
 ### Bestiario / Monstruos
