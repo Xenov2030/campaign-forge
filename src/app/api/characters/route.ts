@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/api-helpers";
+import { requireAuth, parseBody } from "@/lib/api-helpers";
+import { CreateCharacterBody } from "@/lib/api-schemas";
 import prisma from "@/lib/prisma";
 import { getPusherServer, campaignChannel } from "@/lib/pusher/server";
 
@@ -9,17 +10,14 @@ export async function POST(request: NextRequest) {
     if (authResult instanceof NextResponse) return authResult;
     const { user } = authResult;
 
-    const body = await request.json();
+    const bodyResult = await parseBody(request, CreateCharacterBody);
+    if (bodyResult.error) return bodyResult.error;
     const {
       campaignId, name, race, className, subclass, level, background,
       alignment, appearance, backstory, ideals, portraitUrl, bannerUrl,
       str, dex, con, int: intel, wis, cha,
       hitPoints, maxHitPoints, armorClass, speed,
-    } = body;
-
-    if (!campaignId || !name?.trim()) {
-      return NextResponse.json({ error: "campaignId y name son requeridos" }, { status: 400 });
-    }
+    } = bodyResult.data;
 
     const member = await prisma.campaignMember.findUnique({
       where: { campaignId_userId: { campaignId, userId: user.id } },

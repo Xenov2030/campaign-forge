@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import prisma from "@/lib/prisma";
+import { type ZodSchema } from "zod";
 
 export type AuthUser = NonNullable<Awaited<ReturnType<typeof getUser>>>;
 
@@ -42,4 +43,26 @@ export async function requireMember(
       { status: 403 },
     );
   return { member };
+}
+
+/**
+ * Parsea y valida el body de un request contra un schema Zod.
+ * Retorna { data } o { error: NextResponse } con 400.
+ */
+export async function parseBody<T>(
+  request: NextRequest,
+  schema: ZodSchema<T>,
+): Promise<{ data: T; error: null } | { data: null; error: NextResponse }> {
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return { data: null, error: NextResponse.json({ error: "JSON inválido" }, { status: 400 }) };
+  }
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    const message = result.error.issues[0]?.message ?? "Datos inválidos";
+    return { data: null, error: NextResponse.json({ error: message }, { status: 400 }) };
+  }
+  return { data: result.data, error: null };
 }

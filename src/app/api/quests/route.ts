@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/api-helpers";
+import { requireAuth, parseBody } from "@/lib/api-helpers";
+import { CreateQuestBody } from "@/lib/api-schemas";
 import prisma from "@/lib/prisma";
 import { isQuestType, isQuestStatus, sanitizeObjectives, sanitizeRewards } from "@/lib/quests";
 
@@ -10,12 +11,10 @@ export async function POST(request: NextRequest) {
     if (authResult instanceof NextResponse) return authResult;
     const { user } = authResult;
 
-    const body = await request.json();
+    const bodyResult = await parseBody(request, CreateQuestBody);
+    if (bodyResult.error) return bodyResult.error;
+    const body = bodyResult.data;
     const { campaignId, name } = body;
-
-    if (!campaignId || !name?.trim()) {
-      return NextResponse.json({ error: "campaignId y name son requeridos" }, { status: 400 });
-    }
 
     const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
     if (!campaign) return NextResponse.json({ error: "Campaña no encontrada" }, { status: 404 });
